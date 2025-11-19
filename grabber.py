@@ -41,13 +41,19 @@ dirs_dict_ = {"2": "C:\\Users\\Mikolaj\\Games\\Cultures\\Gates of Asgard",
               "4": "C:\\Users\\Mikolaj\\Games\\Cultures\\8th Wonder",
               "5": "C:\\Users\\Mikolaj\\Games\\Cultures\\Cultures Saga"}
 
+dirname = "grabbed"
+
 
 def save_copied_dats(dirs_dict):
-    dir_to_copy_to = "grabbed"
     for version, path in dirs_dict.items():
         for num, data in enumerate(generate_all_dat_content(path)):
-            os.makedirs(dir_to_copy_to, exist_ok=True)
-            with open(os.path.join(dir_to_copy_to, os.path.join(f"{version}_{num}.dat")), "wb") as file:
+            os.makedirs(dirname, exist_ok=True)
+            with open(os.path.join(dirname, os.path.join(f"{version}_{num}.dat")), "wb") as file:
                 file.write(data)
 
-save_copied_dats(dirs_dict_)
+# save_copied_dats(dirs_dict_)
+
+def iterate_copies_paths():
+    for item in os.listdir(dirname):
+        if item.endswith(".dat"):
+            yield os.path.join(dirname, item)
