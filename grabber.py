@@ -1,6 +1,17 @@
 import os
 from supplements.library import Library
 
+# ========= Change this accordingly to your local paths =========
+
+dirs_dict_ = {"2": "C:\\Users\\Mikolaj\\Games\\Cultures\\Gates of Asgard",
+              "3": "C:\\Users\\Mikolaj\\Games\\Cultures\\Wyprawa na Północ",
+              "4": "C:\\Users\\Mikolaj\\Games\\Cultures\\8th Wonder",
+              "5": "C:\\Users\\Mikolaj\\Games\\Cultures\\Cultures Saga"}
+
+dirname = "grabbed"
+
+# ===============================================================
+
 
 def generate_all_dat_content(dir_path: str):
 
@@ -35,15 +46,6 @@ def generate_all_dat_content(dir_path: str):
     except FileNotFoundError:
         pass
 
-# Change this accordingly to your local paths
-dirs_dict_ = {"2": "C:\\Users\\Mikolaj\\Games\\Cultures\\Gates of Asgard",
-              "3": "C:\\Users\\Mikolaj\\Games\\Cultures\\Wyprawa na Północ",
-              "4": "C:\\Users\\Mikolaj\\Games\\Cultures\\8th Wonder",
-              "5": "C:\\Users\\Mikolaj\\Games\\Cultures\\Cultures Saga"}
-
-dirname = "grabbed"
-
-
 def save_copied_dats(dirs_dict):
     for version, path in dirs_dict.items():
         for num, data in enumerate(generate_all_dat_content(path)):
@@ -51,9 +53,11 @@ def save_copied_dats(dirs_dict):
             with open(os.path.join(dirname, os.path.join(f"{version}_{num}.dat")), "wb") as file:
                 file.write(data)
 
-# save_copied_dats(dirs_dict_)
-
 def iterate_copies_paths():
     for item in os.listdir(dirname):
         if item.endswith(".dat"):
             yield os.path.join(dirname, item)
+
+if __name__ == "__main__":
+    save_copied_dats(dirs_dict_)
+

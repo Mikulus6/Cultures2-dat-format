@@ -11,16 +11,31 @@ for item in grabber.iterate_copies_paths():
         assert buffer.bytes(length=4)[::-1] == b"xioh" # According to Siguza this stands for "x input-output handler"
         name = buffer.string(length=4, encoding="ascii")[::-1]
 
-        buffer.unsigned(length=4)
+        section_type = buffer.unsigned(length=4)
         length = buffer.unsigned(length=4)
 
-        match name:
-            case "logi" | "lgmm" | "xend" | "tend":
-                assert buffer.unsigned(length=16) == 0
-                assert length == 0
-            case _:
-                buffer.unsigned(length=16)
-                buffer.bytes(length=length)
+        match section_type:
+            case 0:
+                assert name in ("logi", "lgmm", "emmm", "xend", "tend")
+                assert buffer.unsigned(length=16) == length == 0
+            case 1 | 2 | 4:
+                assert (section_type != 2 or name == "lafm")\
+                   and (section_type != 4 or name == "lasw")
 
-        print(name)
-    print("\n")
+                assert buffer.unsigned(length=4) == 0
+                buffer.unsigned(length=4) # TODO: unknown
+                assert buffer.unsigned(length=8) == 0
+                section_buffer = BufferGiver(buffer.bytes(length=length))
+
+                match name:
+                    case "lsiz": # size
+                        map_width  = section_buffer.unsigned(length=4)
+                        map_height = section_buffer.unsigned(length=4)
+                        print(f"{map_width}x{map_height}")
+                    case _:
+                        pass
+            case _:
+                raise ValueError
+
+        # print(name)
+    # print("\n")
