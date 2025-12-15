@@ -3,7 +3,7 @@ import os.path
 import grabber
 from scripts.buffer import BufferGiver, BufferTaker
 from sections.run_length import run_length_decryption
-from scripts.image import bytes_to_image, shorts_to_image, four_bytes_to_image
+from scripts.image import bytes_to_image, shorts_to_image
 # grabber.save_copied_dats(dirs_dict_)
 
 solutions = "solutions"
@@ -38,32 +38,38 @@ for item in grabber.iterate_copies_paths():
                 assert buffer.unsigned(length=8) == 0
                 section_buffer = BufferGiver(buffer.bytes(length=length))
 
-                match name:
-                    case "lsiz": # size
-                        map_width  = section_buffer.unsigned(length=4)
-                        map_height = section_buffer.unsigned(length=4)
-                    case "lmhe" | "lmpa" | "lmpb" | "lmlt" | "lmlv" | "lmlp" | "lmco" | "lmtw" | "lmms" | "lmpr" |\
-                         "lmwb" | "lmbb" | "lmro" | "lmsb" | "lmao" | "embr" | "emm1" | "emmi" | "empa" | "empb" |\
-                         "emtl" | "emt2" | "emt3" | "emt4" | "emla" | "emvc":
-                        bytes_2d_map = run_length_decryption(bytes(section_buffer))
+                if name == "lsiz":
+                    map_width = section_buffer.unsigned(length=4)
+                    map_height = section_buffer.unsigned(length=4)
+                    continue
 
-                        if name != "lmao" and name.startswith("l"):
-                            bytes_to_image(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"),
-                                           width=map_width if name in ("lmhe", "lmpa", "lmpb") else map_width*2)
-                        elif name == "emmi":
-                            bytes_to_image(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"),
-                                           width=map_width*2)
-                        elif name == "emla":
-                            shorts_to_image(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"), width=map_width*2)
-                        elif name in ("empa", "empb"):
-                            shorts_to_image(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"), width=map_width)
-                        elif name.startswith("e"):
-                            bytes_to_image(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"),
-                                           width=map_width)
-                        else:
-                            shorts_to_image(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"), width=map_width*2)
-                    case "laco" | "lasw" | "lafm" | "eapd" | "eatd" | "eald":
-                        pass
+                if name in ("laco", "lasw", "lafm", "eapd", "eatd", "eald"):
+                    continue
+
+                bytes_2d_map = run_length_decryption(bytes(section_buffer))
+
+                match name:
+                    case "lmhe" | "lmpa" | "lmpb" | "embr" | "emm1" |\
+                         "emt1" | "emt2" | "emt3" | "emt4" | "emvc":
+                        bytes_per_vertex, width_multiplicator = 1, 1
+
+                    case "lmlt" | "lmlv" | "lmlp" | "lmco" | "lmtw" |\
+                         "lmms" | "lmpr" | "lmwb" | "lmbb" | "lmro" |\
+                         "lmsb" | "lmhf" | "emmi":
+                        bytes_per_vertex, width_multiplicator = 1, 2
+
+                    case "empa" | "empb":
+                        bytes_per_vertex, width_multiplicator = 2, 1
+
+                    case "lmao" | "emla":
+                        bytes_per_vertex, width_multiplicator = 2, 2
+
+                    case _:
+                        raise ValueError(f"Unknown section \"{name}\".")
+
+                to_image_func = bytes_to_image if bytes_per_vertex == 1 else shorts_to_image
+                to_image_func(bytes_2d_map, os.path.join(solution_dir, f"{name}.png"),
+                              width=map_width*width_multiplicator)
             case _:
                 raise ValueError
 
