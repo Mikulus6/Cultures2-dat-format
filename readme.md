@@ -1,6 +1,6 @@
 # Cultures2 Data Interpreter
 
-![under_construction](assets\under_construction.png)
+![under_construction](assets/under_construction.png)
 
 ## Introduction
 
