@@ -1,4 +1,6 @@
-# Cultures2 Dat Interpreter
+# Cultures2 Data Interpreter
+
+![under_construction](assets\under_construction.png)
 
 ## Introduction
 
@@ -8,14 +10,8 @@ series whichs engine is based on [*Cultures 2: The Gates of Asgard*](https://en.
 Those are, excluding the mentioned game itself: [*Northland*](https://www.mobygames.com/game/8938/northland/),
 [*8th Wonder of the World*](https://www.mobygames.com/game/8939/8th-wonder-of-the-world/) and
 [*Cultures: Die Saga*](https://www.mobygames.com/game/11159/cultures-die-saga/).
-
 The plan for this project is analogous to [Cultures Map Editor](https://github.com/Mikulus6/Cultures-map-editor).
-
-## Credits
-
-This project is a fan-made tool created by [CulturesNation](https://culturesnation.pl/)
-community. It is not affiliated with the official legacy of *Cultures* series.
-For official developers' website visit [Funatics](https://www.funatics.de/).
+For more information visit [CulturesNation](https://culturesnation.pl/).
 
 ### License
 
