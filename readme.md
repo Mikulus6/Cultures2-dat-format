@@ -1,6 +1,54 @@
 # Cultures2 Data Interpreter
 
-![under_construction](assets/under_construction.png)
+## Progress
+
+✅ - solved  
+🟡 - partially solved  
+❌ - unsolved  
+
+| name | read algo | write algo | comment                        |
+|------|-------------------|-----------------|--------------------------------|
+| `logi` | ✅                 | ✅               | empty                          |
+| `lgmm` | ✅                 | ✅               | empty                          |
+| `lsiz` | ✅                 | ✅               | map size                       |
+| `lmhe` | ✅                 | ❌               | heightmap (check required)     |
+| `lmpa` | ✅                 | ❌               | A-triangles (check required)   |
+| `lmpb` | ✅                 | ❌               | B-triangles (check required)   |
+| `lmlt` | ✅                 | ❌               |                                |
+| `lmlv` | ✅                 | ❌               |                                |
+| `lmlp` | ✅                 | ❌               |                                |
+| `lmco` | ✅                 | ❌               | continents (check required)    |
+| `lmtw` | ✅                 | ❌               |                                |
+| `lmms` | ✅                 | ❌               |                                |
+| `lmpr` | ✅                 | ❌               |                                |
+| `lmwb` | ✅                 | ❌               |                                |
+| `lmbb` | ✅                 | ❌               |                                |
+| `lmro` | ✅                 | ❌               |                                |
+| `lmsb` | ✅                 | ❌               |                                |
+| `lmao` | ✅                 | ❌               |                                |
+| `laco` | ❌                 | ❌               |                                |
+| `lasw` | ❌                 | ❌               |                                |
+| `lafm` | ✅                 | 🟡               | fishes                         |
+| `lmhf` | ✅                 | ✅               | 2d array (always zeros)        |
+| `emmm` | ✅                 | ✅               | empty                          |
+| `embr` | ✅                 | ❌               |                                |
+| `emm1` | ✅                 | ❌               |                                |
+| `emmi` | ✅                 | ❌               |                                |
+| `eapd` | ✅                 | ❌               | some text                      |
+| `empa` | ✅                 | ❌               |                                |
+| `empb` | ✅                 | ❌               |                                |
+| `eatd` | ✅                 | ❌               | some text                      |
+| `emt1` | ✅                 | ❌               |                                |
+| `emt2` | ✅                 | ❌               |                                |
+| `emt3` | ✅                 | ❌               |                                |
+| `emt4` | ✅                 | ❌               |                                |
+| `eald` | ✅                 | ❌               | some text                      |
+| `emla` | ✅                 | ❌               |                                |
+| `emvc` | ✅                 | ❌               | vertex colors (check required) |
+| `xend` | ✅                 | ✅               | empty                          |
+| `tend` | ✅                 | ✅               | empty                          |
+
+section header number - ❌
 
 ## Introduction
 

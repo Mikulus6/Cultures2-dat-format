@@ -1,9 +1,11 @@
 import os
 import numpy as np
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
 from sections.texts import TextSection
 from scripts.image import bytes_to_image, shorts_to_image, image_to_bytes, image_to_shorts
+from supplements.library import Library
 
 
 class Data:
@@ -24,7 +26,7 @@ class Data:
 
     _section_texts =    {"eapd", "eatd", "eald"}
     _section_optional = {"lmhf", "emvc"}
-    _section_unknown = {"laco", "lasw", "lafm"}  # TODO: these sections require further interpretation
+    _section_special = {"laco", "lasw", "lafm"}  # TODO: these sections require further interpretation
 
     _section_type_default = 1
     _section_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
@@ -42,8 +44,16 @@ class Data:
             setattr(self, name, None)
 
     def load(self, filename: str):
-        with open(filename, "rb") as file:
-            buffer = BufferGiver(file.read())
+
+        match filename.lower().split(".")[-1]:
+            case "dat":
+                with open(filename, "rb") as file:
+                    buffer = BufferGiver(file.read())
+            case "c2m":
+                library = Library()
+                library.load(filename, cultures_1=False)
+                buffer = BufferGiver(library["currentusermap\\map.dat"])
+                del library
 
         while len(buffer) != 0:
             assert buffer.string(length=4, encoding="ascii")[::-1] == "xioh"  # "x input-output handler"
@@ -95,11 +105,18 @@ class Data:
 
             else:
 
-                # TODO: further interpretation may be required later. Maybe those sections must be interpreted as
-                #       some kind of iterable objects, not just as raw bytes. They should be easy to manipulate and
-                #       also easily convertible back to raw bytes.
-                setattr(self, name, bytes(section_buffer))
-                assert name in self._section_unknown
+                assert name in self._section_special
+
+                match name:
+                    case "lafm":
+                        fishes = Fishes()
+                        fishes.load(section_buffer)
+                        self.lafm = fishes  # noqa
+                    case _:
+                        # TODO: further interpretation may be required later. Maybe those sections must be interpreted as
+                        #       some kind of iterable objects, not just as raw bytes. They should be easy to manipulate and
+                        #       also easily convertible back to raw bytes.
+                        setattr(self, name, bytes(section_buffer))
 
         # Optional sections, not present in some versions of Cultures 2
         assert set(key for key in self.__dict__ if getattr(self, key) is None).issubset({"lmhf", "emvc"})
@@ -137,8 +154,16 @@ class Data:
                     section_buffer_taker.bytes(run_length_encryption(section.tobytes(),
                                                                      bytes_per_entry=self._section_matrices[name][0]))
 
-                else:
+                elif name in self.__class__._section_texts:
+
                     section_buffer_taker.bytes(bytes(section))
+
+                else:
+                    assert name in self.__class__._section_special
+
+                    match name:
+                        case "lafm": section_buffer_taker.bytes(section.to_bytes(self))
+                        case _:      section_buffer_taker.bytes(bytes(section))
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
                 buffer_taker.unsigned(len(section_buffer_taker), length=4)
@@ -175,9 +200,13 @@ class Data:
             text_section = getattr(self, name)
             text_section.to_file(os.path.join(directory, f"{name}.txt"))
 
-        for name in self._section_unknown:
-            with open(os.path.join(directory, f"{name}.bin"), "wb") as file:
-                file.write(getattr(self, name))
+        for name in self._section_special:
+            match name:
+                case "lafm":
+                    self.lafm.to_file(os.path.join(directory, f"{name}.csv"))
+                case _:
+                    with open(os.path.join(directory, f"{name}.bin"), "wb") as file:
+                        file.write(getattr(self, name))
 
     def pack(self, directory: str):
 
@@ -213,10 +242,16 @@ class Data:
             setattr(self, name, text_section)
             self.headers[name] = 0 # TODO - derivation algorithm required
 
-        for name in self._section_unknown:
-            with open(os.path.join(directory, f"{name}.bin"), "rb") as file:
-                setattr(self, name, file.read())
-                self.headers[name] = 0 # TODO - derivation algorithm required
+        for name in self._section_special:
+            match name:
+                case "lafm":
+                    self.lafm = Fishes()  # noqa
+                    self.lafm.from_file(os.path.join(directory, f"{name}.csv"))
+                    self.headers[name] = 0 # TODO - derivation algorithm required
+                case _:
+                    with open(os.path.join(directory, f"{name}.bin"), "rb") as file:
+                        setattr(self, name, file.read())
+                        self.headers[name] = 0 # TODO - derivation algorithm required
 
     def test_all(self):
         assert np.array_equal(self.lmhf, np.zeros_like(self.lmhf))  # noqa  # section is empty
