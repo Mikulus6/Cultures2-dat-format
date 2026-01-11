@@ -22,30 +22,25 @@ class Fishes(dict):
             position_x = buffer.unsigned(length=2)
             position_y = buffer.unsigned(length=2)
             fish_count = buffer.unsigned(length=4)
-            continent  = buffer.unsigned(length=4)
+            continent  = buffer.unsigned(length=4)  # noqa
             # Continent value is correctly assigned only in "Cultures 2: The Gates of Asgard". In newer Cultures games
-            # this value is not always correctly updated when "lmco" section is considered. Incorrectly updated data
-            # is not considered a primary non-derivable section, because it serves no known purpose in game for now.
-
-            # TODO: Continent value might be related to swarm initial orientation. I need to check it later.
+            # this value is not always correctly updated when "lmco" section is considered. That is because water basins
+            # can be modified after fishes are placed on the map, and the data of fish swarms will not be corrected.
 
             position = (position_x, position_y)
 
             if fish_count == 0:
                 assert position == (0, 0)
+                assert continent == 0
                 continue
 
-            if position in self.keys():
-                continue
-                # Some positions are duplicated in exisiting maps. One such position in "8th Wonder of the World" on map
-                # "singleplayer_03_04/map.dat" ("Bleak Awakening") contains different values for different duplicates.
-                # In such scenarion the game reads the first entry mentioning given position and ignores further
-                # duplicates, as we do here.
+            assert position not in self.keys()
 
             self[position] = fish_count
 
             if len(self) >= sum_of_swarms:
-                # There is a map in "Northland" on which more fishes are declared than there are present in the game.
+                # Further content of this section can be filled with corrupted data. Those are most likely fish swarms
+                # which were deleted in original editors by covering them with land without deleting them directly.
                 break
 
     def to_bytes(self, data_obj):
@@ -67,8 +62,8 @@ class Fishes(dict):
         # preferred file extension" *.csv
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as file:
-            for position, fish_count in self.items():
-                file.write(f"{position[0]},{position[1]},{fish_count}\n")
+            file.write("\n".join((f"{position[0]},{position[1]},{fish_count}"
+                                  for position, fish_count in self.items())))
 
     def from_file(self, filename: str):
         # preferred file extension" *.csv
