@@ -16,7 +16,7 @@ for item in grabber.iterate_copies_paths():
     del data_object
     data_object = Data()
     data_object.pack(solution_dir)
-    data_object.save("example.dat")
+    data_object.save("example.dat")  # TODO: check (simple) for laco and lafm does it work correctly (load->save = original w/o corrupted data)
 
     # input("...")
 

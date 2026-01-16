@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.continents import Continents
 from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
 from sections.texts import TextSection
@@ -112,6 +113,10 @@ class Data:
                         fishes = Fishes()
                         fishes.load(section_buffer)
                         self.lafm = fishes  # noqa
+                    case "laco":
+                        continents = Continents()
+                        continents.load(section_buffer)
+                        self.laco = continents  # noqa
                     case _:
                         # TODO: further interpretation may be required later. Maybe those sections must be interpreted as
                         #       some kind of iterable objects, not just as raw bytes. They should be easy to manipulate and
@@ -163,6 +168,7 @@ class Data:
 
                     match name:
                         case "lafm": section_buffer_taker.bytes(section.to_bytes(self))
+                        case "laco": section_buffer_taker.bytes(section.to_bytes())
                         case _:      section_buffer_taker.bytes(bytes(section))
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
@@ -204,6 +210,8 @@ class Data:
             match name:
                 case "lafm":
                     self.lafm.to_file(os.path.join(directory, f"{name}.csv"))
+                case "laco":
+                    self.laco.to_file(os.path.join(directory, f"{name}.csv"))
                 case _:
                     with open(os.path.join(directory, f"{name}.bin"), "wb") as file:
                         file.write(getattr(self, name))
@@ -247,6 +255,10 @@ class Data:
                 case "lafm":
                     self.lafm = Fishes()  # noqa
                     self.lafm.from_file(os.path.join(directory, f"{name}.csv"))
+                    self.headers[name] = 0 # TODO - derivation algorithm required
+                case "laco":
+                    self.laco = Continents()  # noqa
+                    self.laco.from_file(os.path.join(directory, f"{name}.csv"))
                     self.headers[name] = 0 # TODO - derivation algorithm required
                 case _:
                     with open(os.path.join(directory, f"{name}.bin"), "rb") as file:

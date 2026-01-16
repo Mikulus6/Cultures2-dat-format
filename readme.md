@@ -26,12 +26,12 @@
 | `lmro` | ✅         | ❌          |                                |
 | `lmsb` | ✅         | ❌          |                                |
 | `lmao` | ✅         | ❌          |                                |
-| `laco` | ❌         | ❌          |                                |
+| `laco` | ✅         | ❌          | continents metadata            |
 | `lasw` | ❌         | ❌          |                                |
 | `lafm` | ✅         | ✅          | fishes                         |
-| `lmhf` | ✅         | ✅          | 2d array (always zeros)        |
+| `lmhf` | ✅         | ✅          | 2d array, always zeros         |
 | `emmm` | ✅         | ✅          | empty                          |
-| `embr` | ✅         | ❌          |                                |
+| `embr` | ✅         | ❌          | light (check required)         |
 | `emm1` | ✅         | ❌          |                                |
 | `emmi` | ✅         | ❌          |                                |
 | `eapd` | ✅         | ❌          | text                           |
