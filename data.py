@@ -5,6 +5,7 @@ from sections.continents import Continents
 from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
 from sections.texts import TextSection
+from sections.walk_sectors import WalkSectors
 from scripts.image import bytes_to_image, shorts_to_image, image_to_bytes, image_to_shorts
 from supplements.library import Library
 
@@ -27,7 +28,7 @@ class Data:
 
     _section_texts =    {"eapd", "eatd", "eald"}
     _section_optional = {"lmhf", "emvc"}
-    _section_special = {"laco", "lasw", "lafm"}  # TODO: these sections require further interpretation
+    _section_special = {"laco", "lasw", "lafm"}
 
     _section_type_default = 1
     _section_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
@@ -117,14 +118,17 @@ class Data:
                         continents = Continents()
                         continents.load(section_buffer)
                         self.laco = continents  # noqa
+                    case "lasw":
+                        walk_sectors = WalkSectors()
+                        walk_sectors.load(section_buffer)
+                        self.lasw = walk_sectors  # noqa
+
                     case _:
-                        # TODO: further interpretation may be required later. Maybe those sections must be interpreted as
-                        #       some kind of iterable objects, not just as raw bytes. They should be easy to manipulate and
-                        #       also easily convertible back to raw bytes.
-                        setattr(self, name, bytes(section_buffer))
+                        raise NotImplementedError
 
         # Optional sections, not present in some versions of Cultures 2
-        assert set(key for key in self.__dict__ if getattr(self, key) is None).issubset({"lmhf", "emvc"})
+        assert set(key for key in self.__dict__
+                   if getattr(self, key) is None).issubset(self.__class__._section_optional)
 
     def save(self, filename: str):
         buffer_taker = BufferTaker()
@@ -169,7 +173,8 @@ class Data:
                     match name:
                         case "lafm": section_buffer_taker.bytes(section.to_bytes(self))
                         case "laco": section_buffer_taker.bytes(section.to_bytes())
-                        case _:      section_buffer_taker.bytes(bytes(section))
+                        case "lasw": section_buffer_taker.bytes(section.to_bytes(self))
+                        case _:      raise NotImplementedError
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
                 buffer_taker.unsigned(len(section_buffer_taker), length=4)
@@ -208,13 +213,10 @@ class Data:
 
         for name in self._section_special:
             match name:
-                case "lafm":
-                    self.lafm.to_file(os.path.join(directory, f"{name}.csv"))
-                case "laco":
-                    self.laco.to_file(os.path.join(directory, f"{name}.csv"))
-                case _:
-                    with open(os.path.join(directory, f"{name}.bin"), "wb") as file:
-                        file.write(getattr(self, name))
+                case "lafm": self.lafm.to_file(os.path.join(directory, f"{name}.csv"))
+                case "laco": self.laco.to_file(os.path.join(directory, f"{name}.csv"))
+                case "lasw": self.lasw.to_file(os.path.join(directory, f"{name}.csv"))
+                case _: raise NotImplementedError
 
     def pack(self, directory: str):
 
@@ -252,18 +254,13 @@ class Data:
 
         for name in self._section_special:
             match name:
-                case "lafm":
-                    self.lafm = Fishes()  # noqa
-                    self.lafm.from_file(os.path.join(directory, f"{name}.csv"))
-                    self.headers[name] = 0 # TODO - derivation algorithm required
-                case "laco":
-                    self.laco = Continents()  # noqa
-                    self.laco.from_file(os.path.join(directory, f"{name}.csv"))
-                    self.headers[name] = 0 # TODO - derivation algorithm required
-                case _:
-                    with open(os.path.join(directory, f"{name}.bin"), "rb") as file:
-                        setattr(self, name, file.read())
-                        self.headers[name] = 0 # TODO - derivation algorithm required
+                case "lafm": self.lafm = Fishes()       # noqa
+                case "laco": self.laco = Continents()   # noqa
+                case "lasw": self.lasw = WalkSectors()  # noqa
+                case _: raise NotImplementedError
+
+            getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
+            self.headers[name] = 0  # TODO - derivation algorithm required
 
     def test_all(self):
         assert np.array_equal(self.lmhf, np.zeros_like(self.lmhf))  # noqa  # section is empty

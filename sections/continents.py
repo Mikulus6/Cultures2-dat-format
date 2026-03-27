@@ -74,13 +74,13 @@ class Continents(list):
                 assert continent_size >= 0
 
     def to_file(self, filename: str):
-        # preferred file extension" *.csv
+        # preferred file extension: *.csv
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as file:
             file.write("\n".join((f"{item[0]},{item[1][0]},{item[1][1]},{item[2]}" for item in self)))
 
     def from_file(self, filename: str):
-        # preferred file extension" *.csv
+        # preferred file extension: *.csv
         self.clear()
         with open(filename, "r") as file:
             for line in file.read().rstrip("\n").split("\n"):

@@ -59,14 +59,14 @@ class Fishes(dict):
         return bytes(buffer_taker)
 
     def to_file(self, filename: str):
-        # preferred file extension" *.csv
+        # preferred file extension: *.csv
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as file:
             file.write("\n".join((f"{position[0]},{position[1]},{fish_count}"
                                   for position, fish_count in self.items())))
 
     def from_file(self, filename: str):
-        # preferred file extension" *.csv
+        # preferred file extension: *.csv
         self.clear()
         with open(filename, "r") as file:
             for line in file.read().rstrip("\n").split("\n"):
