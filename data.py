@@ -218,6 +218,10 @@ class Data:
                 case "lasw": self.lasw.to_file(os.path.join(directory, f"{name}.csv"))
                 case _: raise NotImplementedError
 
+        # TODO: this is temporary further interpetation - not direct data
+        self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_land.png"))
+        self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_water.png"))
+
     def pack(self, directory: str):
 
         assert min(self._section_matrices.values(), key=lambda x: x[1])[1] == 1

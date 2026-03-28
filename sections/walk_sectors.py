@@ -1,4 +1,6 @@
+import math
 import os
+from PIL import Image, ImageDraw, ImageFont
 from scripts.buffer import BufferGiver, BufferTaker
 
 
@@ -16,7 +18,7 @@ class WalkSector:
     def load(self, bytes_obj):
 
         sector_buffer = BufferGiver(bytes_obj)
-        assert sector_buffer.unsigned(1) == 1
+        sector_buffer.skip(1) # assert sector_buffer.unsigned(1) == 1  # TODO: can be zero on void? (not in any of original maps)
 
         connections_raw_bits = sector_buffer.binary(1)
         assert connections_raw_bits[::2] == "0000"  # Even bytes (counting from zero) must be zero
@@ -32,8 +34,6 @@ class WalkSector:
         for _ in range(8):
             self.edge_numbers.append(sector_buffer.unsigned(4))
 
-        assert max(self.edge_numbers) <= 7
-
         coordinates_1 = (sector_buffer.unsigned(2), sector_buffer.unsigned(2))
         coordinates_2 = (sector_buffer.unsigned(2), sector_buffer.unsigned(2))
         coordinates_3 = (sector_buffer.unsigned(2), sector_buffer.unsigned(2))
@@ -46,6 +46,11 @@ class WalkSector:
             if coordinates == (0, 0):
                 break
             self.points.append(coordinates)
+
+        assert self.edge_numbers[1] == self.edge_numbers[3] == self.edge_numbers[5] == self.edge_numbers[7]
+        assert max(self.edge_numbers) <= 7
+        if coordinates_1 == (0, 0):
+            assert max(self.edge_numbers) == 0
 
     def to_bytes(self, data_obj):
         buffer_taker = BufferTaker()
@@ -170,3 +175,64 @@ class WalkSectors:
         # preferred file extension: *.csv
         with open(filename, "r") as file:
             self.from_text(file.read())
+
+    def draw_data(self, data_obj, filename, water: bool = False):
+        # For debugging only
+        sector_draw_size = 30
+        image = Image.new(size=(sector_draw_size * (math.ceil(data_obj.map_width/10)),
+                                sector_draw_size * (math.ceil(data_obj.map_height/10))), color=(0, 0, 0), mode="RGB")
+
+        font = ImageFont.truetype("verdana.ttf", 10)
+        draw = ImageDraw.Draw(image)
+
+        for sector_index in range(math.ceil(data_obj.map_width/10) * math.ceil(data_obj.map_height/10)):
+            y, x = divmod(sector_index, math.ceil(data_obj.map_width/10))
+            x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
+
+            draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
+                           fill=None, outline=(128, 128, 128), width=1)
+            if not water:
+                connections_dict = self.land[sector_index].connections  # noqa
+                edge_numbers = self.land[sector_index].edge_numbers  # noqa
+                points = self.land[sector_index].points  # noqa
+            else:
+                connections_dict = self.water[sector_index].connections  # noqa
+                edge_numbers = self.water[sector_index].edge_numbers  # noqa
+                points = self.water[sector_index].points  # noqa
+
+            colors = ((255, 0, 0), (255, 128, 0), (255, 255, 0), (0, 255, 0),
+                      (0, 255, 255), (0, 0, 255), (128, 0, 255), (255, 0, 255))
+
+            for con_index, connection_shift in enumerate(((2, 0), (2, 1), (2, 2),
+                                                          (1, 2), (0, 2), (0, 1),
+                                                          (0, 0), (1, 0))):
+
+                    draw.rectangle(((x_draw + connection_shift[0] * sector_draw_size//3,
+                                     y_draw + connection_shift[1] * sector_draw_size//3),
+                                    (x_draw + (connection_shift[0] + 1) * sector_draw_size//3 - 1,
+                                     y_draw + (connection_shift[1] + 1) * sector_draw_size//3 - 1)),
+                                   fill=colors[edge_numbers[con_index]])
+
+                    mask = Image.new("1", (50, 20), 0)  # black background
+                    mask_draw = ImageDraw.Draw(mask)
+
+                    mask_draw.text((2, -2), str(edge_numbers[con_index]), font=font, fill=1)
+
+                    # 2. Paste onto RGB image
+                    image.paste(
+                        (0, 0, 0),  # text color (black)
+                        (x_draw + connection_shift[0] * sector_draw_size // 3,
+                         y_draw + connection_shift[1] * sector_draw_size // 3), mask)
+
+
+            if len(points) > 0:
+                draw.circle((x_draw + sector_draw_size//2,
+                             y_draw + sector_draw_size//2), sector_draw_size//8, (64, 64, 64))
+
+        for sector_index in range(math.ceil(data_obj.map_width/10) * math.ceil(data_obj.map_height/10)):
+            y, x = divmod(sector_index, math.ceil(data_obj.map_width/10))
+            x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
+
+            draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
+                           fill=None, outline=(128, 128, 128), width=1)
+        image.save(filename)
