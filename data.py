@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.checksum import calculate_checksum
 from sections.continents import Continents
 from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
@@ -38,8 +39,6 @@ class Data:
         self.map_width  = None  # noqa: E221
         self.map_height = None  # noqa: E221
 
-        self.headers = {name: None for name in self.__class__._section_names}
-
         for name in self.__class__._section_names:
             if name in self.__class__._sections_empty or name == "lsiz":
                 continue
@@ -68,16 +67,16 @@ class Data:
             assert self.__class__._get_section_type(name) == section_type
 
             assert buffer.unsigned(length=4) == 0
-            self.headers[name] = buffer.unsigned(length=4)  # TODO: unknown, this has to be figured out eventually.
+            checksum = buffer.unsigned(length=4)
             assert buffer.unsigned(length=8) == 0
 
             section_buffer = BufferGiver(buffer.bytes(length=length))
 
+            assert checksum == calculate_checksum(bytes(section_buffer))
+
             if section_type == 0:  # empty sections
                 assert name in self.__class__._sections_empty
-                assert self.headers[name] == 0
                 assert length == 0
-                del self.headers[name]
 
             elif name == "lsiz":  # map size
                 self.map_width  = section_buffer.unsigned(length=4)
@@ -137,53 +136,32 @@ class Data:
                         [name for name in self.__class__._section_names if name[0] == "e"] + ["xend", "tend"]
 
         for name in names_ordered:
-            try:
-                section = getattr(self, name)
-            except AttributeError:
-                section = None
 
-            if section is None and name in self.__class__._section_optional:
+            section_existence = getattr(self, name, None) is not None
+
+            if not section_existence and name in self.__class__._section_optional:
                 continue
 
             buffer_taker.string("xioh"[::-1])
             buffer_taker.string(name[::-1])
 
-            if (section is None or (self.__class__._get_section_type(name) == 0)) and name != "lsiz":
+            if (not section_existence or (self.__class__._get_section_type(name) == 0)) and name != "lsiz":
                 buffer_taker.unsigned(0, length=24)
 
             else:
 
-                section_buffer_taker = BufferTaker()
-
-                if name == "lsiz":
-                    section_buffer_taker.unsigned(self.map_width,  length=4)
-                    section_buffer_taker.unsigned(self.map_height, length=4)
-
-                elif name in self.__class__._section_matrices.keys():
-                    section_buffer_taker.bytes(run_length_encryption(section.tobytes(),
-                                                                     bytes_per_entry=self._section_matrices[name][0]))
-
-                elif name in self.__class__._section_texts:
-
-                    section_buffer_taker.bytes(bytes(section))
-
-                else:
-                    assert name in self.__class__._section_special
-
-                    match name:
-                        case "lafm": section_buffer_taker.bytes(section.to_bytes(self))
-                        case "laco": section_buffer_taker.bytes(section.to_bytes())
-                        case "lasw": section_buffer_taker.bytes(section.to_bytes(self))
-                        case _:      raise NotImplementedError
+                section_bytes = self.get_section_bytes(name)
+                checksum = calculate_checksum(section_bytes)
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
-                buffer_taker.unsigned(len(section_buffer_taker), length=4)
+                buffer_taker.unsigned(len(section_bytes), length=4)
 
                 buffer_taker.unsigned(0, length=4)
-                buffer_taker.unsigned(self.headers[name], length=4)
+
+                buffer_taker.unsigned(checksum, length=4)
                 buffer_taker.unsigned(0, length=8)
 
-                buffer_taker.bytes(bytes(section_buffer_taker))
+                buffer_taker.bytes(section_bytes)
 
         # os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "wb") as file:
@@ -229,7 +207,6 @@ class Data:
         image_bytes, self.map_width = image_to_bytes(os.path.join(directory, f"{minimal_width_section_name}.png"),
                                                      get_width=True)
         self.map_height = len(image_bytes) // self.map_width
-        self.headers["lsiz"] = 0  # TODO - derivation algorithm required
 
         for name, params in self.__class__._section_matrices.items():
 
@@ -245,7 +222,6 @@ class Data:
 
             try:
                 setattr(self, name, from_image_func(os.path.join(directory, f"{name}.png")))
-                self.headers[name] = 0 # TODO - derivation algorithm required
             except FileNotFoundError:
                 if name in self._section_optional: pass
                 else: raise FileNotFoundError
@@ -254,7 +230,6 @@ class Data:
             text_section = TextSection()
             text_section.from_file(os.path.join(directory, f"{name}.txt"))
             setattr(self, name, text_section)
-            self.headers[name] = 0 # TODO - derivation algorithm required
 
         for name in self._section_special:
             match name:
@@ -264,10 +239,43 @@ class Data:
                 case _: raise NotImplementedError
 
             getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
-            self.headers[name] = 0  # TODO - derivation algorithm required
 
     def test_all(self):
         assert np.array_equal(self.lmhf, np.zeros_like(self.lmhf))  # noqa  # section is empty
+        # TODO: all more
+
+    def get_section_bytes(self, name):
+        try:
+            section = getattr(self, name)
+            if section is None: raise AttributeError
+        except AttributeError:
+            assert name == "lsiz", name
+            section = None
+
+        section_buffer_taker = BufferTaker()
+
+        if name == "lsiz":
+            section_buffer_taker.unsigned(self.map_width,  length=4)
+            section_buffer_taker.unsigned(self.map_height, length=4)
+
+        elif name in self.__class__._section_matrices.keys():
+            section_buffer_taker.bytes(run_length_encryption(section.tobytes(),
+                                                             bytes_per_entry=self._section_matrices[name][0]))
+
+        elif name in self.__class__._section_texts:
+            section_buffer_taker.bytes(bytes(section))
+
+        else:
+            assert name in self.__class__._section_special
+
+            match name:
+                case "lafm": section_buffer_taker.bytes(section.to_bytes(self))
+                case "laco": section_buffer_taker.bytes(section.to_bytes())
+                case "lasw": section_buffer_taker.bytes(section.to_bytes(self))
+                case _: raise NotImplementedError
+
+        return bytes(section_buffer_taker)
+
 
     @classmethod
     def _get_section_type(cls, name):

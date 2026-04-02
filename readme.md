@@ -48,8 +48,6 @@
 | `xend` | ✅         | ✅          | empty                                          |
 | `tend` | ✅         | ✅          | empty                                          |
 
-section header number algo: ❌
-
 ## Introduction
 
 The goal of this project is to write algorithms to freely read and modify
