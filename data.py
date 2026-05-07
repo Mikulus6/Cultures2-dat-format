@@ -5,6 +5,7 @@ from sections.checksum import calculate_checksum
 from sections.continents import Continents
 from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
+from sections.size import Size
 from sections.texts import TextSection
 from sections.walk_sectors import WalkSectors
 from scripts.image import bytes_to_image, shorts_to_image, image_to_bytes, image_to_shorts
@@ -29,19 +30,18 @@ class Data:
 
     _section_texts =    {"eapd", "eatd", "eald"}
     _section_optional = {"lmhf", "emvc"}
-    _section_special = {"laco", "lasw", "lafm"}
+
+    _section_special = {"lsiz": Size,
+                        "laco": Continents,
+                        "lasw": WalkSectors,
+                        "lafm": Fishes}
 
     _section_type_default = 1
     _section_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
 
     def __init__(self):
 
-        self.map_width  = None  # noqa: E221
-        self.map_height = None  # noqa: E221
-
-        for name in self.__class__._section_names:
-            if name in self.__class__._sections_empty or name == "lsiz":
-                continue
+        for name in set(self.__class__._section_names) - set(self.__class__._sections_empty):
             setattr(self, name, None)
 
     def load(self, filename: str):
@@ -78,14 +78,9 @@ class Data:
                 assert name in self.__class__._sections_empty
                 assert length == 0
 
-            elif name == "lsiz":  # map size
-                self.map_width  = section_buffer.unsigned(length=4)
-                self.map_height = section_buffer.unsigned(length=4)
-                assert len(section_buffer) == 0
-
             elif name in self.__class__._section_matrices.keys():
-                assert self.map_width  is not None and\
-                       self.map_height is not None
+                assert self.lsiz.width  is not None and\
+                       self.lsiz.height is not None
 
                 match self.__class__._section_matrices[name][0]:
                     case 1: ndarray_dtype = np.uint8
@@ -94,9 +89,8 @@ class Data:
 
                 size_multiplicator = self.__class__._section_matrices[name][1]
                 section_ndarray = np.frombuffer(run_length_decryption(bytes(section_buffer)),
-                                                dtype=ndarray_dtype).reshape(self.map_height * size_multiplicator,
-                                                                             self.map_width  * size_multiplicator)
-
+                                                dtype=ndarray_dtype).reshape(self.lsiz.height * size_multiplicator,
+                                                                             self.lsiz.width  * size_multiplicator)
                 setattr(self, name, section_ndarray)
 
             elif name in self.__class__._section_texts:
@@ -105,27 +99,11 @@ class Data:
                 setattr(self, name, text_section)
 
             else:
+                assert name in self._section_special.keys()
+                setattr(self, name, self._section_special[name]())
+                getattr(self, name).load(section_buffer)
 
-                assert name in self._section_special
-
-                match name:
-                    case "lafm":
-                        fishes = Fishes()
-                        fishes.load(section_buffer)
-                        self.lafm = fishes  # noqa
-                    case "laco":
-                        continents = Continents()
-                        continents.load(section_buffer)
-                        self.laco = continents  # noqa
-                    case "lasw":
-                        walk_sectors = WalkSectors()
-                        walk_sectors.load(section_buffer)
-                        self.lasw = walk_sectors  # noqa
-
-                    case _:
-                        raise NotImplementedError
-
-        # Optional sections, not present in some versions of Cultures 2
+        # optional sections, not present in some versions of Cultures 2
         assert set(key for key in self.__dict__
                    if getattr(self, key) is None).issubset(self.__class__._section_optional)
 
@@ -145,7 +123,7 @@ class Data:
             buffer_taker.string("xioh"[::-1])
             buffer_taker.string(name[::-1])
 
-            if (not section_existence or (self.__class__._get_section_type(name) == 0)) and name != "lsiz":
+            if not section_existence or (self.__class__._get_section_type(name) == 0):
                 buffer_taker.unsigned(0, length=24)
 
             else:
@@ -155,15 +133,14 @@ class Data:
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
                 buffer_taker.unsigned(len(section_bytes), length=4)
-
                 buffer_taker.unsigned(0, length=4)
-
                 buffer_taker.unsigned(checksum, length=4)
                 buffer_taker.unsigned(0, length=8)
-
                 buffer_taker.bytes(section_bytes)
 
-        # os.makedirs(os.path.dirname(filename), exist_ok=True)
+        if os.path.dirname(filename) != "":
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
         with open(filename, "wb") as file:
             file.write(bytes(buffer_taker))
 
@@ -183,30 +160,27 @@ class Data:
                 case _: raise TypeError
 
             to_image_func(section_ndarray.tobytes(), os.path.join(directory, f"{name}.png"),
-                          width=self.map_width * params[1])
+                          width=self.lsiz.width * params[1])
 
         for name in self.__class__._section_texts:
             text_section = getattr(self, name)
             text_section.to_file(os.path.join(directory, f"{name}.txt"))
 
-        for name in self._section_special:
-            match name:
-                case "lafm": self.lafm.to_file(os.path.join(directory, f"{name}.csv"))
-                case "laco": self.laco.to_file(os.path.join(directory, f"{name}.csv"))
-                case "lasw": self.lasw.to_file(os.path.join(directory, f"{name}.csv"))
-                case _: raise NotImplementedError
+        for name in self._section_special.keys():
+            getattr(self, name).to_file(os.path.join(directory, f"{name}.csv"))
 
-        # TODO: this is temporary further interpetation - not direct data
-        self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_land.png"))
-        self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_water.png"))
+        # TODO: this is temporary for further interpetation - not direct data
+        # self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_land.png"))
+        # self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_water.png"), water=True)
 
     def pack(self, directory: str):
 
+        self.lsiz = Size()  # noqa, precaculate map size
         assert min(self._section_matrices.values(), key=lambda x: x[1])[1] == 1
         minimal_width_section_name = min(self._section_matrices, key=lambda x: x[1])
-        image_bytes, self.map_width = image_to_bytes(os.path.join(directory, f"{minimal_width_section_name}.png"),
+        image_bytes, self.lsiz.width = image_to_bytes(os.path.join(directory, f"{minimal_width_section_name}.png"),
                                                      get_width=True)
-        self.map_height = len(image_bytes) // self.map_width
+        self.lsiz.height = len(image_bytes) // self.lsiz.width
 
         for name, params in self.__class__._section_matrices.items():
 
@@ -217,8 +191,8 @@ class Data:
 
             from_image_func = lambda path: np.frombuffer(from_image_func_temp(path),
                                                          dtype=section_ndarray_dtype).reshape(
-                self.map_height * self._section_matrices[name][1],
-                self.map_width  * self._section_matrices[name][1])
+                self.lsiz.height * self._section_matrices[name][1],
+                self.lsiz.width  * self._section_matrices[name][1])
 
             try:
                 setattr(self, name, from_image_func(os.path.join(directory, f"{name}.png")))
@@ -231,34 +205,20 @@ class Data:
             text_section.from_file(os.path.join(directory, f"{name}.txt"))
             setattr(self, name, text_section)
 
-        for name in self._section_special:
-            match name:
-                case "lafm": self.lafm = Fishes()       # noqa
-                case "laco": self.laco = Continents()   # noqa
-                case "lasw": self.lasw = WalkSectors()  # noqa
-                case _: raise NotImplementedError
+        for name in self._section_special.keys():
 
+            setattr(self, name, self._section_special[name]())
             getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
 
-    def test_all(self):
-        assert np.array_equal(self.lmhf, np.zeros_like(self.lmhf))  # noqa  # section is empty
-        # TODO: all more
-
     def get_section_bytes(self, name):
-        try:
-            section = getattr(self, name)
-            if section is None: raise AttributeError
-        except AttributeError:
-            assert name == "lsiz", name
-            section = None
 
+        section = getattr(self, name)
         section_buffer_taker = BufferTaker()
 
-        if name == "lsiz":
-            section_buffer_taker.unsigned(self.map_width,  length=4)
-            section_buffer_taker.unsigned(self.map_height, length=4)
+        if section is None:
+            raise AttributeError
 
-        elif name in self.__class__._section_matrices.keys():
+        if name in self.__class__._section_matrices.keys():
             section_buffer_taker.bytes(run_length_encryption(section.tobytes(),
                                                              bytes_per_entry=self._section_matrices[name][0]))
 
@@ -266,13 +226,11 @@ class Data:
             section_buffer_taker.bytes(bytes(section))
 
         else:
-            assert name in self.__class__._section_special
+            assert name in self.__class__._section_special.keys()
 
-            match name:
-                case "lafm": section_buffer_taker.bytes(section.to_bytes(self))
-                case "laco": section_buffer_taker.bytes(section.to_bytes())
-                case "lasw": section_buffer_taker.bytes(section.to_bytes(self))
-                case _: raise NotImplementedError
+            if   section.to_bytes.__code__.co_argcount == 1: section_buffer_taker.bytes(section.to_bytes())
+            elif section.to_bytes.__code__.co_argcount == 2: section_buffer_taker.bytes(section.to_bytes(self))
+            else: raise NotImplementedError
 
         return bytes(section_buffer_taker)
 

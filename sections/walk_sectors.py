@@ -13,12 +13,17 @@ class WalkSector:
                             "right": False}
 
         self.edge_numbers = list()
+        # Starting from direction to the right and going clockwise these eight edge numbers are used to determine how
+        # big can a vehicle be for navigation from walk sector in given direction. However, exact implementation in the
+        # game is not clear and this number does not satisy conditions to be redundant to undirected graph.
+
         self.points = list()
 
     def load(self, bytes_obj):
 
         sector_buffer = BufferGiver(bytes_obj)
-        sector_buffer.skip(1) # assert sector_buffer.unsigned(1) == 1  # TODO: can be zero on void? (not in any of original maps)
+        assert sector_buffer.unsigned(1) in (0, 1) # assert sector_buffer.unsigned(1) == 1  # TODO: can be zero on void?
+                                                                                            # (not in any original map)
 
         connections_raw_bits = sector_buffer.binary(1)
         assert connections_raw_bits[::2] == "0000"  # Even bytes (counting from zero) must be zero
@@ -177,16 +182,16 @@ class WalkSectors:
             self.from_text(file.read())
 
     def draw_data(self, data_obj, filename, water: bool = False):
-        # For debugging only
+        # TODO: function fo debugging only - remove later
         sector_draw_size = 30
-        image = Image.new(size=(sector_draw_size * (math.ceil(data_obj.map_width/10)),
-                                sector_draw_size * (math.ceil(data_obj.map_height/10))), color=(0, 0, 0), mode="RGB")
+        image = Image.new(size=(sector_draw_size * (math.ceil(data_obj.lsiz.width/10)),
+                                sector_draw_size * (math.ceil(data_obj.lsiz.height/10))), color=(0, 0, 0), mode="RGB")
 
         font = ImageFont.truetype("verdana.ttf", 10)
         draw = ImageDraw.Draw(image)
 
-        for sector_index in range(math.ceil(data_obj.map_width/10) * math.ceil(data_obj.map_height/10)):
-            y, x = divmod(sector_index, math.ceil(data_obj.map_width/10))
+        for sector_index in range(math.ceil(data_obj.lsiz.width/10) * math.ceil(data_obj.lsiz.height/10)):
+            y, x = divmod(sector_index, math.ceil(data_obj.lsiz.width/10))
             x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
 
             draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
@@ -203,9 +208,9 @@ class WalkSectors:
             colors = ((255, 0, 0), (255, 128, 0), (255, 255, 0), (0, 255, 0),
                       (0, 255, 255), (0, 0, 255), (128, 0, 255), (255, 0, 255))
 
-            for con_index, connection_shift in enumerate(((2, 0), (2, 1), (2, 2),
-                                                          (1, 2), (0, 2), (0, 1),
-                                                          (0, 0), (1, 0))):
+            for con_index, connection_shift in enumerate(((2, 1), (1, 1),
+                                                          (1, 2), (1, 1), (0, 1),
+                                                          (1, 1), (1, 0), (1, 1))):
 
                     draw.rectangle(((x_draw + connection_shift[0] * sector_draw_size//3,
                                      y_draw + connection_shift[1] * sector_draw_size//3),
@@ -225,12 +230,12 @@ class WalkSectors:
                          y_draw + connection_shift[1] * sector_draw_size // 3), mask)
 
 
-            if len(points) > 0:
-                draw.circle((x_draw + sector_draw_size//2,
-                             y_draw + sector_draw_size//2), sector_draw_size//8, (64, 64, 64))
+            # if len(points) > 0:
+            #     draw.circle((x_draw + sector_draw_size//2,
+            #                  y_draw + sector_draw_size//2), sector_draw_size//8, (64, 64, 64))
 
-        for sector_index in range(math.ceil(data_obj.map_width/10) * math.ceil(data_obj.map_height/10)):
-            y, x = divmod(sector_index, math.ceil(data_obj.map_width/10))
+        for sector_index in range(math.ceil(data_obj.lsiz.width/10) * math.ceil(data_obj.lsiz.height/10)):
+            y, x = divmod(sector_index, math.ceil(data_obj.lsiz.width/10))
             x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
 
             draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),

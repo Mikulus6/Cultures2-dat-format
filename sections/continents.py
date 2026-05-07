@@ -66,7 +66,7 @@ class Continents(list):
             assert first_vertex_y >= -1
             assert (first_vertex_x == -1) == (first_vertex_y == -1)
 
-            if index_ == 0:
+            if index_ == 0 or continent_type == 0:
                 assert (continent_type, first_vertex_x, first_vertex_y) == (0, 0, 0)
                 assert continent_size <= 0
             else:
