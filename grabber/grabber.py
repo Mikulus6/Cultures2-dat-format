@@ -1,8 +1,8 @@
 import json
 import os
 import shutil
+from grabber.preparation import prepare_lib_data
 from supplements.library import Library
-from supplements.preparation import prepare_lib_data
 
 # You can get all relevant Cultures games there:
 #  https://www.gog.com/en/game/cultures_12

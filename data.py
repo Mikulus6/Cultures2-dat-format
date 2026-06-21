@@ -2,13 +2,13 @@ import os
 import numpy as np
 from scripts.buffer import BufferGiver, BufferTaker
 from sections.checksum import calculate_checksum
-from sections.continents import Continents
-from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
-from sections.size import Size
-from sections.special import SpecialSection
-from sections.texts import TextSection
-from sections.walk_sectors import WalkSectors
+from special.continents import Continents
+from special.fishes import Fishes
+from special.size import Size
+from special.special import SpecialSection
+from special.texts import TextSection
+from special.walk_sectors import WalkSectors
 from scripts.image import bytes_to_image, shorts_to_image, image_to_bytes, image_to_shorts
 from supplements.library import Library
 

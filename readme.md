@@ -12,8 +12,8 @@
 | `lgmm` | ✅         | ✅          | empty                                   |
 | `lsiz` | ✅         | ✅          | map size                                |
 | `lmhe` | ✅         | ❌          | heightmap (check required)              |
-| `lmpa` | ✅         | ❌          | A-triangles (check required)            |
-| `lmpb` | ✅         | ❌          | B-triangles (check required)            |
+| `lmpa` | ✅         | ❌          |                                         |
+| `lmpb` | ✅         | ❌          |                                         |
 | `lmlt` | ✅         | ❌          |                                         |
 | `lmlv` | ✅         | ❌          |                                         |
 | `lmlp` | ✅         | ❌          |                                         |
@@ -35,8 +35,8 @@
 | `emm1` | ✅         | ❌          |                                         |
 | `emmi` | ✅         | ❌          |                                         |
 | `eapd` | ✅         | ❌          | text                                    |
-| `empa` | ✅         | ❌          |                                         |
-| `empb` | ✅         | ❌          |                                         |
+| `empa` | ✅         | ✅          | A-triangles (primary data)              |
+| `empb` | ✅         | ✅          | B-triangles (primary data)              |
 | `eatd` | ✅         | ❌          | text                                    |
 | `emt1` | ✅         | ❌          |                                         |
 | `emt2` | ✅         | ❌          |                                         |

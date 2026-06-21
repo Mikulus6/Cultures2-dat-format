@@ -1,6 +1,7 @@
 import json
 from collections import OrderedDict
 from collections.abc import Iterable
+import numpy as np
 
 inverse_dictionary = lambda dict_: {value: key for key, value in dict_.items()}
 
@@ -32,11 +33,17 @@ def load_colormap(filepath):
         dict_new[int(key)] = tuple(value)
     return ColorMap(dict_new)
 
-def apply_colormap(list_: list, colormap: ColorMap | dict) -> list:
-    return [colormap[element] for element in list_]
+def apply_colormap(data: list | np.ndarray, colormap: ColorMap | dict):
+    if isinstance(data, np.ndarray):
+        return np.array([[colormap[value] for value in row] for row in data], dtype=np.uint8)
+    else:
+        return [colormap[element] for element in data]
 
-def remove_colormap(list_: list, colormap: ColorMap | dict) -> list:
-    return apply_colormap(list_, colormap.inversed)
+def remove_colormap(data: list | np.ndarray, colormap: ColorMap | dict):
+    if isinstance(data, np.ndarray):
+        return np.array([[colormap.inversed[tuple(pixel)] for pixel in row] for row in data])
+    else:
+        return apply_colormap(data, colormap.inversed)
 
 def apply_colormap_to_shorts(sequence: bytes, colormap: ColorMap) -> list:
     return [(colormap[byte1 + byte2 * 256]) for byte1, byte2 in zip(sequence[::2], sequence[1::2])]

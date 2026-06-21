@@ -2,7 +2,7 @@ import math
 import os
 from PIL import Image, ImageDraw, ImageFont
 from scripts.buffer import BufferGiver, BufferTaker
-from sections.special import SpecialSection
+from special.special import SpecialSection
 
 class WalkSector:
 
