@@ -1,8 +1,8 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.special import SpecialSection
 
-
-class TextSection(list):
+class TextSection(list, metaclass=SpecialSection):
 
     def __init__(self, *, list_: list = None):
         super().__init__(list_ if list_ is not None else list())

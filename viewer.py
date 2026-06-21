@@ -2,7 +2,7 @@ from data import Data
 import os
 import time
 
-input_path  = "C:\\Users\\Mikolaj\\Desktop\\Map.c2m"
+input_path  = "C:\\Users\\Mikolaj\\Desktop\\Map.c2m"  # Change paths to whatever you want
 output_path = "C:\\Users\\Mikolaj\\Desktop\\Map"
 refresh_time = 0.5  # seconds
 

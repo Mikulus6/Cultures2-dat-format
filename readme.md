@@ -2,7 +2,7 @@
 
 ## Progress
 
-✅ - solved (excluding header algo for sections)  
+✅ - solved  
 🟡 - partially solved (in progress)  
 ❌ - unsolved  
 

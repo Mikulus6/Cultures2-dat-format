@@ -1,8 +1,9 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.special import SpecialSection
 
 
-class Continents(list):
+class Continents(list, metaclass=SpecialSection):
     _continents_limit = 250
 
     def __init__(self):

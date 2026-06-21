@@ -2,7 +2,7 @@ import math
 import os
 from PIL import Image, ImageDraw, ImageFont
 from scripts.buffer import BufferGiver, BufferTaker
-
+from sections.special import SpecialSection
 
 class WalkSector:
 
@@ -115,7 +115,7 @@ class WalkSector:
                                points_raw_list))
 
 
-class WalkSectors:
+class WalkSectors(metaclass=SpecialSection):
     _walkable_terrain_types = ("land", "water")
     _bytes_per_sector = 52
 

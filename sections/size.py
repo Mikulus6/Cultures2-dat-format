@@ -1,8 +1,8 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.special import SpecialSection
 
-
-class Size:
+class Size(metaclass=SpecialSection):
     def __init__(self):
         self.width: int =  0
         self.height: int = 0

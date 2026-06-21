@@ -6,6 +6,7 @@ from sections.continents import Continents
 from sections.fishes import Fishes
 from sections.run_length import run_length_decryption, run_length_encryption
 from sections.size import Size
+from sections.special import SpecialSection
 from sections.texts import TextSection
 from sections.walk_sectors import WalkSectors
 from scripts.image import bytes_to_image, shorts_to_image, image_to_bytes, image_to_shorts
@@ -38,6 +39,9 @@ class Data:
 
     _section_type_default = 1
     _section_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
+
+    assert all(isinstance(section_special_class, SpecialSection) for section_special_class in _section_special.values())
+    assert isinstance(TextSection, SpecialSection)
 
     def __init__(self):
 
@@ -233,7 +237,6 @@ class Data:
             else: raise NotImplementedError
 
         return bytes(section_buffer_taker)
-
 
     @classmethod
     def _get_section_type(cls, name):

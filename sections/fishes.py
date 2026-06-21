@@ -1,8 +1,9 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.special import SpecialSection
 
 
-class Fishes(dict):
+class Fishes(dict, metaclass=SpecialSection):
     _fishes_swarms_limit = 500
 
     def __init__(self):
