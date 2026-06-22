@@ -6,47 +6,45 @@
 🟡 - partially solved (in progress)  
 ❌ - unsolved  
 
-| name   | read algo | write algo | comment                                 |
-|--------|-----------|------------|-----------------------------------------|
-| `logi` | ✅         | ✅          | empty                                   |
-| `lgmm` | ✅         | ✅          | empty                                   |
-| `lsiz` | ✅         | ✅          | map size                                |
-| `lmhe` | ✅         | ❌          | heightmap (check required)              |
-| `lmpa` | ✅         | ❌          |                                         |
-| `lmpb` | ✅         | ❌          |                                         |
-| `lmlt` | ✅         | ❌          |                                         |
-| `lmlv` | ✅         | ❌          |                                         |
-| `lmlp` | ✅         | ❌          |                                         |
-| `lmco` | ✅         | ❌          | continents (check required)             |
-| `lmtw` | ✅         | ❌          |                                         |
-| `lmms` | ✅         | ❌          |                                         |
-| `lmpr` | ✅         | ❌          |                                         |
-| `lmwb` | ✅         | ❌          |                                         |
-| `lmbb` | ✅         | ❌          |                                         |
-| `lmro` | ✅         | ❌          |                                         |
-| `lmsb` | ✅         | ❌          |                                         |
-| `lmao` | ✅         | ❌          |                                         |
-| `laco` | ✅         | ❌          | continents metadata                     |
-| `lasw` | ✅         | ❌          | walk sectors (interpretation required!) |
-| `lafm` | ✅         | ✅          | fishes                                  |
-| `lmhf` | ✅         | ✅          | 2d array, always zeros                  |
-| `emmm` | ✅         | ✅          | empty                                   |
-| `embr` | ✅         | ❌          | light (check required)                  |
-| `emm1` | ✅         | ❌          |                                         |
-| `emmi` | ✅         | ❌          |                                         |
-| `eapd` | ✅         | ❌          | text                                    |
-| `empa` | ✅         | ✅          | A-triangles (primary data)              |
-| `empb` | ✅         | ✅          | B-triangles (primary data)              |
-| `eatd` | ✅         | ❌          | text                                    |
-| `emt1` | ✅         | ❌          |                                         |
-| `emt2` | ✅         | ❌          |                                         |
-| `emt3` | ✅         | ❌          |                                         |
-| `emt4` | ✅         | ❌          |                                         |
-| `eald` | ✅         | ❌          | text                                    |
-| `emla` | ✅         | ❌          |                                         |
-| `emvc` | ✅         | ❌          | vertex colors (check required)          |
-| `xend` | ✅         | ✅          | empty                                   |
-| `tend` | ✅         | ✅          | empty                                   |
+| name   | read algo | write algo | comment                                                               |
+|--------|-----------|------------|-----------------------------------------------------------------------|
+| `logi` | ✅         | ✅          | empty                                                                 |
+| `lgmm` | ✅         | ✅          | empty                                                                 |
+| `lsiz` | ✅         | ✅          | map size                                                              |
+| `lmhe` | ✅         | ❌          | heightmap (check required)                                            |
+| `lmpa` | ✅         | ❌          |                                                                       |
+| `lmpb` | ✅         | ❌          |                                                                       |
+| `lmlt` | ✅         | ❌          |                                                                       |
+| `lmlv` | ✅         | ❌          |                                                                       |
+| `lmlp` | ✅         | ❌          |                                                                       |
+| `lmco` | ✅         | ❌          | continents (check required)                                           |
+| `lmtw` | ✅         | ❌          |                                                                       |
+| `lmms` | ✅         | ❌          |                                                                       |
+| `lmpr` | ✅         | ❌          |                                                                       |
+| `lmwb` | ✅         | ❌          |                                                                       |
+| `lmbb` | ✅         | ❌          |                                                                       |
+| `lmro` | ✅         | ❌          |                                                                       |
+| `lmsb` | ✅         | ❌          |                                                                       |
+| `lmao` | ✅         | ❌          |                                                                       |
+| `laco` | ✅         | ❌          | continents metadata                                                   |
+| `lasw` | ✅         | ❌          | walk sectors (interpretation required!)                               |
+| `lafm` | ✅         | ✅          | fishes                                                                |
+| `lmhf` | ✅         | ✅          | 2d array, always zeros                                                |
+| `emmm` | ✅         | ✅          | empty                                                                 |
+| `embr` | ✅         | ❌          | light (check required)                                                |
+| `emm1` | ✅         | ❌          |                                                                       |
+| `emmi` | ✅         | ❌          |                                                                       |
+| `eapd` | ✅         | 🟡          | patterns ids (left for later, see [here](./sections/patterns_def.py)) |
+| `eatd` | ✅         | ❌          | text (probably sth with transitions)                                  |
+| `emt1` | ✅         | ❌          |                                                                       |
+| `emt2` | ✅         | ❌          |                                                                       |
+| `emt3` | ✅         | ❌          |                                                                       |
+| `emt4` | ✅         | ❌          |                                                                       |
+| `eald` | ✅         | ❌          | text (probably sth with landscapes)                                   |
+| `emla` | ✅         | ❌          |                                                                       |
+| `emvc` | ✅         | ❌          | vertex colors (check required)                                        |
+| `xend` | ✅         | ✅          | empty                                                                 |
+| `tend` | ✅         | ✅          | empty                                                                 |
 
 ## Introduction
 

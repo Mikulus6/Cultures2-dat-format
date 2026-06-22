@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw
 from scripts.colormap import ColorMap, find_closest_color
 from supplements.patterns import pattern
 from supplements.read import read
-from typing import Literal
 
 textures_path_free = "data_v\\ve_graphics\\textures1\\free"
 textures_path_sys  = "data_v\\ve_graphics\\textures1\\sys"
@@ -66,9 +65,7 @@ all_used_colors_in_textures = set()
 
 class Texture:
 
-    def __init__(self, pixel_coords, pattern_id, source_path):
-
-        assert pattern_id < 2**16  # pattern_id can use only two bytes
+    def __init__(self, pixel_coords, source_path):
 
         bounds_x, bounds_y = rect_bound(pixel_coords)
         self.size = (bounds_x[1] - bounds_x[0], bounds_y[1] - bounds_y[0])
@@ -110,8 +107,8 @@ class Textures(dict):
                 a_pixel_coords = self.flat_pixel_coords_to_pairs(source["GfxCoordsA"])
                 b_pixel_coords = self.flat_pixel_coords_to_pairs(source["GfxCoordsB"])
 
-                texture_a = Texture(a_pixel_coords, pattern_id, source["GfxTexture"])
-                texture_b = Texture(b_pixel_coords, pattern_id, source["GfxTexture"])
+                texture_a = Texture(a_pixel_coords, source["GfxTexture"])
+                texture_b = Texture(b_pixel_coords, source["GfxTexture"])
 
                 self[pattern_id] = {"a": texture_a, "b": texture_b}
 
@@ -138,7 +135,7 @@ class Textures(dict):
 
 patterndefs_textures = Textures()
 patterndefs_textures.load(source_dict=pattern)
-mep_colormap = patterndefs_textures.load_colormap()
+epm_colors_dict = patterndefs_textures.load_colormap()
 
 safe_alpha_color = find_closest_color((255, 0, 255), excluded_colors=all_used_colors_in_textures)
 del all_used_colors_in_textures

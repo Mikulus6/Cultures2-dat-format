@@ -11,7 +11,8 @@ class ColorMap(dict):
         if dict_ is None:
             dict_ = dict()
         super().__init__(dict_)
-        assert all(map(lambda key: isinstance(key, int) and isinstance(self[key], tuple), self.keys()))
+        assert all(map(lambda key: isinstance(self[key], tuple), self.keys()))
+        # TODO: Some functionalities might work only if keys are integers, but this is not necessary to always be the case.
 
     @property
     def inversed(self):
@@ -25,12 +26,12 @@ class ColorMap(dict):
             values_found.add(self[key])
         assert len(self.values()) == len(set(self.values()))
 
-def load_colormap(filepath):
+def load_colormap(filepath, keys_as_integers: bool = True):
     dict_new = dict()
     with open(filepath) as file:
         dict_loaded = json.loads(file.read())
     for key, value in dict_loaded.items():
-        dict_new[int(key)] = tuple(value)
+        dict_new[key if not keys_as_integers else int(key)] = tuple(value)
     return ColorMap(dict_new)
 
 def apply_colormap(data: list | np.ndarray, colormap: ColorMap | dict):
