@@ -42,7 +42,7 @@
 | `emt4` | ✅         | ❌          |                                                                       |
 | `eald` | ✅         | ❌          | text (probably sth with landscapes)                                   |
 | `emla` | ✅         | ❌          |                                                                       |
-| `emvc` | ✅         | ❌          | vertex colors (check required)                                        |
+| `emvc` | ✅         | ✅          | vertex colors (primary data)                                          |
 | `xend` | ✅         | ✅          | empty                                                                 |
 | `tend` | ✅         | ✅          | empty                                                                 |
 

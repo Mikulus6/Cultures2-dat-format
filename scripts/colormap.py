@@ -1,7 +1,9 @@
+import io
 import json
 from collections import OrderedDict
 from collections.abc import Iterable
 import numpy as np
+from PIL import Image
 
 inverse_dictionary = lambda dict_: {value: key for key, value in dict_.items()}
 
@@ -33,6 +35,12 @@ def load_colormap(filepath, keys_as_integers: bool = True):
     for key, value in dict_loaded.items():
         dict_new[key if not keys_as_integers else int(key)] = tuple(value)
     return ColorMap(dict_new)
+
+def load_colormap_from_pcx_data(pcx_data: bytes):
+    with Image.open(io.BytesIO(pcx_data)) as image:
+        assert image.mode == "P"
+        raw = image.getpalette()
+        return ColorMap(dict_={i: (raw[i * 3], raw[i * 3 + 1], raw[i * 3 + 2]) for i in range(len(raw) // 3)})
 
 def apply_colormap(data: list | np.ndarray, colormap: ColorMap | dict):
     if isinstance(data, np.ndarray):
