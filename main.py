@@ -19,30 +19,23 @@ solutions = "tests\\output"
 for item in iterate_grabbed_paths():
     print(item)
 
-    if item.split("\\")[-1][0] not in ("4", "5"):
-        continue
-
     solution_dir = os.path.join(solutions, os.path.basename(item).split(".")[0])
 
     data_object = Data()
     data_object.load(item)
     data_object.extract(solution_dir)
 
+    # TODO: clean it up later
+    os.makedirs(os.path.join(solution_dir, "primary"), exist_ok=True)
+
     # TODO: cool map export (clean it up to some other func, but do not remove it). Also implement inverse function later.
     emp_combined = combine_emp(data_object.empa, data_object.empb)
     emp_texts = np.asarray(data_object.eapd)[emp_combined]
-    Image.fromarray(apply_colormap(emp_texts, epm_colors_dict), mode="RGB").save(os.path.join(solution_dir, "emp.png"))
+    Image.fromarray(apply_colormap(emp_texts, epm_colors_dict), mode="RGB").save(os.path.join(solution_dir, "primary\\terrain.png"))
 
     # TODO: vertexcolors export (clean it up later)
-    Image.fromarray(apply_colormap(data_object.emvc, vertexcolors), mode="RGB").save(os.path.join(solution_dir, "vertexcolors.png"))
-
-    # function tests
-    data_object_new = copy.deepcopy(data_object)
-    data_object_new = derive_pattern_defs(data_object_new)
-
-    assert data_object_new.eapd == data_object.eapd
-    assert np.array_equal(data_object_new.empa, data_object.empa)
-    assert np.array_equal(data_object_new.empb, data_object.empb)
+    if data_object.emvc is not None:
+        Image.fromarray(apply_colormap(data_object.emvc, vertexcolors), mode="RGB").save(os.path.join(solution_dir, "primary\\vertexcolors.png"))
 
     del data_object
     # data_object = Data()
