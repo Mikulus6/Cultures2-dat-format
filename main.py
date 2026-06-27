@@ -1,17 +1,20 @@
-import copy
-import os
 from data import Data
-from grabber.grabber import grab_source_files, iterate_grabbed_paths
+from grabber.grabber import iterate_grabbed_paths
 
-from scripts.colormap import apply_colormap
-from supplements.patterns import *
 from supplements.textures import *
 from supplements.vertexcolors import *
 
-from sections.patterns_def import derive_pattern_defs, simplify_pattern_defs
-from sections.mesh_points import combine_emp
+from sections.patterns import update_patterns
+from sections.ab_sections import combine_ab_sections
 from scripts.colormap import apply_colormap
 from PIL import Image
+
+data_obj = Data()
+data_obj.load("map.dat")
+data_obj = update_patterns(data_obj)
+data_obj.save("map_new.dat")
+exit()
+
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
 
@@ -29,7 +32,7 @@ for item in iterate_grabbed_paths():
     os.makedirs(os.path.join(solution_dir, "primary"), exist_ok=True)
 
     # TODO: cool map export (clean it up to some other func, but do not remove it). Also implement inverse function later.
-    emp_combined = combine_emp(data_object.empa, data_object.empb)
+    emp_combined = combine_ab_sections(data_object.empa, data_object.empb)
     emp_texts = np.asarray(data_object.eapd)[emp_combined]
     Image.fromarray(apply_colormap(emp_texts, epm_colors_dict), mode="RGB").save(os.path.join(solution_dir, "primary\\terrain.png"))
 

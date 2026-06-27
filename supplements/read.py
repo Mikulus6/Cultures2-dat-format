@@ -37,7 +37,7 @@ def read(filepath: str, mode: Literal["r", "rb"] = "r", *,
 
             filepaths = filepath[:-4]+".ini", filepath[:-4]+".cif"
 
-            for skip_lib in (False, True):
+            for skip_lib in (True, False):
                 for is_decoded, sub_filepath in zip((True, False), filepaths):
                     try:
                         content = read(sub_filepath, mode= "r" if is_decoded else "rb",

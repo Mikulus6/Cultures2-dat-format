@@ -1,8 +1,8 @@
 import os
 import numpy as np
 from scripts.buffer import BufferGiver, BufferTaker
-from sections.checksum import calculate_checksum
-from sections.run_length import run_length_decryption, run_length_encryption
+from special.common.checksum import calculate_checksum
+from special.common.run_length import run_length_decryption, run_length_encryption
 from special.continents import Continents
 from special.fishes import Fishes
 from special.size import Size

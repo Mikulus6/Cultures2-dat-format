@@ -4,7 +4,7 @@ import shutil
 from grabber.preparation import prepare_lib_data
 from supplements.library import Library
 
-# You can get all relevant Cultures games there:
+# You can get all relevant Cultures games here:
 #  https://www.gog.com/en/game/cultures_12
 #  https://www.gog.com/en/game/cultures_34
 #  https://archive.org/details/cultures-saga

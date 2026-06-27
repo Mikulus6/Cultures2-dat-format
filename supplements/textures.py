@@ -4,11 +4,8 @@ from math import sqrt
 import numpy as np
 from PIL import Image, ImageDraw
 from scripts.colormap import ColorMap, find_closest_color
-from supplements.patterns import pattern
+from supplements.external import patterns
 from supplements.read import read
-
-textures_path_free = "data_v\\ve_graphics\\textures1\\free"
-textures_path_sys  = "data_v\\ve_graphics\\textures1\\sys"
 
 def get_average_color(image: Image.Image) -> tuple:
     img_array = np.array(image)
@@ -134,7 +131,7 @@ class Textures(dict):
 
 
 patterndefs_textures = Textures()
-patterndefs_textures.load(source_dict=pattern)
+patterndefs_textures.load(source_dict=patterns)
 epm_colors_dict = patterndefs_textures.load_colormap()
 
 safe_alpha_color = find_closest_color((255, 0, 255), excluded_colors=all_used_colors_in_textures)

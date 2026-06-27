@@ -14,7 +14,6 @@ class ColorMap(dict):
             dict_ = dict()
         super().__init__(dict_)
         assert all(map(lambda key: isinstance(self[key], tuple), self.keys()))
-        # TODO: Some functionalities might work only if keys are integers, but this is not necessary to always be the case.
 
     @property
     def inversed(self):
@@ -28,7 +27,7 @@ class ColorMap(dict):
             values_found.add(self[key])
         assert len(self.values()) == len(set(self.values()))
 
-def load_colormap(filepath, keys_as_integers: bool = True):
+def load_colormap_from_json_data(filepath, keys_as_integers: bool = True):
     dict_new = dict()
     with open(filepath) as file:
         dict_loaded = json.loads(file.read())
