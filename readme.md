@@ -6,47 +6,52 @@
 🟡 - partially solved (in progress)  
 ❌ - unsolved  
 
-| name   | read algo | write algo | comment                                   |
-|--------|-----------|------------|-------------------------------------------|
-| `logi` | ✅         | ✅          | empty                                     |
-| `lgmm` | ✅         | ✅          | empty                                     |
-| `lsiz` | ✅         | ✅          | map size (derivable from any array size)  |
-| `lmhe` | ✅         | ❌          | heightmap (check required)                |
-| `lmpa` | ✅         | ❌          |                                           |
-| `lmpb` | ✅         | ❌          |                                           |
-| `lmlt` | ✅         | ❌          |                                           |
-| `lmlv` | ✅         | ❌          |                                           |
-| `lmlp` | ✅         | ❌          |                                           |
-| `lmco` | ✅         | ❌          | continents (check required)               |
-| `lmtw` | ✅         | ❌          |                                           |
-| `lmms` | ✅         | ❌          |                                           |
-| `lmpr` | ✅         | ❌          |                                           |
-| `lmwb` | ✅         | ❌          |                                           |
-| `lmbb` | ✅         | ❌          |                                           |
-| `lmro` | ✅         | ❌          |                                           |
-| `lmsb` | ✅         | ❌          |                                           |
-| `lmao` | ✅         | ❌          |                                           |
-| `laco` | ✅         | ❌          | continents metadata                       |
-| `lasw` | ✅         | ❌          | walk sectors (interpretation required!)   |
-| `lafm` | ✅         | ✅          | fishes (primary)                          |
-| `lmhf` | ✅         | ✅          | 2d array, always zeros                    |
-| `emmm` | ✅         | ✅          | empty                                     |
-| `embr` | ✅         | ❌          | light (check required)                    |
-| `emm1` | ✅         | ❌          |                                           |
-| `emmi` | ✅         | ❌          |                                           |
-| `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)      |
-| `empa` | ✅         | ✅          | A-triangles (primary)                     |
-| `empb` | ✅         | ✅          | B-triangles (primary)                     |
-| `eatd` | ✅         | 🟡         | text (probably sth with transitions)      |
-| `emt1` | ✅         | 🟡         | transitions (possibly primary?)           |
-| `emt2` | ✅         | 🟡         | transitions (possibly primary?)           |
-| `emt3` | ✅         | ❌          |                                           |
-| `emt4` | ✅         | ❌          |                                           |
-| `eald` | ✅         | 🟡         | landscapes ids, text (kind of primary)    |
-| `emla` | ✅         | 🟡         | landscapes (values from `eald`) (primary) |
-| `emvc` | ✅         | ✅          | vertex colors (primary)                   |
-| `xend` | ✅         | ✅          | empty                                     |
-| `tend` | ✅         | ✅          | empty                                     |
+| name   | read algo | write algo | comment                                      |
+|--------|-----------|------------|----------------------------------------------|
+| `logi` | ✅         | ✅          | empty                                        |
+| `lgmm` | ✅         | ✅          | empty                                        |
+| `lsiz` | ✅         | ✅          | map size (derivable from any array size)     |
+| `lmhe` | ✅         | ❌          | heightmap (check required)                   |
+| `lmpa` | ✅         | ❌          |                                              |
+| `lmpb` | ✅         | ❌          |                                              |
+| `lmlt` | ✅         | ❌          |                                              |
+| `lmlv` | ✅         | ❌          |                                              |
+| `lmlp` | ✅         | ❌          |                                              |
+| `lmco` | ✅         | ❌          | continents (check required)                  |
+| `lmtw` | ✅         | ❌          |                                              |
+| `lmms` | ✅         | ❌          |                                              |
+| `lmpr` | ✅         | ❌          |                                              |
+| `lmwb` | ✅         | ❌          |                                              |
+| `lmbb` | ✅         | ❌          |                                              |
+| `lmro` | ✅         | ❌          |                                              |
+| `lmsb` | ✅         | ❌          |                                              |
+| `lmao` | ✅         | ❌          |                                              |
+| `laco` | ✅         | ❌          | continents metadata                          |
+| `lasw` | ✅         | ❌          | walk sectors (interpretation required!)      |
+| `lafm` | ✅         | ✅          | fishes (primary)                             |
+| `lmhf` | ✅         | ✅          | 2d array, always zeros                       |
+| `emmm` | ✅         | ✅          | empty                                        |
+| `embr` | ✅         | ❌          | light (check required)                       |
+| `emm1` | ✅         | ❌          |                                              |
+| `emmi` | ✅         | ❌          |                                              |
+| `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)         |
+| `empa` | ✅         | ✅          | A-triangles (primary)                        |
+| `empb` | ✅         | ✅          | B-triangles (primary)                        |
+| `eatd` | ✅         | ✅          | transitions ids divided by 6, text (primary) |
+| `emt1` | ✅         | 🟡         | transitions A, foreground (primary)          |
+| `emt2` | ✅         | 🟡         | transitions B, foreground (primary)          |
+| `emt3` | ✅         | 🟡         | transitions A, background (primary)          |
+| `emt4` | ✅         | 🟡         | transitions B, background (primary)          |
+| `eald` | ✅         | ✅          | landscapes ids, text (kind of primary)       |
+| `emla` | ✅         | ✅          | landscapes (primary)                         |
+| `emvc` | ✅         | ✅          | vertex colors (primary)                      |
+| `xend` | ✅         | ✅          | empty                                        |
+| `tend` | ✅         | ✅          | empty                                        |
+
+🟡 About `emt` sections: Those are primary transitions data, but I think there exists an objectively
+correct way to derive them based on `empa`, `empb`, `eapd` and `eatd`. I haven't figured out this algoritm yet,
+but it seems to be important enough to not mark transitions as complete (Who wants to place them by hand anyway).
+Consider also the fact that multiple solutions might exist for single instance of this kind of derivation.
 
 ## Introduction
 
