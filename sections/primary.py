@@ -16,7 +16,19 @@ emt_corners_presence = {0: (False, True,  True ),
                         4: (False, True,  False),
                         5: (False, False, True )}
 
+emm_transition_types = {3: "overlay road 1",
+                        4: "overlay road 2",
+                        5: "overlay house 1",
+                        6: "overlay house 2"}
+
 assert no_transition_color not in emt_colors_dict.values()
+
+# transitions colormap
+emt_colors_dict_with_empty = ColorMap(dict_={"": no_transition_color})
+emt_colors_dict_with_empty.update(emt_colors_dict)
+emt_cover_colormap = ColorMap(dict_={k: tuple(0 if not x else 255 for x in v)
+                                     for k, v in emt_corners_presence.items()})
+emt_cover_colormap[transition_types_num] = no_transition_color
 
 def extract_primary(data_object, directory):
     _directory_name = "primary"
@@ -30,13 +42,6 @@ def extract_primary(data_object, directory):
         os.path.join(directory_full_name, "terrain.png"))
 
     # transitions (4 sections)
-    emt_colors_dict_with_empty = ColorMap(dict_={"": no_transition_color})
-    emt_colors_dict_with_empty.update(emt_colors_dict)
-    emt_cover_colormap = ColorMap(dict_={k: tuple(0 if not x else 255 for x in v)
-                                         for k, v in emt_corners_presence.items()})
-
-    emt_cover_colormap[transition_types_num] = no_transition_color
-
     for emt_a, emt_b, layer in ((data_object.emt1, data_object.emt2, "foreground"),
                                 (data_object.emt3, data_object.emt4, "background")):
         emt_combined = combine_ab_sections(emt_a, emt_b)

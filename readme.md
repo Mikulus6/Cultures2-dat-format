@@ -32,8 +32,8 @@
 | `lmhf` | ✅         | ✅          | 2d array, always zeros                                                   |
 | `emmm` | ✅         | ✅          | empty                                                                    |
 | `embr` | ✅         | ❌          | light (check required)                                                   |
-| `emm1` | ✅         | ❌          |                                                                          |
-| `emmi` | ✅         | ❌          | roads?                                                                   |
+| `emm1` | ✅         | ✅          | visibility of overlay (secondary, derivable from `emmi`)                 |
+| `emmi` | ✅         | 🟡         | roads/houses overlay (primary, devs never used houses overlay here)      |
 | `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                     |
 | `empa` | ✅         | ✅          | A-triangles (primary)                                                    |
 | `empb` | ✅         | ✅          | B-triangles (primary)                                                    |
