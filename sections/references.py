@@ -10,8 +10,11 @@ eald_global = TextSection(list_=landscapes.editnames_ordered)
 def update_external_assets_references(array_section: np.ndarray,
                                       text_section_old: list, text_section_new: list | None = None):
 
-    minus_one = np.iinfo(array_section.dtype).max if np.issubdtype(array_section.dtype, np.unsignedinteger) else -1
-    mask = (array_section == minus_one)
+    match np.issubdtype(array_section.dtype, np.unsignedinteger):  # TODO: duplicated code
+        case True:  minus_one = np.iinfo(array_section.dtype).max
+        case False: minus_one = -1
+
+    mask = (array_section == minus_one)  # noqa
 
     array_texts = np.asarray(text_section_old)[np.where(mask, 0, array_section)]
     array_texts[mask] = ""
@@ -41,19 +44,19 @@ def update_landscapes(data_object, eald_new: list | None = None):
 def update_transitions(data_object, eatd_new: list | None = None):
 
     # This is just a technical combination. Such combination does not represent human-readable array.
-    emt = combine_ab_sections(combine_ab_sections(data_object.emt1, data_object.emt2),
-                              combine_ab_sections(data_object.emt3, data_object.emt4))
+    emt = combine_ab_sections(combine_ab_sections(data_object.emt1, data_object.emt3),  # transitions A
+                              combine_ab_sections(data_object.emt2, data_object.emt4))  # transitions B
+    # 1, 2 -> foreground
+    # 3, 4 -> background
 
-    # emt1 - foreground transitions A
-    # emt2 - foreground transitions B
-    # emt3 - background transitions A
-    # emt4 - background transitions B
+    match np.issubdtype(data_object.emt1.dtype, np.unsignedinteger):  # TODO: duplicated code
+        case True:  minus_one = np.iinfo(data_object.emt1.dtype).max
+        case False: minus_one = -1
 
-    minus_one = 255
     transition_types_num = 6  # In how many ways is it possible to choose vertices of a triangle, excluding choosing all
                               # of them or none of them. This is how many different types of transitions there are.
 
-    mask = (emt == minus_one)
+    mask = (emt == minus_one)  # noqa
     emt, transition_types_array = np.divmod(emt, transition_types_num)
     emt[mask] = minus_one
     transition_types_array[mask] = 0
@@ -63,12 +66,23 @@ def update_transitions(data_object, eatd_new: list | None = None):
     emt[mask] = minus_one // transition_types_num
     emt_new = (emt_new * transition_types_num) + transition_types_array
 
-    emt12_new, emt34_new = split_ab_sections(emt_new)
-    emt1_new, emt2_new = split_ab_sections(emt12_new)
-    emt3_new, emt4_new = split_ab_sections(emt34_new)
+    emt_a_new, emt_b_new = split_ab_sections(emt_new)
+    emt1_new, emt3_new = split_ab_sections(emt_a_new)
+    emt2_new, emt4_new = split_ab_sections(emt_b_new)
 
     data_object.emt1, data_object.emt2, data_object.emt3, data_object.emt4 = \
         emt1_new.astype(data_object.emt1.dtype), emt2_new.astype(data_object.emt2.dtype), \
         emt3_new.astype(data_object.emt3.dtype), emt4_new.astype(data_object.emt3.dtype)
+
+    return data_object
+
+def update_all_references(data_object,
+                          eapd_new: list | None = None,
+                          eatd_new: list | None = None,
+                          eald_new: list | None = None):
+
+    data_object = update_patterns   (data_object, eapd_new)
+    data_object = update_transitions(data_object, eatd_new)
+    data_object = update_landscapes (data_object, eald_new)
 
     return data_object

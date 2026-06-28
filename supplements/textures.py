@@ -4,7 +4,7 @@ from math import sqrt
 import numpy as np
 from PIL import Image, ImageDraw
 from scripts.colormap import ColorMap, find_closest_color
-from supplements.external import patterns
+from supplements.external import patterns, transitions
 from supplements.read import read
 
 def get_average_color(image: Image.Image) -> tuple:
@@ -90,16 +90,24 @@ class Texture:
         self.image = Image.fromarray(image_array)
         self.average_color = get_average_color(self.image)
 
+    @staticmethod
+    def flat_pixel_coords_to_pairs(pixel_coords):
+        return (pixel_coords[0], pixel_coords[1]), \
+               (pixel_coords[2], pixel_coords[3]), \
+               (pixel_coords[4], pixel_coords[5])
+
 
 class Textures(dict):
 
-    def __init__(self):
+    def __init__(self, is_transition: bool = False):
         super().__init__(dict())
-        self.pygame_converted = False
+        self.transitions = is_transition
 
     def load(self, source_dict: dict):
         super().clear()
         for pattern_id, source in source_dict.items():
+
+            if not self.transitions:
 
                 a_pixel_coords = self.flat_pixel_coords_to_pairs(source["GfxCoordsA"])
                 b_pixel_coords = self.flat_pixel_coords_to_pairs(source["GfxCoordsB"])
@@ -108,6 +116,16 @@ class Textures(dict):
                 texture_b = Texture(b_pixel_coords, source["GfxTexture"])
 
                 self[pattern_id] = {"a": texture_a, "b": texture_b}
+
+            else:
+
+                self[pattern_id] = {"a": list(), "b": list()}
+                for pixel_coords_entries, triangle_type in ((source["GfxCoordsA"], "a"),
+                                                            (source["GfxCoordsB"], "b")):
+
+                    for pixel_coords_entry in pixel_coords_entries:
+                        pixel_coords = self.flat_pixel_coords_to_pairs(pixel_coords_entry)
+                        self[pattern_id][triangle_type].append(Texture(pixel_coords, source["GfxTexture"]))
 
     @staticmethod
     def flat_pixel_coords_to_pairs(pixel_coords):
@@ -119,8 +137,22 @@ class Textures(dict):
         _default_color = (0, 0, 0)
         colormap = ColorMap()
         for key, value in self.items():
-            average_color_a = value["a"].average_color if value["a"].average_color is not None else _default_color
-            average_color_b = value["b"].average_color if value["b"].average_color is not None else _default_color
+
+            if not self.transitions:
+                average_color_a = value["a"].average_color if value["a"].average_color is not None else _default_color
+                average_color_b = value["b"].average_color if value["b"].average_color is not None else _default_color
+            else:
+                colors_a = [texture.average_color for texture in value["a"]]
+                colors_b = [texture.average_color for texture in value["b"]]
+
+                while None in colors_a: colors_a.remove(None)
+                while None in colors_b: colors_b.remove(None)
+
+                if len(colors_a) == 0: colors_a.append(_default_color)
+                if len(colors_b) == 0: colors_b.append(_default_color)
+
+                average_color_a = tuple(sum(col) // len(col) for col in zip(*colors_a))
+                average_color_b = tuple(sum(col) // len(col) for col in zip(*colors_b))
 
             colormap[key] = ((average_color_a[0] + average_color_b[0]) // 2,
                              (average_color_a[1] + average_color_b[1]) // 2,
@@ -130,9 +162,13 @@ class Textures(dict):
         return colormap
 
 
-patterndefs_textures = Textures()
-patterndefs_textures.load(source_dict=patterns)
-epm_colors_dict = patterndefs_textures.load_colormap()
+patterns_textures = Textures()
+patterns_textures.load(source_dict=patterns)
+emp_colors_dict = patterns_textures.load_colormap()
+
+transitions_textures = Textures(is_transition=True)
+transitions_textures.load(source_dict=transitions)
+emt_colors_dict = transitions_textures.load_colormap()
 
 safe_alpha_color = find_closest_color((255, 0, 255), excluded_colors=all_used_colors_in_textures)
 del all_used_colors_in_textures
