@@ -31,7 +31,7 @@
 | `lafm` | ✅         | ✅          | fishes (primary)                                                         |
 | `lmhf` | ✅         | ✅          | 2d array, always zeros                                                   |
 | `emmm` | ✅         | ✅          | empty                                                                    |
-| `embr` | ✅         | ❌          | light (check required)                                                   |
+| `embr` | ✅         | ✅          | brightness (secondary, derivable from `lmhe`+`empa`+`empb`)              |
 | `emm1` | ✅         | ✅          | visibility of overlay (secondary, derivable from `emmi`)                 |
 | `emmi` | ✅         | ✅          | roads/houses vertex type (primary, devs never used houses overlay here)  |
 | `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                     |

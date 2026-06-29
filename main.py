@@ -1,12 +1,10 @@
 from data import Data
 from grabber.grabber import iterate_grabbed_paths
 from sections.primary import extract_primary
-from scripts.colormap import ColorMap, apply_colormap
 import os
-import numpy as np
-from PIL import Image
-from sections.overlays import emmi_to_emm1
-from scripts.expansions import expand_image_object_to_hexagons
+
+from sections.brightness import update_embr
+from sections.overlays import update_emm1
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
 
