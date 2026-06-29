@@ -8,7 +8,7 @@ from supplements.textures import emp_colors_dict, emt_colors_dict
 from supplements.palettes import vertexcolors
 
 transition_types_num = 6
-no_transition_color = (0, 0, 0)
+no_data_color = (0, 0, 0)
 emt_corners_presence = {0: (False, True,  True ),
                         1: (True,  False, True ),
                         2: (True,  True,  False),
@@ -21,14 +21,19 @@ emm_transition_types = {3: "overlay road 1",
                         5: "overlay house 1",
                         6: "overlay house 2"}
 
-assert no_transition_color not in emt_colors_dict.values()
+assert no_data_color not in emt_colors_dict.values()
 
 # transitions colormap
-emt_colors_dict_with_empty = ColorMap(dict_={"": no_transition_color})
+emt_colors_dict_with_empty = ColorMap(dict_={"": no_data_color})
 emt_colors_dict_with_empty.update(emt_colors_dict)
 emt_cover_colormap = ColorMap(dict_={k: tuple(0 if not x else 255 for x in v)
                                      for k, v in emt_corners_presence.items()})
-emt_cover_colormap[transition_types_num] = no_transition_color
+emt_cover_colormap[transition_types_num] = no_data_color
+
+# roads colormap
+emm_transition_colormap = ColorMap(dict_={0: no_data_color})
+emm_transition_colormap.update({2**(k-1): emt_colors_dict[v] for k, v in emm_transition_types.items()})
+
 
 def extract_primary(data_object, directory):
     _directory_name = "primary"
@@ -89,3 +94,8 @@ def extract_primary(data_object, directory):
 
     # fishes
     data_object.lafm.to_file(os.path.join(directory_full_name, "fishes.csv"))
+
+    # roads
+    Image.fromarray(apply_colormap(data_object.emmi, emm_transition_colormap), mode="RGB").save(
+        os.path.join(directory_full_name, "roads.png"))
+        # values 4 and 8 are used randomly (just like when filling up regular transitions with multiple possible solutions)

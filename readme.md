@@ -2,7 +2,7 @@
 
 ## Progress
 
-✅ - solved  
+✅ - solved (derivation algo exists or section is understood to have non-derivable primary data)  
 🟡 - partially solved (in progress)  
 ❌ - unsolved  
 
@@ -33,7 +33,7 @@
 | `emmm` | ✅         | ✅          | empty                                                                    |
 | `embr` | ✅         | ❌          | light (check required)                                                   |
 | `emm1` | ✅         | ✅          | visibility of overlay (secondary, derivable from `emmi`)                 |
-| `emmi` | ✅         | 🟡         | roads/houses overlay (primary, devs never used houses overlay here)      |
+| `emmi` | ✅         | ✅          | roads/houses vertex type (primary, devs never used houses overlay here)  |
 | `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                     |
 | `empa` | ✅         | ✅          | A-triangles (primary)                                                    |
 | `empb` | ✅         | ✅          | B-triangles (primary)                                                    |
