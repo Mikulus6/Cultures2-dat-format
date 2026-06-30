@@ -12,8 +12,8 @@
 | `lgmm` | ✅         | ✅          | empty                                                                    |
 | `lsiz` | ✅         | ✅          | map size (derivable from any array size)                                 |
 | `lmhe` | ✅         | ✅          | heightmap (primary)                                                      |
-| `lmpa` | ✅         | ❌          |                                                                          |
-| `lmpb` | ✅         | ❌          |                                                                          |
+| `lmpa` | ✅         | ✅          | patterns LogicType (secondary, derivable from `empa`+`eapd`)             |
+| `lmpb` | ✅         | ✅          | patterns LogicType (secondary, derivable from `empb`+`eapd`)             |
 | `lmlt` | ✅         | ❌          |                                                                          |
 | `lmlv` | ✅         | ❌          |                                                                          |
 | `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade |
@@ -32,7 +32,7 @@
 | `lmhf` | ✅         | ✅          | 2d array, always zeros                                                   |
 | `emmm` | ✅         | ✅          | empty                                                                    |
 | `embr` | ✅         | ✅          | brightness (secondary, derivable from `lmhe`+`empa`+`empb`)              |
-| `emm1` | ✅         | ✅          | visibility of overlay (secondary, derivable from `emmi`)                 |
+| `emm1` | ✅         | ✅          | visibility of infrastructure (secondary, derivable from `emmi`)          |
 | `emmi` | ✅         | ✅          | roads/houses vertex type (primary, devs never used houses overlay here)  |
 | `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                     |
 | `empa` | ✅         | ✅          | A-triangles (primary)                                                    |

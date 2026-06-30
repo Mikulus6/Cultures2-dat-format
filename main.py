@@ -3,8 +3,9 @@ from grabber.grabber import iterate_grabbed_paths
 from sections.primary import extract_primary
 import os
 
-from sections.brightness import update_embr
-from sections.overlays import update_emm1
+from sections.brightness     import update_embr
+from sections.infrastructure import update_emm1
+from sections.logic_type     import update_lmp
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
 
