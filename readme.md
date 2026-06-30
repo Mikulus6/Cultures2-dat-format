@@ -15,7 +15,7 @@
 | `lmpa` | ✅         | ✅          | patterns LogicType (secondary, derivable from `empa`+`eapd`)             |
 | `lmpb` | ✅         | ✅          | patterns LogicType (secondary, derivable from `empb`+`eapd`)             |
 | `lmlt` | ✅         | ❌          |                                                                          |
-| `lmlv` | ✅         | ❌          |                                                                          |
+| `lmlv` | ✅         | ✅          | landscape valency (primary, never bigger than `LogicMaximumValency`)     |
 | `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade |
 | `lmco` | ✅         | ❌          | continents (check required)                                              |
 | `lmtw` | ✅         | ❌          |                                                                          |

@@ -76,7 +76,7 @@ def extract_primary(data_object, directory):
         Image.fromarray(apply_colormap(data_object.emvc, vertexcolors), mode="RGB").save(
             os.path.join(directory_full_name, "vertexcolors.png"))
 
-    # landscapes + landscapes players
+    # landscapes + landscapes valency + landscapes players
     landscapes_dict = {}
     for (y, x), landscape_id in np.ndenumerate(data_object.emla):
         if int(landscape_id) == (2**16) - 1:
@@ -85,8 +85,9 @@ def extract_primary(data_object, directory):
         landscapes_dict[x, y] = data_object.eald[landscape_id]
     with open(os.path.join(directory_full_name, "landscapes.csv"), "w") as file:
         for coordinates, landscape in landscapes_dict.items():
+            landscape_valency         = int(data_object.lmlv[coordinates[::-1]])
             landscape_owner_player_id = int(np.uint8(data_object.lmlp[coordinates[::-1]]).view(np.int8))
-            file.write(f"{coordinates[0]},{coordinates[1]},\"{landscape}\",{landscape_owner_player_id}\n")
+            file.write(f"{coordinates[0]},{coordinates[1]},\"{landscape}\",{landscape_valency},{landscape_owner_player_id}\n")
 
     # heightmap
     bytes_to_image(data_object.lmhe.tobytes(),
