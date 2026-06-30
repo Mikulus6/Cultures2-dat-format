@@ -23,7 +23,7 @@
 | `lmpr` | ✅         | ❌          |                                                                          |
 | `lmwb` | ✅         | ❌          |                                                                          |
 | `lmbb` | ✅         | ❌          |                                                                          |
-| `lmro` | ✅         | ❌          |                                                                          |
+| `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                 |
 | `lmsb` | ✅         | ❌          |                                                                          |
 | `lmao` | ✅         | ❌          |                                                                          |
 | `laco` | ✅         | ❌          | continents metadata                                                      |

@@ -6,6 +6,7 @@ import os
 from sections.brightness     import update_embr
 from sections.infrastructure import update_emm1
 from sections.logic_type     import update_lmp
+from sections.roads          import update_lmro
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
 
