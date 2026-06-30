@@ -32,3 +32,15 @@ def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
 
                     lm_b[y_real % micro_height, x_real % micro_width] = 1
     return lm_b
+
+def data_to_lmsb(data_object):
+    lmsb = np.zeros_like(data_object.lmsb)
+    for walkable_terrain_type in data_object.lasw.__class__._walkable_terrain_types: # noqa
+        for walk_sector in getattr(data_object.lasw, walkable_terrain_type):
+            for point in walk_sector.points:
+                lmsb[*point[::-1]] = 1
+    return lmsb
+
+def update_lmsb(data_object):
+    data_object.lmsb = data_to_lmsb(data_object)
+    return data_object

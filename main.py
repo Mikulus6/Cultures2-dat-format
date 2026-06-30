@@ -3,6 +3,7 @@ from grabber.grabber import iterate_grabbed_paths
 from sections.primary import extract_primary
 import os
 
+from sections.block          import update_lmsb
 from sections.brightness     import update_embr
 from sections.infrastructure import update_emm1
 from sections.logic_type     import update_lmp
