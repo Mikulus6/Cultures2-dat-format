@@ -21,8 +21,8 @@
 | `lmtw` | ✅         | ❌          |                                                                            |
 | `lmms` | ✅         | ❌          |                                                                            |
 | `lmpr` | ✅         | ❌          |                                                                            |
-| `lmwb` | ✅         | 🟡         | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |
-| `lmbb` | ✅         | 🟡         | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`) |
+| `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |
+| `lmbb` | ✅         | ✅          | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`) |
 | `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                   |
 | `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                           |
 | `lmao` | ✅         | ❌          |                                                                            |

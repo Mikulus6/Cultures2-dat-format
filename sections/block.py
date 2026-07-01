@@ -30,8 +30,13 @@ def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
                     y_real = y + y_offset
                     x_real = x + x_offset + x_iter + int((y % 2 != 0) and (y_real % 2 == 0))
 
-                    lm_b[y_real % micro_height, x_real % micro_width] = 1
+                    if 0 <= x_real < micro_width and 0 <= y_real < micro_height:
+                        lm_b[y_real, x_real] = 1
     return lm_b
+
+def update_lm_b(data_object):
+    data_object.lmwb = data_to_lm_b(data_object, block_type="Walk")
+    data_object.lmbb = data_to_lm_b(data_object, block_type="Build")
 
 def data_to_lmsb(data_object):
     lmsb = np.zeros_like(data_object.lmsb)

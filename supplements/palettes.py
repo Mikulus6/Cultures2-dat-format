@@ -3,7 +3,8 @@ from supplements.read import read
 from supplements.external import palettes
 
 vertexcolors_path = "data\\engine2d\\bin\\palettes\\misc\\vertexcolors.pcx"
-vertexcolors = load_colormap_from_pcx_data(read(vertexcolors_path, "rb"))
+try:                      vertexcolors = load_colormap_from_pcx_data(read(vertexcolors_path, "rb"))
+except FileNotFoundError: vertexcolors = ColorMap()
 
 # num_of_players, palette_index = 10, 24
 # players_colormap = ColorMap()
