@@ -1,4 +1,5 @@
 import numpy as np
+from sections.common.minus_one import get_minus_one
 from supplements.external import landscapes
 from typing import Literal
 
@@ -10,14 +11,12 @@ def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
     micro_width  = 2 * data_object.lsiz.width
     micro_height = 2 * data_object.lsiz.height
 
-    match np.issubdtype(data_object.emla.dtype, np.unsignedinteger):  # TODO: duplicated code
-        case True:  minus_one = np.iinfo(data_object.emla.dtype).max
-        case False: minus_one = -1
+    no_landscape = get_minus_one(data_object.emla.dtype)
 
     for y in range(micro_height):
         for x in range(micro_width):
             landscape_id = data_object.emla[y, x]
-            if landscape_id == minus_one:  # noqa
+            if landscape_id == no_landscape:  # noqa
                 continue
             landscape = landscapes[data_object.eald[landscape_id]]
             landscape_valency = data_object.lmlv[y, x]

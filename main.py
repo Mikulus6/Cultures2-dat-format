@@ -1,18 +1,20 @@
+import os
+import numpy as np
+from PIL import Image
+
 from data import Data
 from grabber.grabber import iterate_grabbed_paths, grab_source_files
 from sections.primary import extract_primary
-import os
-import numpy as np
 
-from sections.block          import update_lm_b
-from sections.block          import update_lmsb
-from sections.brightness     import update_embr
-from sections.infrastructure import update_emm1
-from sections.logic_type     import update_lmp
-from sections.roads          import update_lmro
+from sections.block           import update_lm_b
+from sections.block           import update_lmsb
+from sections.brightness      import update_embr
+from sections.external_assets import update_ea_d
+from sections.infrastructure  import update_emm1
+from sections.logic_type      import update_lmp_
+from sections.roads           import update_lmro
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
-
 
 solutions = "tests\\output"
 for item in iterate_grabbed_paths():

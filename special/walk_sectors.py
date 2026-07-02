@@ -26,7 +26,7 @@ class WalkSector:
                                                                                             # (not in any original map)
 
         connections_raw_bits = sector_buffer.binary(1)
-        assert connections_raw_bits[::2] == "0000"  # Even bytes (counting from zero) must be zero
+        assert connections_raw_bits[::2] == "0000"  # Even bits (counting from zero) must be zero
         self.connections = {"up":    connections_raw_bits[1] == "1",
                             "left":  connections_raw_bits[3] == "1",
                             "down":  connections_raw_bits[5] == "1",

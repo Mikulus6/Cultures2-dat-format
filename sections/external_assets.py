@@ -1,6 +1,6 @@
-import copy
 import numpy as np
-from sections.ab_sections import combine_ab_sections, split_ab_sections
+from sections.common.ab_sections import combine_ab_sections, split_ab_sections
+from sections.common.minus_one import get_minus_one
 from special.texts import TextSection
 from supplements.external import patterns, landscapes
 
@@ -10,9 +10,7 @@ eald_global = TextSection(list_=landscapes.editnames_ordered)
 def update_external_assets_references(array_section: np.ndarray,
                                       text_section_old: list, text_section_new: list | None = None):
 
-    match np.issubdtype(array_section.dtype, np.unsignedinteger):  # TODO: duplicated code
-        case True:  minus_one = np.iinfo(array_section.dtype).max
-        case False: minus_one = -1
+    minus_one = get_minus_one(array_section.dtype)
 
     mask = (array_section == minus_one)  # noqa
 
@@ -49,21 +47,19 @@ def update_transitions(data_object, eatd_new: list | None = None):
     # 1, 2 -> foreground
     # 3, 4 -> background
 
-    match np.issubdtype(data_object.emt1.dtype, np.unsignedinteger):  # TODO: duplicated code
-        case True:  minus_one = np.iinfo(data_object.emt1.dtype).max
-        case False: minus_one = -1
+    no_transition = get_minus_one(data_object.emt1.dtype)
 
     transition_types_num = 6  # In how many ways is it possible to choose vertices of a triangle, excluding choosing all
                               # of them or none of them. This is how many different types of transitions there are.
 
-    mask = (emt == minus_one)  # noqa
+    mask = (emt == no_transition)  # noqa
     emt, transition_types_array = np.divmod(emt, transition_types_num)
-    emt[mask] = minus_one
+    emt[mask] = no_transition
     transition_types_array[mask] = 0
 
     emt_new, data_object.eatd = update_external_assets_references(emt, data_object.eatd, eatd_new)
 
-    emt[mask] = minus_one // transition_types_num
+    emt[mask] = no_transition // transition_types_num
     emt_new = (emt_new * transition_types_num) + transition_types_array
 
     emt_a_new, emt_b_new = split_ab_sections(emt_new)
@@ -76,10 +72,10 @@ def update_transitions(data_object, eatd_new: list | None = None):
 
     return data_object
 
-def update_all_references(data_object,
-                          eapd_new: list | None = None,
-                          eatd_new: list | None = None,
-                          eald_new: list | None = None):
+def update_ea_d(data_object,
+                eapd_new: list | None = None,
+                eatd_new: list | None = None,
+                eald_new: list | None = None):
 
     data_object = update_patterns   (data_object, eapd_new)
     data_object = update_transitions(data_object, eatd_new)

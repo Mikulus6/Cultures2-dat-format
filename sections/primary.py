@@ -3,7 +3,8 @@ import numpy as np
 from PIL import Image
 from scripts.colormap import ColorMap, apply_colormap
 from scripts.image import bytes_to_image
-from sections.ab_sections import combine_ab_sections
+from sections.common.ab_sections import combine_ab_sections
+from sections.common.minus_one import get_minus_one
 from supplements.textures import emp_colors_dict, emt_colors_dict
 from supplements.palettes import vertexcolors
 
@@ -51,9 +52,7 @@ def extract_primary(data_object, directory):
                                 (data_object.emt3, data_object.emt4, "background")):
         emt_combined = combine_ab_sections(emt_a, emt_b)
 
-        match np.issubdtype(data_object.emt1.dtype, np.unsignedinteger):
-            case True:  minus_one = np.iinfo(data_object.emt1.dtype).max
-            case False: minus_one = -1
+        minus_one = get_minus_one(data_object.emt1.dtype)
 
         mask = (emt_combined == minus_one)  # noqa
         emt_terrain_type, emt_cover_type = np.divmod(emt_combined, transition_types_num)
@@ -68,8 +67,6 @@ def extract_primary(data_object, directory):
 
         Image.fromarray(apply_colormap(emt_cover_type, emt_cover_colormap), mode="RGB").save(
             os.path.join(directory_full_name, f"transitions_cover_{layer}.png"))
-
-        del minus_one
 
     # vertexcolors
     if data_object.emvc is not None:
