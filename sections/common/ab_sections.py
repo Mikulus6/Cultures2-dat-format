@@ -1,5 +1,4 @@
 import numpy as np
-from functools import lru_cache
 
 def combine_ab_sections(a_sec: np.ndarray, b_sec: np.ndarray):
     sec = np.empty((a_sec.shape[0], a_sec.shape[1] * 2), dtype=a_sec.dtype)
@@ -36,3 +35,9 @@ def get_adjacent_triangles_offets(coordinates) -> (tuple, tuple):
         case 1, 2: return ((0, 0), (0, -1), (1, -1)), ((0, 0), (0, -1), (-1, 0))
         case 1, 3: return ((0, 0),), ((0, 0),)
         case _: raise ValueError
+
+def get_tangent_triangles(coordinates_1, coordinates_2) -> (tuple, tuple):
+    a1, b1 = get_adjacent_triangles(coordinates_1)
+    a2, b2 = get_adjacent_triangles(coordinates_2)
+    return tuple(coord for coord in a1 if coord in a2), \
+           tuple(coord for coord in b1 if coord in b2)
