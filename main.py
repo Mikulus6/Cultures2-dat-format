@@ -9,6 +9,7 @@ from sections.primary import extract_primary
 from sections.block           import update_lm_b
 from sections.block           import update_lmsb
 from sections.brightness      import update_embr
+from sections.continents      import update_lmco_laco
 from sections.external_assets import update_ea_d
 from sections.infrastructure  import update_emm1
 from sections.logic_type      import update_lmp_

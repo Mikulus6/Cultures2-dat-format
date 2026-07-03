@@ -17,8 +17,8 @@
 | `lmlt` | ✅         | ❌          |                                                                            |
 | `lmlv` | ✅         | ✅          | landscape valency (primary, never bigger than `LogicMaximumValency`)       |
 | `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade   |
-| `lmco` | ✅         | ❌          | continents (check required)                                                |
-| `lmtw` | ✅         | ❌          |                                                                            |
+| `lmco` | ✅         | ✅          | continents (0 = void, 1 = land, 2 = water)                                 |
+| `lmtw` | ✅         | ❌          | connections for walking / swimming                                         |
 | `lmms` | ✅         | ❌          |                                                                            |
 | `lmpr` | ✅         | ❌          |                                                                            |
 | `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |
@@ -26,7 +26,7 @@
 | `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                   |
 | `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                           |
 | `lmao` | ✅         | ❌          |                                                                            |
-| `laco` | ✅         | ❌          | continents metadata                                                        |
+| `laco` | ✅         | ✅          | continents metadata                                                        |
 | `lasw` | ✅         | ❌          | walk sectors (interpretation required!)                                    |
 | `lafm` | ✅         | ✅          | fishes (primary)                                                           |
 | `lmhf` | ✅         | ✅          | 2d array, always zeros                                                     |

@@ -1,4 +1,5 @@
 import numpy as np
+from functools import lru_cache
 
 def combine_ab_sections(a_sec: np.ndarray, b_sec: np.ndarray):
     sec = np.empty((a_sec.shape[0], a_sec.shape[1] * 2), dtype=a_sec.dtype)
@@ -17,34 +18,21 @@ def get_neighbouring_vertices(coordinates):
     if y % 2 == 0: return [(x + 1, y), (x, y + 1), (x - 1, y + 1), (x - 1, y), (x - 1, y - 1), (x, y - 1)]
     else:          return [(x + 1, y), (x + 1, y + 1), (x, y + 1), (x - 1, y), (x, y - 1), (x + 1, y - 1)]
 
-def get_adjacent_triangles(coordinates, *, ignore_minor_vertices=False):
-    # 'ignore_minor_vertices' should always be set to False, except for recursive case in function definitnion.
-    x, y = coordinates
-
-    if x % 2 == 0 and y % 4 == 0:    # major vertex, even row
-        a_coordinates = [(x//2, y//2), (x//2 - 1, y//2 - 1), (x//2, y//2 - 1)]
-        b_coordinates = [(x//2, y//2), (x//2 - 1, y//2 - 1), (x//2 - 1, y//2)]
-    elif x % 2 == 1 and y % 4 == 2:  # major vertex, odd row
-        a_coordinates = [(x//2, y//2), (x//2, y//2 - 1), (x//2 + 1, y//2 - 1)]
-        b_coordinates = [(x//2, y//2), (x//2, y//2 - 1), (x//2 - 1, y//2)]
-    elif not ignore_minor_vertices:  # minor vertex
-
-        a_coordinates_collection = []
-        b_coordinates_collection = []
-
-        for neighbour in get_neighbouring_vertices(coordinates):
-            a_coordinates_temp, b_coordinates_temp = get_adjacent_triangles(neighbour, ignore_minor_vertices=True)
-            if len(a_coordinates_temp) + len(b_coordinates_temp) != 0:  # major vertex
-                a_coordinates_collection.append(a_coordinates_temp)
-                b_coordinates_collection.append(b_coordinates_temp)
-
-        a_coordinates = [coordinates for coordinates in a_coordinates_collection[0] if
-                            coordinates in a_coordinates_collection[1]]
-        b_coordinates = [coordinates for coordinates in b_coordinates_collection[0] if
-                            coordinates in b_coordinates_collection[1]]
-
-        return a_coordinates, b_coordinates
-    else:
-        a_coordinates, b_coordinates = [], []
-
+def get_adjacent_triangles(coordinates):
+    a_offsets, b_offsets = get_adjacent_triangles_offets(coordinates)
+    a_coordinates = [(coordinates[0] // 2 + x, coordinates[1] // 2 + y) for x, y in a_offsets]
+    b_coordinates = [(coordinates[0] // 2 + x, coordinates[1] // 2 + y) for x, y in b_offsets]
     return a_coordinates, b_coordinates
+
+def get_adjacent_triangles_offets(coordinates) -> (tuple, tuple):
+    x, y =  coordinates
+    match x % 2, y % 4:
+        case 0, 0: return ((0, 0), (-1, -1), (0, -1)), ((0, 0), (-1, -1), (-1, 0))
+        case 0, 1: return ((0, 0),), ((0, 0),)
+        case 0, 2: return ((0, -1),), ((-1, 0),)
+        case 0, 3: return ((0, 0),), ((-1, 0),)
+        case 1, 0: return ((0, -1),), ((0, 0),)
+        case 1, 1: return ((1, 0),), ((0, 0),)
+        case 1, 2: return ((0, 0), (0, -1), (1, -1)), ((0, 0), (0, -1), (-1, 0))
+        case 1, 3: return ((0, 0),), ((0, 0),)
+        case _: raise ValueError

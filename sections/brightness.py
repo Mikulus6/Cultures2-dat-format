@@ -91,7 +91,7 @@ def update_embr(data_object):
 
 
 class StochasticGradientDescentShadowKernel:
-    # Supplementary class used for reversee-enginering shadow kernel in existing data files with SGD method.
+    # supplementary class used for reversee-enginering shadow kernel in existing data files with SGD method
 
     def __init__(self, kernel_size, kernel_center=(0, 0)):
         self.kernel_ndarray = np.zeros(kernel_size, dtype=np.uint32)

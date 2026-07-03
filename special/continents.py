@@ -1,7 +1,13 @@
 import os
+from dataclasses import dataclass
 from scripts.buffer import BufferGiver, BufferTaker
 from special.special import SpecialSection
 
+@dataclass
+class Continent:
+    type: int
+    anchor_vertex: tuple[int, int]
+    size: int
 
 class Continents(list, metaclass=SpecialSection):
     _continents_limit = 250
@@ -16,18 +22,22 @@ class Continents(list, metaclass=SpecialSection):
         number_of_continents = buffer.unsigned(length=4)
 
         for index_, _ in enumerate(range(number_of_continents)):
-            continent_type = buffer.unsigned(length=4)  # 0 = void, 1 = land, 2 = water  # TODO: verify
-            first_vertex_x = buffer.signed(length=2)
-            first_vertex_y = buffer.signed(length=2)
+            continent_type = buffer.unsigned(length=4)  # 0 = void, 1 = land, 2 = water
+            anchor_vertex_x = buffer.signed(length=2)
+            anchor_vertex_y = buffer.signed(length=2)
             continent_size = buffer.signed(length=4)
 
-            # Cordinates of first vertex being -1 x -1 and negative continent size are most likely a result of a removal
-            # of previously existing continent during development process. The second type of this issue is absent in
-            # "Cultures 2: The Gates of Asgard" and is present only in newer Cultures games.
+            # Cordinates of anchor vertex being -1 x -1 and negative continent size are most likely a result of a
+            # removal of previously existing continent during development process. The second type of this issue is
+            # absent in "Cultures 2: The Gates of Asgard" and is present only in newer Cultures games.
 
-            assert bool(index_) == bool(buffer.unsigned(length=4))
+            assert (int(bool(index_)) == buffer.unsigned(length=4)) or continent_size == 0
 
-            self.append([continent_type, (first_vertex_x, first_vertex_y), continent_size])
+            continent = Continent(type=continent_type,
+                                  anchor_vertex=(anchor_vertex_x, anchor_vertex_y),
+                                  size=continent_size)
+
+            self.append(continent)
 
         self.check_internal_consistency()
 
@@ -38,12 +48,12 @@ class Continents(list, metaclass=SpecialSection):
 
         self.check_internal_consistency()
 
-        for index_, item in enumerate(self):
+        for index_, continent in enumerate(self):
 
-            buffer_taker.unsigned(item[0], length=4)
-            buffer_taker.signed(item[1][0], length=2)
-            buffer_taker.signed(item[1][1], length=2)
-            buffer_taker.signed(item[2], length=4)
+            buffer_taker.unsigned(continent.type,          length=4)
+            buffer_taker.signed(continent.anchor_vertex[0], length=2)
+            buffer_taker.signed(continent.anchor_vertex[1], length=2)
+            buffer_taker.signed(continent.size[2],         length=4)
 
             match bool(index_):
                 case True : buffer_taker.unsigned(1, length=4)
@@ -58,27 +68,24 @@ class Continents(list, metaclass=SpecialSection):
 
         assert len(self) <= self.__class__._continents_limit
 
-        for index_, item in enumerate(self):
-            continent_type = item[0]
-            first_vertex_x, first_vertex_y = item[1]
-            continent_size = item[2]
+        for index_, continent in enumerate(self):
 
-            assert first_vertex_x >= -1
-            assert first_vertex_y >= -1
-            assert (first_vertex_x == -1) == (first_vertex_y == -1)
+            assert continent.anchor_vertex[0] >= -1
+            assert continent.anchor_vertex[1] >= -1
+            assert (continent.anchor_vertex[0] == -1) == (continent.anchor_vertex[1] == -1)
 
-            if index_ == 0 or continent_type == 0:
-                assert (continent_type, first_vertex_x, first_vertex_y) == (0, 0, 0)
-                assert continent_size <= 0
+            if index_ == 0 or continent.type == 0:
+                assert continent.type == 0 and continent.anchor_vertex == (0, 0)
+                assert continent.size <= 0
             else:
-                assert continent_type in (1, 2)
-                assert continent_size >= 0
+                assert continent.type in (1, 2)
+                assert continent.size >= 0
 
     def to_file(self, filename: str):
         # preferred file extension: *.csv
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as file:
-            file.write("\n".join((f"{item[0]},{item[1][0]},{item[1][1]},{item[2]}" for item in self)))
+            file.write("\n".join((f"{continent.type},{continent.anchor_vertex[0]},{continent.anchor_vertex[1]},{continent.size}" for continent in self)))
 
     def from_file(self, filename: str):
         # preferred file extension: *.csv
@@ -88,4 +95,4 @@ class Continents(list, metaclass=SpecialSection):
                 if len(line) == 0:
                     continue
                 entries = tuple(map(lambda entry: int(entry.rstrip(" ")), line.split(",")))
-                self.append([entries[0], (entries[1], entries[2]), entries[3]])
+                self.append(Continent(type=entries[0], anchor_vertex=(entries[1], entries[2]), size=entries[3]))

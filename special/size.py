@@ -7,6 +7,9 @@ class Size(metaclass=SpecialSection):
         self.width: int =  0
         self.height: int = 0
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.width == other.width and self.height == other.height
+
     def load(self, bytes_obj: bytes):
         buffer = BufferGiver(bytes_obj)
         self.width = buffer.unsigned(length=4)
