@@ -13,6 +13,7 @@ from sections.external_assets import update_ea_d
 from sections.infrastructure  import update_emm1
 from sections.logic_type      import update_lmp_, update_lmlt
 from sections.roads           import update_lmro
+from sections.roughness       import update_lmpr
 from sections.travel_way      import update_lmtw
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.

@@ -6,47 +6,47 @@
 🟡 - partially solved (in progress)  
 ❌ - unsolved  
 
-| name   | read algo | write algo | comment                                                                    |
-|--------|-----------|------------|----------------------------------------------------------------------------|
-| `logi` | ✅         | ✅          | empty                                                                      |
-| `lgmm` | ✅         | ✅          | empty                                                                      |
-| `lsiz` | ✅         | ✅          | map size (derivable from any array size)                                   |
-| `lmhe` | ✅         | ✅          | heightmap (primary)                                                        |
-| `lmpa` | ✅         | ✅          | patterns `LogicType` (secondary, derivable from `empa`+`eapd`)             |
-| `lmpb` | ✅         | ✅          | patterns `LogicType` (secondary, derivable from `empb`+`eapd`)             |
-| `lmlt` | ✅         | ✅          | landscapes `LogicType` (secondary, derivable from `emla`+`eald`)           |
-| `lmlv` | ✅         | ✅          | landscape valency (primary, never bigger than `LogicMaximumValency`)       |
-| `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade   |
-| `lmco` | ✅         | ✅          | continents (secondary, derivable from `lmpa`+`lmpb`)                       |
-| `lmtw` | ✅         | ✅          | edges for walking / swimming (secondary, derivable from `lmpa`+`lmpb`)     |
-| `lmms` | ✅         | ❌          |                                                                            |
-| `lmpr` | ✅         | ❌          | terrain difficulty (units speed)?                                          |
-| `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |
-| `lmbb` | ✅         | ✅          | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`) |
-| `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                   |
-| `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                           |
-| `lmao` | ✅         | ❌          |                                                                            |
-| `laco` | ✅         | ✅          | continents metadata (secondary, derivable from `lmco`)                     |
-| `lasw` | ✅         | ❌          | walk sectors (interpretation required!)                                    |
-| `lafm` | ✅         | ✅          | fishes (primary)                                                           |
-| `lmhf` | ✅         | ✅          | 2d array, always zeros                                                     |
-| `emmm` | ✅         | ✅          | empty                                                                      |
-| `embr` | ✅         | ✅          | brightness (secondary, derivable from `lmhe`+`empa`+`empb`)                |
-| `emm1` | ✅         | ✅          | visibility of infrastructure (secondary, derivable from `emmi`)            |
-| `emmi` | ✅         | ✅          | roads/houses vertex type (primary, devs never used houses overlay here)    |
-| `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                       |
-| `empa` | ✅         | ✅          | A-triangles (primary)                                                      |
-| `empb` | ✅         | ✅          | B-triangles (primary)                                                      |
-| `eatd` | ✅         | ✅          | transitions ids divided by 6, text (primary)                               |
-| `emt1` | ✅         | ✅          | transitions A, foreground (primary)                                        |
-| `emt2` | ✅         | ✅          | transitions B, foreground (primary)                                        |
-| `emt3` | ✅         | ✅          | transitions A, background (primary)                                        |
-| `emt4` | ✅         | ✅          | transitions B, background (primary)                                        |
-| `eald` | ✅         | ✅          | landscapes ids, text (kind of primary)                                     |
-| `emla` | ✅         | ✅          | landscapes (primary)                                                       |
-| `emvc` | ✅         | ✅          | vertex colors (primary)                                                    |
-| `xend` | ✅         | ✅          | empty                                                                      |
-| `tend` | ✅         | ✅          | empty                                                                      |
+| name   | read algo | write algo | comment                                                                     |
+|--------|-----------|------------|-----------------------------------------------------------------------------|
+| `logi` | ✅         | ✅          | empty                                                                       |
+| `lgmm` | ✅         | ✅          | empty                                                                       |
+| `lsiz` | ✅         | ✅          | map size (derivable from any array size)                                    |
+| `lmhe` | ✅         | ✅          | heightmap (primary)                                                         |
+| `lmpa` | ✅         | ✅          | patterns `LogicType` (secondary, derivable from `empa`+`eapd`)              |
+| `lmpb` | ✅         | ✅          | patterns `LogicType` (secondary, derivable from `empb`+`eapd`)              |
+| `lmlt` | ✅         | ✅          | landscapes `LogicType` (secondary, derivable from `emla`+`eald`)            |
+| `lmlv` | ✅         | ✅          | landscape valency (primary, never bigger than `LogicMaximumValency`)        |
+| `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade    |
+| `lmco` | ✅         | ✅          | continents (secondary, derivable from `lmpa`+`lmpb`)                        |
+| `lmtw` | ✅         | ✅          | edges for walking / swimming (secondary, derivable from `lmpa`+`lmpb`)      |
+| `lmms` | ✅         | ❌          | maximum vehicle size                                                        |
+| `lmpr` | ✅         | ✅          | units speed (secondnary, derivable from `lmco`+`laco`+`lmro`+`lmpa`+`lmpb`) |
+| `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)   |
+| `lmbb` | ✅         | ✅          | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`)  |
+| `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                    |
+| `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                            |
+| `lmao` | ✅         | ❌          |                                                                             |
+| `laco` | ✅         | ✅          | continents metadata (secondary, derivable from `lmco`)                      |
+| `lasw` | ✅         | ❌          | walk sectors (interpretation required!)                                     |
+| `lafm` | ✅         | ✅          | fishes (primary)                                                            |
+| `lmhf` | ✅         | ✅          | 2d array, always zeros                                                      |
+| `emmm` | ✅         | ✅          | empty                                                                       |
+| `embr` | ✅         | ✅          | brightness (secondary, derivable from `lmhe`+`empa`+`empb`)                 |
+| `emm1` | ✅         | ✅          | visibility of infrastructure (secondary, derivable from `emmi`)             |
+| `emmi` | ✅         | ✅          | roads/houses vertex type (primary, devs never used houses overlay here)     |
+| `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                        |
+| `empa` | ✅         | ✅          | A-triangles (primary)                                                       |
+| `empb` | ✅         | ✅          | B-triangles (primary)                                                       |
+| `eatd` | ✅         | ✅          | transitions ids divided by 6, text (primary)                                |
+| `emt1` | ✅         | ✅          | transitions A, foreground (primary)                                         |
+| `emt2` | ✅         | ✅          | transitions B, foreground (primary)                                         |
+| `emt3` | ✅         | ✅          | transitions A, background (primary)                                         |
+| `emt4` | ✅         | ✅          | transitions B, background (primary)                                         |
+| `eald` | ✅         | ✅          | landscapes ids, text (kind of primary)                                      |
+| `emla` | ✅         | ✅          | landscapes (primary)                                                        |
+| `emvc` | ✅         | ✅          | vertex colors (primary)                                                     |
+| `xend` | ✅         | ✅          | empty                                                                       |
+| `tend` | ✅         | ✅          | empty                                                                       |
 
 About `emt` sections: Those are primary transitions data, but I think there exists an objectively
 correct way to derive them based on `empa`, `empb`, `eapd` and `eatd`. I haven't figured out this algoritm yet.

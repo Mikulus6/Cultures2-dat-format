@@ -5,17 +5,17 @@ from special.continents import Continents, Continent
 from sections.common.ab_sections import get_neighbouring_vertices, get_adjacent_triangles, get_tangent_triangles
 
 
-continents_logic_types = {0: {0, 5},                    # void
-                          1: {2, 3, 4, 6, 7, 8, 9, 10}, # land
-                          2: {1, }}                     # water
+continents_logic_types = {0: {0, 5, 6},              # void
+                          1: {2, 3, 4, 7, 8, 9, 10}, # land
+                          2: {1, }}                  # water
 void_continent_id = 0
 minimum_continent_size = 20
 continents_types_priority = (1, 0, 2)  # from the most important to the least important
 
-def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
+def get_adjacent_logic_types(data_object, coordinates_1, coordinates_2 = None):
     width = data_object.lsiz.width
     height = data_object.lsiz.height
-    adjacent_logic_types = set()
+    adjacent_logic_types = list()
     triangles = get_adjacent_triangles(coordinates_1) if coordinates_2 is None else \
                 get_tangent_triangles(coordinates_1, coordinates_2)
     for coordinates_iter, lmp_section in zip(triangles, (data_object.lmpa, data_object.lmpb)):
@@ -23,8 +23,11 @@ def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
             if not (0 <= x_1 < width) or \
                not (0 <= y_1 < height):
                 continue
-            adjacent_logic_types.add(lmp_section[y_1, x_1])
+            adjacent_logic_types.append(lmp_section[y_1, x_1])
+    return adjacent_logic_types
 
+def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
+    adjacent_logic_types = get_adjacent_logic_types(data_object, coordinates_1, coordinates_2)
     for continent_type in continents_types_priority:
         if not continents_logic_types[continent_type].isdisjoint(adjacent_logic_types):
             return continent_type
