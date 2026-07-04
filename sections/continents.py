@@ -2,7 +2,7 @@ import numpy as np
 from collections import deque
 from collections.abc import Callable
 from special.continents import Continents, Continent
-from sections.common.ab_sections import get_neighbouring_vertices, get_adjacent_triangles
+from sections.common.ab_sections import get_neighbouring_vertices, get_adjacent_triangles, get_tangent_triangles
 
 
 continents_logic_types = {0: {0, 5},                    # void
@@ -12,12 +12,13 @@ void_continent_id = 0
 minimum_continent_size = 20
 continents_types_priority = (1, 0, 2)  # from the most important to the least important
 
-def get_continent_type(data_object, coordinates):
+def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
     width = data_object.lsiz.width
     height = data_object.lsiz.height
     adjacent_logic_types = set()
-    for coordinates_iter, lmp_section in zip(get_adjacent_triangles(coordinates),
-                                             (data_object.lmpa, data_object.lmpb)):
+    triangles = get_adjacent_triangles(coordinates_1) if coordinates_2 is None else \
+                get_tangent_triangles(coordinates_1, coordinates_2)
+    for coordinates_iter, lmp_section in zip(triangles, (data_object.lmpa, data_object.lmpb)):
         for x_1, y_1 in coordinates_iter:
             if not (0 <= x_1 < width) or \
                not (0 <= y_1 < height):

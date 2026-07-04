@@ -18,7 +18,7 @@
 | `lmlv` | ✅         | ✅          | landscape valency (primary, never bigger than `LogicMaximumValency`)       |
 | `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade   |
 | `lmco` | ✅         | ✅          | continents (secondary, derivable from `lmpa`+`lmpb`)                       |
-| `lmtw` | ✅         | 🟡         | connections for walking / swimming                                         |
+| `lmtw` | ✅         | ✅          | edges for walking / swimming (secondary, derivable from `lmpa`+`lmpb`)     |
 | `lmms` | ✅         | ❌          |                                                                            |
 | `lmpr` | ✅         | ❌          |                                                                            |
 | `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |

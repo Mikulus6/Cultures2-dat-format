@@ -1,47 +1,53 @@
 import numpy as np
+from sections.continents import get_continent_type
 from sections.common.ab_sections import get_neighbouring_vertices, get_tangent_triangles
 from sections.continents import continents_types_priority, continents_logic_types
 
+def check_boundary(data_object, coordinates):
+    x, y = coordinates
 
-def get_connection_type(data_object, coordinates_1, coordinates_2):
-    width = data_object.lsiz.width
-    height = data_object.lsiz.height
-    adjacent_logic_types = set()
-    for coordinates_iter, lmp_section in zip(get_tangent_triangles(coordinates_1, coordinates_2),
-                                             (data_object.lmpa, data_object.lmpb)):
-        for x_1, y_1 in coordinates_iter:
-            if not (0 <= x_1 < width) or \
-               not (0 <= y_1 < height):
-                continue
-            adjacent_logic_types.add(lmp_section[y_1, x_1])
+    if y < 4 or y >= 2 * data_object.lsiz.height - 4:
+        return True
 
-    for continent_type in continents_types_priority:
-        if not continents_logic_types[continent_type].isdisjoint(adjacent_logic_types):
-            return continent_type
-    else:
-        raise ValueError  # undefined connection type
+    match y % 4:
+        case 0: return x < 4 or x >= 2 * data_object.lsiz.width - 4
+        case 1: return x < 3 or x >= 2 * data_object.lsiz.width - 5
+        case 2: return x < 5 or x >= 2 * data_object.lsiz.width - 3
+        case 3: return x < 4 or x >= 2 * data_object.lsiz.width - 4
+        case _: raise ArithmeticError
 
 def data_to_lmtw(data_object):
-    # TODO: doesn't work on map edges. I also checked and there's no difference between swamp and void in the middle of the map.
-    #       This function is not finished yet!!!
-    micro_width  = 2 * data_object.lsiz.width
-    micro_height = 2 * data_object.lsiz.height
+    # There are two types of exceptions in exisitng maps where lmtw is not correctly derived. On of them, possible to
+    # easily recreate in the original editor, is that edges might not update when drawing with void on top of land or
+    # water. The other one is present only on the map "Trophy hunt" in the game "Northland". This map does not seem to
+    # be properly finished (as there are *.bak files present), which would explain presence of uexpected values in lmtw.
 
-    lmtw = np.zeros_like(data_object.lmco, dtype=np.uint8)
+    lmtw = np.zeros_like(data_object.lmtw, dtype=np.uint8)
+    continent_types = -1 * np.ones_like(data_object.lmtw, dtype=np.int8)
 
-    for y in range(0, micro_height):
-        for x in range(0, micro_width):
-            continent_index = data_object.lmco[y, x]
-            continent_type = int(data_object.laco[continent_index].type)
-            if continent_type == 0:
+    for y in range(0, 2 * data_object.lsiz.height):
+        for x in range(0, 2 * data_object.lsiz.width):
+            if continent_types[y, x] == -1:
+                continent_types[y, x] = get_continent_type(data_object, (x, y))
+
+            if check_boundary(data_object, (x, y)) or continent_types[y, x] == 0:
                 continue
 
-            for index_, coordinates in enumerate(get_neighbouring_vertices((x, y))):
-                if not (0 <= coordinates[0] < micro_width) or \
-                   not (0 <= coordinates[1] < micro_height):
+            for index_, coordinates in enumerate(get_neighbouring_vertices((x, y))[:3]):
+                if check_boundary(data_object, coordinates):
                     continue
 
-                if continent_index == data_object.lmco[coordinates[::-1]] and \
-                   continent_type == get_connection_type(data_object, (x, y), coordinates):
-                    lmtw[y, x] += 2 ** index_
+                if continent_types[coordinates[::-1]] == -1:
+                    continent_types[coordinates[::-1]] = get_continent_type(data_object, coordinates)
+
+                if continent_types[y, x] == \
+                   continent_types[coordinates[::-1]] == \
+                   get_continent_type(data_object, (x, y), coordinates):
+
+                    lmtw[y, x]              |= (1 << index_)
+                    lmtw[coordinates[::-1]] |= (1 << (index_ + 3))
     return lmtw
+
+def update_lmtw(data_object):
+    data_object.lmtw = data_to_lmtw(data_object)
+    return data_object
