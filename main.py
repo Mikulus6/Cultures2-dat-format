@@ -6,13 +6,12 @@ from data import Data
 from grabber.grabber import iterate_grabbed_paths, grab_source_files
 from sections.primary import extract_primary
 
-from sections.block           import update_lm_b
-from sections.block           import update_lmsb
+from sections.block           import update_lm_b, update_lmsb
 from sections.brightness      import update_embr
 from sections.continents      import update_lmco_laco
 from sections.external_assets import update_ea_d
 from sections.infrastructure  import update_emm1
-from sections.logic_type      import update_lmp_
+from sections.logic_type      import update_lmp_, update_lmlt
 from sections.roads           import update_lmro
 from sections.travel_way      import update_lmtw
 

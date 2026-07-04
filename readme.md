@@ -14,13 +14,13 @@
 | `lmhe` | ✅         | ✅          | heightmap (primary)                                                        |
 | `lmpa` | ✅         | ✅          | patterns `LogicType` (secondary, derivable from `empa`+`eapd`)             |
 | `lmpb` | ✅         | ✅          | patterns `LogicType` (secondary, derivable from `empb`+`eapd`)             |
-| `lmlt` | ✅         | ❌          |                                                                            |
+| `lmlt` | ✅         | ✅          | landscapes `LogicType` (secondary, derivable from `emla`+`eald`)           |
 | `lmlv` | ✅         | ✅          | landscape valency (primary, never bigger than `LogicMaximumValency`)       |
 | `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade   |
 | `lmco` | ✅         | ✅          | continents (secondary, derivable from `lmpa`+`lmpb`)                       |
 | `lmtw` | ✅         | ✅          | edges for walking / swimming (secondary, derivable from `lmpa`+`lmpb`)     |
 | `lmms` | ✅         | ❌          |                                                                            |
-| `lmpr` | ✅         | ❌          |                                                                            |
+| `lmpr` | ✅         | ❌          | terrain difficulty (units speed)?                                          |
 | `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |
 | `lmbb` | ✅         | ✅          | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`) |
 | `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                   |
