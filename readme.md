@@ -19,7 +19,7 @@
 | `lmlp` | ✅         | ✅          | landscape players (primary) (-1 = default) (>=0 = ID), used for stockade   |
 | `lmco` | ✅         | ✅          | continents (secondary, derivable from `lmpa`+`lmpb`)                       |
 | `lmtw` | ✅         | ✅          | edges for walking / swimming (secondary, derivable from `lmpa`+`lmpb`)     |
-| `lmms` | ✅         | ❌          | maximum vehicle size                                                       |
+| `lmms` | ✅         | ✅          | max vehicle size (sec., der. f. `lmco`+`laco`+`lmpa`+`lmpb`+`lmtw`+`lmwb`) |
 | `lmpr` | ✅         | ✅          | units speed (secondary, derivable from `lmco`+`laco`+`lmro`+`lmpa`+`lmpb`) |
 | `lmwb` | ✅         | ✅          | landscapes `LogicWalkBlockArea` (secondary, derivable from `emla`+`eald`)  |
 | `lmbb` | ✅         | ✅          | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`) |

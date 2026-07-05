@@ -12,6 +12,7 @@ from sections.continents      import update_lmco_laco
 from sections.external_assets import update_ea_d
 from sections.infrastructure  import update_emm1
 from sections.logic_type      import update_lmp_, update_lmlt
+from sections.moveable_size   import update_lmms
 from sections.roads           import update_lmro
 from sections.roughness       import update_lmpr
 from sections.travel_way      import update_lmtw

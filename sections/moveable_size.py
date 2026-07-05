@@ -2,7 +2,6 @@ import numpy as np
 from collections import deque
 from sections.common.geometry import get_neighbouring_vertices
 from sections.continents import get_adjacent_logic_types, continents_logic_types_inverse
-from sections.block import data_to_lm_b
 
 max_vehicle_size = 7
 
@@ -34,18 +33,14 @@ def distance_transform(input_data: np.array, value_to_fill, max_output_value, ou
     return output_data
 
 def moveable_block(data_object) -> np.ndarray:
-    # TODO: doesn't work yet
     moveable_array = np.zeros_like(data_object.lmco, dtype=np.bool)
-
-    lmbb_alternative = data_to_lm_b(data_object, block_type="Build", exclude_non_obstructable=True)
-    # TODO: when deriving everything together I should avoid calculating lmbb twice with really small differences
 
     for y in range(0, 2 * data_object.lsiz.height):
         for x in range(0, 2 * data_object.lsiz.width):
             continent_id = data_object.lmco[y, x]
             continent_type = data_object.laco[continent_id].type
 
-            if continent_type == 0 or lmbb_alternative[y, x] or data_object.lmtw[y, x] != 0b111111:
+            if continent_type == 0 or data_object.lmwb[y, x] or data_object.lmtw[y, x] != 0b111111:
                 moveable_array[y, x] = True
                 continue
 
@@ -59,11 +54,14 @@ def moveable_block(data_object) -> np.ndarray:
                 if not (0 <= x_1 < 2 * data_object.lsiz.width) or \
                    not (0 <= y_1 < 2 * data_object.lsiz.height):
                     continue
-                if continent_id != data_object.lmco[y_1, x_1]:
+                if continent_id != data_object.lmco[y_1, x_1] or data_object.lmwb[y_1, x_1]:
                     moveable_array[y, x] = True
                     break
     return moveable_array
 
 def data_to_lmms(data_object):
-    # TODO: doesn't work yet
-    return distance_transform(moveable_block(data_object), False, 7, np.uint8)
+    return distance_transform(moveable_block(data_object), False, max_vehicle_size, np.uint8)
+
+def update_lmms(data_object):
+    data_object.lmms = data_to_lmms(data_object)
+    return data_object
