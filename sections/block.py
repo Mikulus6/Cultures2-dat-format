@@ -22,6 +22,10 @@ def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk", 
             if landscape_id == no_landscape:  # noqa
                 continue
             landscape = landscapes[data_object.eald[landscape_id]]
+
+            if exclude_non_obstructable and (landscape["EditName"] in non_obstructable_landscapes):
+                continue
+
             landscape_valency = data_object.lmlv[y, x]
 
             for valency, x_offset, y_offset, indent in landscape.get(block_typ_name, []):
