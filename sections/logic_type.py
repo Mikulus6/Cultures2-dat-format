@@ -1,6 +1,21 @@
 import numpy as np
+from sections.common.geometry import get_adjacent_triangles, get_tangent_triangles
 from sections.common.minus_one import get_minus_one
 from supplements.external import patterns, landscapes
+
+def get_adjacent_logic_types(data_object, coordinates_1, coordinates_2 = None):
+    width = data_object.lsiz.width
+    height = data_object.lsiz.height
+    adjacent_logic_types = list()
+    triangles = get_adjacent_triangles(coordinates_1) if coordinates_2 is None else \
+                get_tangent_triangles(coordinates_1, coordinates_2)
+    for coordinates_iter, lmp_section in zip(triangles, (data_object.lmpa, data_object.lmpb)):
+        for x_1, y_1 in coordinates_iter:
+            if not (0 <= x_1 < width) or \
+               not (0 <= y_1 < height):
+                continue
+            adjacent_logic_types.append(lmp_section[y_1, x_1])
+    return adjacent_logic_types
 
 def data_to_lmp_(data_object):
     func = lambda pattern_id: patterns[data_object.eapd[pattern_id]]["LogicType"]

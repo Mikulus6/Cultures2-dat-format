@@ -8,6 +8,8 @@ from sections.common.minus_one import get_minus_one
 from supplements.textures import emp_colors_dict, emt_colors_dict
 from supplements.palettes import vertexcolors
 
+# TODO: this file is not in the proper folder yet, move it somewhere else later
+
 transition_types_num = 6
 no_data_color = (0, 0, 0)
 emt_corners_presence = {0: (False, True,  True ),

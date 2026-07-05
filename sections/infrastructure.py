@@ -1,5 +1,6 @@
 import numpy as np
-from sections.common.ab_sections import combine_ab_sections, split_ab_sections, get_adjacent_triangles
+from sections.common.ab_sections import combine_ab_sections, split_ab_sections
+from sections.common.geometry import get_adjacent_triangles
 
 def emm1_to_binary(emm1: np.ndarray) -> np.ndarray:
     return combine_ab_sections(*(np.divmod(emm1, 2)[::-1]))

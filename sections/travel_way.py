@@ -1,7 +1,6 @@
 import numpy as np
 from sections.continents import get_continent_type
-from sections.common.ab_sections import get_neighbouring_vertices, get_tangent_triangles
-from sections.continents import continents_types_priority, continents_logic_types
+from sections.common.geometry import get_neighbouring_vertices
 
 def check_boundary(data_object, coordinates):
     x, y = coordinates

@@ -1,7 +1,8 @@
 import numpy as np
 from math import floor, ceil
-from sections.common.ab_sections import get_adjacent_triangles, get_neighbouring_vertices
-from sections.continents import get_adjacent_logic_types, continents_logic_types
+from sections.common.geometry import get_adjacent_triangles, get_neighbouring_vertices
+from sections.continents import continents_logic_types
+from sections.logic_type import get_adjacent_logic_types
 
 logic_types_roughness = {0: 0, 1: 1, 2: 2, 3: 4, 4: 3, 5: 0, 6: 0, 7: 5, 8: 3, 9: 3, 10: 1}
 
