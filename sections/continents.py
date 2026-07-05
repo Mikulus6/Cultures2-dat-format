@@ -13,6 +13,8 @@ void_continent_id = 0
 minimum_continent_size = 20
 continents_types_priority = (1, 0, 2)  # from the most important to the least important
 
+continents_logic_types_inverse = {v: k for k, vs in continents_logic_types.items() for v in vs}
+
 def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
     adjacent_logic_types = get_adjacent_logic_types(data_object, coordinates_1, coordinates_2)
     for continent_type in continents_types_priority:
@@ -21,7 +23,7 @@ def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
     else:
         raise ValueError  # undefined continent type
 
-def flood_fill_info_hexagonal_2d_generator(input_data: np.array | Callable, coordinates_start, *, shape=None):
+def flood_fill_hexagonal_generator(input_data: np.array | Callable, coordinates_start, *, shape=None):
     """ Generates triplets of form (x, y, z), where (x, y) are coordinates and z is a binary indicator of vertex
     belonging to filled area or to its boundary (1 = filled area, 0 = bounadry) """
 
@@ -74,9 +76,9 @@ def data_to_lmco_laco(data_object):
         elements_to_clear = []
         continent_size = 0
 
-        for x, y, inner_fill in flood_fill_info_hexagonal_2d_generator(input_data=get_current_continent_type,
-                                                                       coordinates_start=anchor_vertex,
-                                                                       shape=data_object.lmco.shape):
+        for x, y, inner_fill in flood_fill_hexagonal_generator(input_data=get_current_continent_type,
+                                                               coordinates_start=anchor_vertex,
+                                                               shape=data_object.lmco.shape):
             if inner_fill:
                 is_assigned[y, x] = True
                 lmco[y, x]        = current_continent_id if continent_type != 0 else void_continent_id

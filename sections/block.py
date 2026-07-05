@@ -3,8 +3,11 @@ from sections.common.minus_one import get_minus_one
 from supplements.external import landscapes
 from typing import Literal
 
+# TODO: non obstructable landscapes are the current bes hypothesis for lmms derivation.
+non_obstructable_landscapes = ("gate_01_open", "gate_02_open", "gate_03_open", "tree_dead 03")
+
 # lm_b = {lmwb, lmbb}
-def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
+def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk", exclude_non_obstructable: bool = False):
     lm_b = np.zeros_like(data_object.lmwb)
     block_typ_name = f"Logic{block_type}BlockArea"
 
