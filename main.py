@@ -6,6 +6,7 @@ from data import Data
 from grabber.grabber import iterate_grabbed_paths, grab_source_files
 from sections.primary import extract_primary
 
+from sections.attach          import update_lmao
 from sections.block           import update_lm_b, update_lmsb
 from sections.brightness      import update_embr
 from sections.continents      import update_lmco_laco

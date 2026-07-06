@@ -25,7 +25,7 @@
 | `lmbb` | ✅         | ✅          | landscapes `LogicBuildBlockArea` (secondary, derivable from `emla`+`eald`) |
 | `lmro` | ✅         | ✅          | roads (secondary, derivable from `emmi`)                                   |
 | `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                           |
-| `lmao` | ✅         | ❌          |                                                                            |
+| `lmao` | ✅         | ✅          | vectorized landscapes `LogicAdditionalAttachPointArea` (`emla`+`eald`)     |
 | `laco` | ✅         | ✅          | continents metadata (secondary, derivable from `lmco`)                     |
 | `lasw` | ✅         | ❌          | walk sectors (interpretation required!)                                    |
 | `lafm` | ✅         | ✅          | fishes (primary)                                                           |
