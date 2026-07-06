@@ -51,8 +51,7 @@ def convolve_hexagonal_2d(input_array, kernel_array, kernel_center=(0, 0), dtype
 
 def data_to_embr(data_object, *, local_kernel = shadow_kernel, local_kernel_center = shadow_kernel_center):
 
-    original_dtype = data_object.embr.dtype
-    embr = convolve_hexagonal_2d(data_object.lmhe, local_kernel, kernel_center=local_kernel_center)
+    embr = convolve_hexagonal_2d(data_object.lmhe, local_kernel, kernel_center=local_kernel_center, dtype=np.int32)
     embr += default_light_value
 
     for y in range(0, data_object.lsiz.height):
@@ -83,7 +82,7 @@ def data_to_embr(data_object, *, local_kernel = shadow_kernel, local_kernel_cent
             except ValueError:
                 embr[y, x] = 0
 
-    return embr.astype(dtype=original_dtype)
+    return embr.astype(dtype=data_object.lmhe.dtype)
 
 def update_embr(data_object):
     data_object.embr = data_to_embr(data_object)
@@ -146,6 +145,7 @@ class StochasticGradientDescentShadowKernel:
         while iteration_num < iterations:
             iteration_num += 1
 
+            print("current shadow kernel:")
             print(np.array2string(self.kernel_ndarray))
             print(f"total error: {self.last_error_value}")
 

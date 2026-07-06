@@ -1,9 +1,9 @@
 import numpy as np
-from sections.common.minus_one import get_minus_one
+from sections.arrays.common.minus_one import get_minus_one
 from supplements.external import landscapes
 
 def data_to_lmao(data_object):
-    lmao = np.zeros_like(data_object.emla, dtype=np.uint16)
+    lmao = np.zeros(shape=data_object.lsiz.shape_micro, dtype=np.uint16)
 
     micro_width  = 2 * data_object.lsiz.width
     micro_height = 2 * data_object.lsiz.height

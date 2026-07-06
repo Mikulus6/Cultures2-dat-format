@@ -1,6 +1,6 @@
 import numpy as np
-from sections.common.geometry import get_adjacent_triangles, get_tangent_triangles
-from sections.common.minus_one import get_minus_one
+from sections.arrays.common.geometry import get_adjacent_triangles, get_tangent_triangles
+from sections.arrays.common.minus_one import get_minus_one
 from supplements.external import patterns, landscapes
 
 def get_adjacent_logic_types(data_object, coordinates_1, coordinates_2 = None):

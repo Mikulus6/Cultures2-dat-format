@@ -1,11 +1,11 @@
 import numpy as np
-from sections.common.minus_one import get_minus_one
+from sections.arrays.common.minus_one import get_minus_one
 from supplements.external import landscapes
 from typing import Literal
 
 # lm_b = {lmwb, lmbb}
 def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
-    lm_b = np.zeros_like(data_object.lmwb)
+    lm_b = np.zeros(shape=data_object.lsiz.shape_micro, dtype=np.uint8)
     block_typ_name = f"Logic{block_type}BlockArea"
 
     micro_width  = 2 * data_object.lsiz.width
@@ -16,7 +16,7 @@ def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
     for y in range(micro_height):
         for x in range(micro_width):
             landscape_id = data_object.emla[y, x]
-            if landscape_id == no_landscape:  # noqa
+            if landscape_id == no_landscape:
                 continue
 
             landscape = landscapes[data_object.eald[landscape_id]]
@@ -37,6 +37,7 @@ def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):
 def update_lm_b(data_object):
     data_object.lmwb = data_to_lm_b(data_object, block_type="Walk")
     data_object.lmbb = data_to_lm_b(data_object, block_type="Build")
+    return data_object
 
 def data_to_lmsb(data_object):
     lmsb = np.zeros_like(data_object.lmsb)

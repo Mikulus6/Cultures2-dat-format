@@ -1,4 +1,4 @@
-from scripts.data_loader import load_ini_as_dict
+from supplements.data_loader import load_ini_as_dict
 from itertools import count
 
 

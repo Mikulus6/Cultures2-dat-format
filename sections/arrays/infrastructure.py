@@ -1,6 +1,11 @@
 import numpy as np
-from sections.common.ab_sections import combine_ab_sections, split_ab_sections
-from sections.common.geometry import get_adjacent_triangles
+from sections.arrays.common.ab_sections import combine_ab_sections, split_ab_sections
+from sections.arrays.common.geometry import get_adjacent_triangles
+
+emm_transition_types = {3: "overlay road 1",
+                        4: "overlay road 2",
+                        5: "overlay house 1",
+                        6: "overlay house 2"}
 
 def emm1_to_binary(emm1: np.ndarray) -> np.ndarray:
     return combine_ab_sections(*(np.divmod(emm1, 2)[::-1]))
@@ -43,6 +48,9 @@ def types_to_binary(types: np.ndarray):
 
 def emmi_to_emm1(emmi: np.ndarray) -> np.ndarray:
     return binary_to_emm1(types_to_binary(emmi_to_types(emmi)))
+
+def data_to_emm1(data_object):
+    return emmi_to_emm1(data_object.emmi)
 
 def update_emm1(data_object):
     data_object.emm1 = emmi_to_emm1(data_object.emmi)

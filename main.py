@@ -4,19 +4,7 @@ from PIL import Image
 
 from data import Data
 from grabber.grabber import iterate_grabbed_paths, grab_source_files
-from sections.primary import extract_primary
-
-from sections.attach          import update_lmao
-from sections.block           import update_lm_b, update_lmsb
-from sections.brightness      import update_embr
-from sections.continents      import update_lmco_laco
-from sections.external_assets import update_ea_d
-from sections.infrastructure  import update_emm1
-from sections.logic_type      import update_lmp_, update_lmlt
-from sections.moveable_size   import update_lmms
-from sections.roads           import update_lmro
-from sections.roughness       import update_lmpr
-from sections.travel_way      import update_lmtw
+from primary import extract_primary
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
 

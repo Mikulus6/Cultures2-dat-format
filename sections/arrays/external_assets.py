@@ -1,7 +1,7 @@
 import numpy as np
-from sections.common.ab_sections import combine_ab_sections, split_ab_sections
-from sections.common.minus_one import get_minus_one
-from special.texts import TextSection
+from sections.arrays.common.ab_sections import combine_ab_sections, split_ab_sections
+from sections.arrays.common.minus_one import get_minus_one
+from sections.special.texts import TextSection
 from supplements.external import patterns, landscapes
 
 eapd_global = TextSection(list_=patterns.editnames_ordered)
@@ -12,7 +12,7 @@ def update_external_assets_references(array_section: np.ndarray,
 
     minus_one = get_minus_one(array_section.dtype)
 
-    mask = (array_section == minus_one)  # noqa
+    mask = (array_section == minus_one)
 
     array_texts = np.asarray(text_section_old)[np.where(mask, 0, array_section)]
     array_texts[mask] = ""

@@ -1,16 +1,10 @@
 import os
 import numpy as np
 from scripts.buffer import BufferGiver, BufferTaker
-from special.common.checksum import calculate_checksum
-from special.common.run_length import run_length_decryption, run_length_encryption
-from special.continents import Continents
-from special.fishes import Fishes
-from special.size import Size
-from special.special import SpecialSection
-from special.texts import TextSection
-from special.walk_sectors import WalkSectors
-from scripts.image import bytes_to_image, shorts_to_image, image_to_bytes, image_to_shorts
+from sections.generic import *
+from sections.special import *
 from supplements.library import Library
+from PIL import Image
 
 
 class Data:
@@ -71,7 +65,7 @@ class Data:
             assert self.__class__._get_section_type(name) == section_type
 
             assert buffer.unsigned(length=4) == 0
-            checksum = buffer.unsigned(length=4)
+            checksum = buffer.unsigned(length=4)  # noqa
             assert buffer.unsigned(length=8) == 0
 
             section_buffer = BufferGiver(buffer.bytes(length=length))
@@ -133,7 +127,7 @@ class Data:
             else:
 
                 section_bytes = self.get_section_bytes(name)
-                checksum = calculate_checksum(section_bytes)
+                checksum = calculate_checksum(section_bytes)  # noqa
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
                 buffer_taker.unsigned(len(section_bytes), length=4)
@@ -159,12 +153,18 @@ class Data:
                 continue
 
             match section_ndarray.dtype:
-                case np.uint8:  assert params[0] == 1; to_image_func = bytes_to_image
-                case np.uint16: assert params[0] == 2; to_image_func = shorts_to_image
+                case np.uint8:
+                    assert params[0] == 1
+                    to_image_func = lambda arr:(
+                        Image.fromarray(arr, mode="L"))
+                case np.uint16:
+                    assert params[0] == 2
+                    to_image_func = lambda arr:(
+                        Image.fromarray(np.dstack((arr % 0x100, arr // 0x100, np.zeros_like(arr))).astype(np.uint8),
+                                        mode="RGB"))
                 case _: raise TypeError
 
-            to_image_func(section_ndarray.tobytes(), os.path.join(directory, f"{name}.png"),
-                          width=self.lsiz.width * params[1])
+            to_image_func(section_ndarray).save(os.path.join(directory, f"{name}.png"))
 
         for name in self.__class__._section_texts:
             text_section = getattr(self, name)
@@ -182,21 +182,19 @@ class Data:
         self.lsiz = Size()  # noqa, precaculate map size
         assert min(self._section_matrices.values(), key=lambda x: x[1])[1] == 1
         minimal_width_section_name = min(self._section_matrices, key=lambda x: x[1])
-        image_bytes, self.lsiz.width = image_to_bytes(os.path.join(directory, f"{minimal_width_section_name}.png"),
-                                                     get_width=True)
-        self.lsiz.height = len(image_bytes) // self.lsiz.width
+        minimal_width_section = Image.open(os.path.join(directory, f"{minimal_width_section_name}.png"))
+        self.lsiz.width, self.lsiz.height  = minimal_width_section.size
+
+        del minimal_width_section_name, minimal_width_section
 
         for name, params in self.__class__._section_matrices.items():
 
             match self._section_matrices[name][0]:
-                case 1: section_ndarray_dtype = np.uint8;  from_image_func_temp = image_to_bytes
-                case 2: section_ndarray_dtype = np.uint16; from_image_func_temp = image_to_shorts
+                case 1: from_image_func_temp = lambda image: image
+                case 2: from_image_func_temp = lambda image: ((arr := np.array(image, dtype=np.uint16))[..., 0] | (arr[..., 1] << 8))
                 case _: raise TypeError
 
-            from_image_func = lambda path: np.frombuffer(from_image_func_temp(path),
-                                                         dtype=section_ndarray_dtype).reshape(
-                self.lsiz.height * self._section_matrices[name][1],
-                self.lsiz.width  * self._section_matrices[name][1])
+            from_image_func = lambda path: np.array(from_image_func_temp(Image.open(path)))
 
             try:
                 setattr(self, name, from_image_func(os.path.join(directory, f"{name}.png")))
@@ -217,6 +215,8 @@ class Data:
     def get_section_bytes(self, name):
 
         section = getattr(self, name)
+        if name == "laco":
+            print(type(section))
         section_buffer_taker = BufferTaker()
 
         if section is None:
@@ -231,7 +231,7 @@ class Data:
 
         else:
             assert name in self.__class__._section_special.keys()
-
+            print(name)
             if   section.to_bytes.__code__.co_argcount == 1: section_buffer_taker.bytes(section.to_bytes())
             elif section.to_bytes.__code__.co_argcount == 2: section_buffer_taker.bytes(section.to_bytes(self))
             else: raise NotImplementedError

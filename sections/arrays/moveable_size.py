@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
-from sections.common.geometry import get_neighbouring_vertices
-from sections.continents import get_adjacent_logic_types, continents_logic_types_inverse
+from sections.arrays.common.geometry import get_neighbouring_vertices
+from sections.arrays.continents import get_adjacent_logic_types, continents_logic_types_inverse
 
 max_vehicle_size = 7
 
@@ -33,7 +33,12 @@ def distance_transform(input_data: np.array, value_to_fill, max_output_value, ou
     return output_data
 
 def moveable_block(data_object) -> np.ndarray:
-    moveable_array = np.zeros_like(data_object.lmco, dtype=np.bool)
+
+    # There exists one map in the game "Cultures: Die Saga" where this derivation is incorrect. This is map "Daheim".
+    # Such discrepency is caused by stockade disappearing after removing player in the external editor. This mismatch
+    # is easily recreatable by placing stockade and removing player to whom it belongs in the aforementioned editor.
+
+    moveable_array = np.zeros(data_object.shape_micro, dtype=np.bool)
 
     for y in range(0, 2 * data_object.lsiz.height):
         for x in range(0, 2 * data_object.lsiz.width):

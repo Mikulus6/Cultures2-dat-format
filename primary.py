@@ -2,13 +2,13 @@ import os
 import numpy as np
 from PIL import Image
 from scripts.colormap import ColorMap, apply_colormap
-from scripts.image import bytes_to_image
-from sections.common.ab_sections import combine_ab_sections
-from sections.common.minus_one import get_minus_one
+from sections.arrays.common.ab_sections import combine_ab_sections
+from sections.arrays.common.minus_one import get_minus_one
+from sections.arrays.infrastructure import emm_transition_types
 from supplements.textures import emp_colors_dict, emt_colors_dict
 from supplements.palettes import vertexcolors
 
-# TODO: this file is not in the proper folder yet, move it somewhere else later
+# TODO: this file is temporary, clean it up later and do something else with it
 
 transition_types_num = 6
 no_data_color = (0, 0, 0)
@@ -18,11 +18,6 @@ emt_corners_presence = {0: (False, True,  True ),
                         3: (True,  False, False),
                         4: (False, True,  False),
                         5: (False, False, True )}
-
-emm_transition_types = {3: "overlay road 1",
-                        4: "overlay road 2",
-                        5: "overlay house 1",
-                        6: "overlay house 2"}
 
 assert no_data_color not in emt_colors_dict.values()
 
@@ -89,8 +84,8 @@ def extract_primary(data_object, directory):
             file.write(f"{coordinates[0]},{coordinates[1]},\"{landscape}\",{landscape_valency},{landscape_owner_player_id}\n")
 
     # heightmap
-    bytes_to_image(data_object.lmhe.tobytes(),
-                   os.path.join(directory_full_name, "heightmap.png"), width=data_object.lsiz.width)
+    Image.fromarray(data_object.lmhe).save(os.path.join(directory_full_name, "heightmap.png"),
+                                           width=data_object.lsiz.width)
 
     # fishes
     data_object.lafm.to_file(os.path.join(directory_full_name, "fishes.csv"))

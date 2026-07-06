@@ -1,14 +1,24 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
-from special.special import SpecialSection
+from sections.special.special import SpecialSection
 
 class Size(metaclass=SpecialSection):
     def __init__(self):
-        self.width: int =  0
+        self.width:  int = 0
         self.height: int = 0
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.width == other.width and self.height == other.height
+
+    @property
+    def shape(self):
+        # Property used for numpy arrays, therefore order of coordinates is reversed.
+        return self.height, self.width
+
+    @property
+    def shape_micro(self):
+        # Property used for numpy arrays, therefore order of coordinates is reversed.
+        return 2 * self.height, 2 * self.width
 
     def load(self, bytes_obj: bytes):
         buffer = BufferGiver(bytes_obj)
@@ -31,3 +41,8 @@ class Size(metaclass=SpecialSection):
         # preferred file extension: *.csv
         with open(filename, "r") as file:
             self.width, self.height = tuple(map(int, file.read().strip("\n").split("\n")))
+
+
+def update_lsiz(data_object):
+    data_object.lsiz.height, data_object.lsiz_width = data_object.empa.shape
+    return data_object

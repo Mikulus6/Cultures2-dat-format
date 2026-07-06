@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 from scripts.buffer import BufferGiver, BufferTaker
-from special.special import SpecialSection
+from sections.special.special import SpecialSection
 
 @dataclass
 class Continent:
@@ -50,10 +50,10 @@ class Continents(list, metaclass=SpecialSection):
 
         for index_, continent in enumerate(self):
 
-            buffer_taker.unsigned(continent.type,          length=4)
+            buffer_taker.unsigned(continent.type,           length=4)
             buffer_taker.signed(continent.anchor_vertex[0], length=2)
             buffer_taker.signed(continent.anchor_vertex[1], length=2)
-            buffer_taker.signed(continent.size[2],         length=4)
+            buffer_taker.signed(continent.size,             length=4)
 
             match bool(index_):
                 case True : buffer_taker.unsigned(1, length=4)

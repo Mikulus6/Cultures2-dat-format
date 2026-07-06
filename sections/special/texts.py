@@ -1,6 +1,6 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
-from special.special import SpecialSection
+from sections.special.special import SpecialSection
 
 class TextSection(list, metaclass=SpecialSection):
 

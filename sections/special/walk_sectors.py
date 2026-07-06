@@ -2,7 +2,7 @@ import math
 import os
 from PIL import Image, ImageDraw, ImageFont
 from scripts.buffer import BufferGiver, BufferTaker
-from special.special import SpecialSection
+from sections.special.special import SpecialSection
 
 class WalkSector:
 
@@ -13,7 +13,7 @@ class WalkSector:
                             "right": False}
 
         self.edge_numbers = list()
-        # Starting from direction to the right and going clockwise these eight edge numbers are used to determine how
+        # Starting from direction to the right and going clockwise, these eight edge numbers are used to determine how
         # big can a vehicle be for navigation from walk sector in given direction. However, exact implementation in the
         # game is not clear and this number does not satisy conditions to be redundant to undirected graph.
 
@@ -241,3 +241,10 @@ class WalkSectors(metaclass=SpecialSection):
             draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
                            fill=None, outline=(128, 128, 128), width=1)
         image.save(filename)
+
+def data_to_lasw(data_object):
+    raise NotImplementedError # TODO
+
+def update_lasw(data_object):
+    data_object.lasw = data_to_lasw(data_object)
+    return data_object

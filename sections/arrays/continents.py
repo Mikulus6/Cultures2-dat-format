@@ -1,9 +1,9 @@
 import numpy as np
 from collections import deque
 from collections.abc import Callable
-from special.continents import Continents, Continent
-from sections.common.geometry import get_neighbouring_vertices
-from sections.logic_type import get_adjacent_logic_types
+from sections.arrays.common.geometry import get_neighbouring_vertices
+from sections.special.continents import Continents, Continent
+from sections.arrays.logic_type import get_adjacent_logic_types
 
 
 continents_logic_types = {0: {0, 5, 6},              # void
@@ -23,7 +23,7 @@ def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
     else:
         raise ValueError  # undefined continent type
 
-def flood_fill_hexagonal_generator(input_data: np.array | Callable, coordinates_start, *, shape=None):
+def flood_fill_hexagonal_generator(input_data: np.ndarray | Callable, coordinates_start, *, shape=None):
     """ Generates triplets of form (x, y, z), where (x, y) are coordinates and z is a binary indicator of vertex
     belonging to filled area or to its boundary (1 = filled area, 0 = bounadry) """
 
@@ -61,8 +61,11 @@ def data_to_lmco_laco(data_object):
     def get_current_continent_type(coordinates):
         return get_continent_type(data_object, coordinates)
 
-    is_assigned = np.zeros_like(data_object.lmco, dtype=np.bool)
-    lmco = np.zeros_like(data_object.lmco)
+    def cost_function(coordinates):
+        return coordinates[1] * (2 * data_object.lsiz.width) + coordinates[0]
+
+    is_assigned = np.zeros(shape=data_object.lsiz.shape_micro, dtype=np.bool)
+    lmco        = np.zeros(shape=data_object.lsiz.shape_micro, dtype=np.uint8)
     laco = Continents()
 
     laco.append(Continent(type=void_continent_id, anchor_vertex=(0, 0), size=0))
@@ -78,7 +81,7 @@ def data_to_lmco_laco(data_object):
 
         for x, y, inner_fill in flood_fill_hexagonal_generator(input_data=get_current_continent_type,
                                                                coordinates_start=anchor_vertex,
-                                                               shape=data_object.lmco.shape):
+                                                               shape=data_object.lsiz.shape_micro):
             if inner_fill:
                 is_assigned[y, x] = True
                 lmco[y, x]        = current_continent_id if continent_type != 0 else void_continent_id
@@ -98,7 +101,7 @@ def data_to_lmco_laco(data_object):
             if current_continent_id > Continents._continents_limit: # noqa
                 raise OverflowError
 
-        # update anchor_vertex
+        # updating anchor_vertex below
 
         anchor_vertex_min_cost = float("inf")
         anchor_vertex = None
@@ -108,7 +111,7 @@ def data_to_lmco_laco(data_object):
             if is_assigned[boundary_vertex[::-1]]:
                 boundary_vertices_to_remove.add(boundary_vertex)
                 continue
-            cost_value = (boundary_vertex[1] * (2 * data_object.lsiz.width) + boundary_vertex[0])
+            cost_value = cost_function(boundary_vertex)
             if anchor_vertex_min_cost > cost_value:
                 anchor_vertex = boundary_vertex
                 anchor_vertex_min_cost = cost_value
@@ -152,11 +155,10 @@ def check_continents_isomorphicity(data_object_1, data_object_2, *, ignore_void_
             try:
                 continent_1 = data_object_1.laco[continent_1_id]
                 continent_2 = data_object_2.laco[continent_2_id]
-            except IndexError:                                                  return False
-            if continent_1.type != continent_2.type:                            return False
+            except IndexError:                       return False
+            if continent_1.type != continent_2.type: return False
             if not ignore_void_mismatch and (data_object_1.lmco[continent_1.anchor_vertex[::-1]] != continent_1_id and
                                              data_object_2.lmco[continent_2.anchor_vertex[::-1]] != continent_2_id):
                 return False
-            # It is unnecessary to check sizes of continents here,
-            # because verifying bijection already requires sizes to match.
+            # It is unnecessary to check sizes of continents here, because bijection already requires sizes to match.
     return True

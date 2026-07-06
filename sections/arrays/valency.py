@@ -1,5 +1,5 @@
 import numpy as np
-from sections.common.minus_one import get_minus_one
+from sections.arrays.common.minus_one import get_minus_one
 from supplements.external import landscapes
 
 def data_to_maximum_lmlv(data_object):
@@ -10,7 +10,7 @@ def data_to_maximum_lmlv(data_object):
         if landscape_id == no_landscape: return 0
         else:                            return landscapes[data_object.eald[landscape_id]]["LogicMaximumValency"]
 
-    return np.vectorize(func)(data_object.emla).astype(data_object.lmlv.dtype)
+    return np.vectorize(func)(data_object.emla).astype(np.uint8)
 
 def update_lmlv_to_maximum(data_object):
     data_object.lmlv = data_to_maximum_lmlv(data_object)

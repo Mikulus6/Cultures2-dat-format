@@ -11,7 +11,7 @@ newline_factual = "\r\n"
 
 def apply_cipher(bytes_obj: bytes, mode: Literal["decode", "encode"]) -> bytes:
     result = BufferTaker()
-    c, d = 71, 126
+    c, d = 71, 126 # coprime factors
 
     for b in bytes_obj:
         match mode:
@@ -20,7 +20,7 @@ def apply_cipher(bytes_obj: bytes, mode: Literal["decode", "encode"]) -> bytes:
             case _: raise ValueError
         c += d
         d += 33
-        result.unsigned(b % 256, length=1)
+        result.unsigned(b % 0x100, length=1)
 
     return bytes(result)
 

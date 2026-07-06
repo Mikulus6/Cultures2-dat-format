@@ -26,7 +26,7 @@ class BufferGiver(bytes):
 
     def bytes(self, length):
         self.offset += length
-        if self.offset > len(self.sequence): raise IndexError  # noqa: E701
+        if self.offset > len(self.sequence): raise IndexError
         return self.sequence[self.offset - length: self.offset]
 
     def unsigned(self, length):
@@ -48,11 +48,11 @@ class BufferGiver(bytes):
 
     def skip(self, n: int):
         self.offset += n
-        if self.offset > len(self.sequence): raise IndexError  # noqa: E701
+        if self.offset > len(self.sequence): raise IndexError
 
     def skip_to(self, n: int):
         self.offset = n
-        if self.offset > len(self.sequence): raise IndexError  # noqa: E701
+        if self.offset > len(self.sequence): raise IndexError
 
 
 class BufferTaker(bytes):

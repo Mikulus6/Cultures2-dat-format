@@ -1,6 +1,6 @@
 import os
 from scripts.buffer import BufferGiver, BufferTaker
-from special.special import SpecialSection
+from sections.special.special import SpecialSection
 
 
 class Fishes(dict, metaclass=SpecialSection):
@@ -23,7 +23,7 @@ class Fishes(dict, metaclass=SpecialSection):
             position_x = buffer.unsigned(length=2)
             position_y = buffer.unsigned(length=2)
             fish_count = buffer.unsigned(length=4)
-            continent  = buffer.unsigned(length=4)  # noqa
+            continent  = buffer.unsigned(length=4)
             # Continent value is correctly assigned only in "Cultures 2: The Gates of Asgard". In newer Cultures games
             # this value is not always correctly updated when "lmco" section is considered. That is because water basins
             # can be modified after fishes are placed on the map, and the data of fish swarms will not be corrected.
@@ -47,7 +47,7 @@ class Fishes(dict, metaclass=SpecialSection):
     def to_bytes(self, data_obj):
         buffer_taker = BufferTaker()
         sum_of_swarms = 0
-        for position in sorted(self.keys(), key=lambda pos: pos[1] - 1/(pos[0] + 1)):
+        for position in sorted(self.keys(), key=lambda pos: pos[1] * (2 * data_obj.lsiz.width) + pos[0]):
             buffer_taker.unsigned(position[0], length=2)
             buffer_taker.unsigned(position[1], length=2)
             buffer_taker.unsigned(self[position], length=4)
