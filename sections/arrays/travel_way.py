@@ -1,6 +1,6 @@
 import numpy as np
 from sections.arrays.continents import get_continent_type
-from sections.arrays.common.geometry import get_neighbouring_vertices
+from sections.generic.geometry import get_neighbouring_vertices
 
 def check_boundary(data_object, coordinates):
     x, y = coordinates

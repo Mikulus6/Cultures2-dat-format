@@ -1,7 +1,7 @@
 import numpy as np
 from collections import deque
 from collections.abc import Callable
-from sections.arrays.common.geometry import get_neighbouring_vertices
+from sections.generic.geometry import get_neighbouring_vertices
 from sections.special.continents import Continents, Continent
 from sections.arrays.logic_type import get_adjacent_logic_types
 

@@ -1,6 +1,6 @@
 import numpy as np
 from sections.arrays.common.ab_sections import combine_ab_sections, split_ab_sections
-from sections.arrays.common.geometry import get_adjacent_triangles
+from sections.generic.geometry import get_adjacent_triangles
 
 emm_transition_types = {3: "overlay road 1",
                         4: "overlay road 2",
