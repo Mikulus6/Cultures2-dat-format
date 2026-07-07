@@ -120,12 +120,10 @@ class WalkSectors(metaclass=SpecialSection):
     _bytes_per_sector = 52
 
     def __init__(self):
-
         for terrain_type in self.__class__._walkable_terrain_types:
             setattr(self, terrain_type, list())
 
     def load(self, bytes_obj: bytes):
-
         assert len(bytes_obj) % (self.__class__._bytes_per_sector * len(self._walkable_terrain_types)) == 0
         buffer = BufferGiver(bytes_obj)
 
@@ -243,7 +241,19 @@ class WalkSectors(metaclass=SpecialSection):
         image.save(filename)
 
 def data_to_lasw(data_object):
-    raise NotImplementedError # TODO
+
+    raise NotImplementedError  # TODO: remove this line for testing
+
+    for sector_type in (data_object.lasw.land, data_object.lasw.water):
+        for sector in sector_type:
+            old_edge_numbers = sector.edge_numbers
+
+            # diagonal edge number
+            if len(sector.points) == 0: diagonal_edge_number = 0
+            else: diagonal_edge_number = max(data_object.lmms[sector.points[0][::-1]], *sector.edge_numbers[::2])
+            sector.edge_numbers[1::2] = [diagonal_edge_number] * len(sector.edge_numbers[1::2])
+
+            assert old_edge_numbers == sector.edge_numbers  # alawys satisfied
 
 def update_lasw(data_object):
     data_object.lasw = data_to_lasw(data_object)
