@@ -335,3 +335,53 @@ def get_sector_connections(data_object, sector_index, terrain_type: Literal["lan
             "down":  connections[1],
             "left":  connections[2],
             "up":    connections[3]}
+
+def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end, terrain_type: Literal["land", "water"] = "land"):
+    # TODO: There are many exceptions where this function produces output different than the files present in the game.
+    #        I suspect this is because of the corrupted data, but I am unsure. More empirical testing or decomp is required.
+
+    match terrain_type:
+        case "land":  size_limit = 1
+        case "water": size_limit = 4
+        case _: raise ValueError
+
+    max_vehicle_size = int(data_object.lmms[coordinates_start[::-1]])
+    size_cap = min(max_vehicle_size, size_limit)
+
+    for vehicle_size in range(size_cap, -1, -1):
+
+        def availability_func(coordinates):
+            return (data_object.lmwb[coordinates[::-1]] == 0) and vehicle_size <= data_object.lmms[coordinates[::-1]]
+
+        if pathfind(data_object, coordinates_start, coordinates_end, availability_func):
+            return vehicle_size
+
+    return max_vehicle_size
+
+def get_edge_numbers(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
+    # TODO: might not work correctly
+    _number_of_neighbours = 8
+    sectors_type = getattr(data_object.lasw, terrain_type)
+    sector = sectors_type[sector_index]
+
+    if len(sector.points) == 0:
+        return [0] * _number_of_neighbours
+
+    edge_numbers = [int(data_object.lmms[sector.points[0][::-1]])] * _number_of_neighbours
+    for direction_index, sector_neighbour_index in enumerate(get_neighbouring_sector_indices(data_object, sector_index)):
+
+        if sector_neighbour_index is None:
+            continue
+
+        sector_neighbour = sectors_type[sector_neighbour_index]
+        if len(sector_neighbour.points) == 0:
+            continue
+
+        edge_numbers[2 * direction_index] = \
+            get_cardinal_edge_value(data_object, sector.points[0], sector_neighbour.points[0], terrain_type)
+
+    if len(sector.points) == 0: diagonal_edge_number = 0
+    else: diagonal_edge_number = max(edge_numbers)
+    edge_numbers[1::2] = [diagonal_edge_number] * len(edge_numbers[1::2])
+
+    return edge_numbers
