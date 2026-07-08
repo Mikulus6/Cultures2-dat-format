@@ -196,8 +196,8 @@ class WalkSectors(metaclass=SpecialSection):
         font = ImageFont.truetype("verdana.ttf", 7)
         draw = ImageDraw.Draw(image)
 
-        for sector_index in range(math.ceil(data_obj.lsiz.width/10) * math.ceil(data_obj.lsiz.height/10)):
-            y, x = divmod(sector_index, math.ceil(data_obj.lsiz.width/10))
+        for sector_index in range(ceil(data_obj.lsiz.width/10) * ceil(data_obj.lsiz.height/10)):
+            y, x = divmod(sector_index, ceil(data_obj.lsiz.width/10))
             x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
 
             draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
@@ -240,8 +240,8 @@ class WalkSectors(metaclass=SpecialSection):
             #     draw.circle((x_draw + sector_draw_size//2,
             #                  y_draw + sector_draw_size//2), sector_draw_size//8, (64, 64, 64))
 
-        for sector_index in range(math.ceil(data_obj.lsiz.width/10) * math.ceil(data_obj.lsiz.height/10)):
-            y, x = divmod(sector_index, math.ceil(data_obj.lsiz.width/10))
+        for sector_index in range(ceil(data_obj.lsiz.width/10) * ceil(data_obj.lsiz.height/10)):
+            y, x = divmod(sector_index, ceil(data_obj.lsiz.width/10))
             x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
 
             draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
@@ -303,19 +303,35 @@ def pathfind(data_object, coordinates_start, coordinates_end,
                 searched[y_1 - y_min, x_1 - x_min] = True
     return False
 
-    raise NotImplementedError  # TODO: remove this line for testing
+def get_neighbouring_sector_indices(data_object, sector_index):
+    sectors_width, sectors_height = sectors_grid_size(data_object)
+    return (sector_index + 1             if sector_index % sectors_width != sectors_width - 1   else None, # right
+            sector_index + sectors_width if sector_index < sectors_width * (sectors_height - 1) else None, # down
+            sector_index - 1             if sector_index % sectors_width != 0                   else None, # left
+            sector_index - sectors_width if sector_index >= sectors_width                       else None) # up
 
-    for sector_type in (data_object.lasw.land, data_object.lasw.water):
-        for sector in sector_type:
-            old_edge_numbers = sector.edge_numbers
+def get_sector_connections(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
+    sectors_type = getattr(data_object.lasw, terrain_type)
+    sector = sectors_type[sector_index]
+    if len(sector.points) != 0:
+        availability_func = lambda coordinates: (data_object.lmwb[coordinates[::-1]] == 0)
 
-            # diagonal edge number
-            if len(sector.points) == 0: diagonal_edge_number = 0
-            else: diagonal_edge_number = max(data_object.lmms[sector.points[0][::-1]], *sector.edge_numbers[::2])
-            sector.edge_numbers[1::2] = [diagonal_edge_number] * len(sector.edge_numbers[1::2])
+        connections = list()
+        for sector_neighbour_index in get_neighbouring_sector_indices(data_object, sector_index):
+            if sector_neighbour_index is None:
+                connections.append(False)
+                continue
 
-            assert old_edge_numbers == sector.edge_numbers  # alawys satisfied
+            sector_neighbour = sectors_type[sector_neighbour_index]
+            if len(sector_neighbour.points) == 0:
+                connections.append(False)
+                continue
 
-def update_lasw(data_object):
-    data_object.lasw = data_to_lasw(data_object)
-    return data_object
+            connections.append(pathfind(data_object, sector.points[0], sector_neighbour.points[0], availability_func))
+    else:
+        connections = [False, False, False, False]
+
+    return {"right": connections[0],
+            "down":  connections[1],
+            "left":  connections[2],
+            "up":    connections[3]}
