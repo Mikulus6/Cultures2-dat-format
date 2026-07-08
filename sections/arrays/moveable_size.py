@@ -38,7 +38,7 @@ def moveable_block(data_object) -> np.ndarray:
     # Such discrepency is caused by stockade disappearing after removing player in the external editor. This mismatch
     # is easily recreatable by placing stockade and removing player to whom it belongs in the aforementioned editor.
 
-    moveable_array = np.zeros(data_object.shape_micro, dtype=np.bool)
+    moveable_array = np.zeros(data_object.lsiz.shape_micro, dtype=np.bool)
 
     for y in range(0, 2 * data_object.lsiz.height):
         for x in range(0, 2 * data_object.lsiz.width):

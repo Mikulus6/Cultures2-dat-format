@@ -1,8 +1,16 @@
-import math
+from collections import deque
+from collections.abc import Callable
+from math import ceil
+import numpy as np
 import os
 from PIL import Image, ImageDraw, ImageFont
+from typing import Literal
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.generic.geometry import get_neighbouring_vertices
 from sections.special.special import SpecialSection
+
+walk_sector_size = (10, 10)
+walk_sector_size_micro = type(walk_sector_size)(map(lambda x: 2 * x, walk_sector_size))
 
 class WalkSector:
 
@@ -181,11 +189,11 @@ class WalkSectors(metaclass=SpecialSection):
 
     def draw_data(self, data_obj, filename, water: bool = False):
         # TODO: function fo debugging only - remove later
-        sector_draw_size = 30
-        image = Image.new(size=(sector_draw_size * (math.ceil(data_obj.lsiz.width/10)),
-                                sector_draw_size * (math.ceil(data_obj.lsiz.height/10))), color=(0, 0, 0), mode="RGB")
+        sector_draw_size = 20
+        image = Image.new(size=(sector_draw_size * (ceil(data_obj.lsiz.width/10)),
+                                sector_draw_size * (ceil(data_obj.lsiz.height/10))), color=(0, 0, 0), mode="RGB")
 
-        font = ImageFont.truetype("verdana.ttf", 10)
+        font = ImageFont.truetype("verdana.ttf", 7)
         draw = ImageDraw.Draw(image)
 
         for sector_index in range(math.ceil(data_obj.lsiz.width/10) * math.ceil(data_obj.lsiz.height/10)):
@@ -219,7 +227,7 @@ class WalkSectors(metaclass=SpecialSection):
                     mask = Image.new("1", (50, 20), 0)  # black background
                     mask_draw = ImageDraw.Draw(mask)
 
-                    mask_draw.text((2, -2), str(edge_numbers[con_index]), font=font, fill=1)
+                    mask_draw.text((1, -1), str(edge_numbers[con_index]), font=font, fill=1)
 
                     # 2. Paste onto RGB image
                     image.paste(
@@ -240,7 +248,60 @@ class WalkSectors(metaclass=SpecialSection):
                            fill=None, outline=(128, 128, 128), width=1)
         image.save(filename)
 
-def data_to_lasw(data_object):
+
+def sectors_grid_size(data_object):
+    sectors_width =  ( data_object.lsiz.width  // walk_sector_size[0]) + \
+                     ((data_object.lsiz.width  %  walk_sector_size[0]) != 0)
+    sectors_height = ( data_object.lsiz.height // walk_sector_size[1]) + \
+                     ((data_object.lsiz.height %  walk_sector_size[1]) != 0)
+    return sectors_width, sectors_height
+
+def pathfind_bounds(coordinates_1, coordinates_2):
+    x_min = min((coordinates_1[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0],
+                (coordinates_2[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0])
+    y_min = min((coordinates_1[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1],
+                (coordinates_2[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1])
+    x_max = max(((coordinates_1[0] // walk_sector_size_micro[0]) + 1) * walk_sector_size_micro[0],
+                ((coordinates_2[0] // walk_sector_size_micro[0]) + 1) * walk_sector_size_micro[0]) - 1
+    y_max = max(((coordinates_1[1] // walk_sector_size_micro[1]) + 1) * walk_sector_size_micro[1],
+                ((coordinates_2[1] // walk_sector_size_micro[1]) + 1) * walk_sector_size_micro[1]) - 1
+    return (x_min, y_min), (x_max, y_max)
+
+def pathfind(data_object, coordinates_start, coordinates_end,
+             vextex_availability_func: Callable = lambda *args, **kwargs: True):
+
+    coords_min, coords_max = pathfind_bounds(coordinates_start, coordinates_end)
+    x_min, y_min = coords_min
+    x_max, y_max = coords_max
+
+    if coordinates_start == coordinates_end:
+        return True
+
+    if not vextex_availability_func(coordinates_end) or \
+       data_object.lmco[coordinates_start[::-1]] != data_object.lmco[coordinates_end[::-1]]:
+        return False
+
+    queue = deque([coordinates_start])
+    searched = np.zeros(shape=(y_max - y_min + 1, x_max - x_min + 1), dtype=bool)
+    searched[coordinates_start[1] - y_min, coordinates_start[0] - x_min] = True
+
+    while len(queue) > 0:
+        x, y = queue.popleft()
+        if vextex_availability_func((x, y)):
+            if (x, y) == coordinates_end:
+                return True
+
+            for direction, coordinates in enumerate(get_neighbouring_vertices((x, y))):
+                x_1, y_1 = coordinates
+                if not(x_min <= x_1 <= x_max) or \
+                   not(y_min <= y_1 <= y_max) or \
+                   searched[y_1 - y_min, x_1 - x_min] or \
+                   (data_object.lmtw[y, x] & (1 << direction)) == 0:  # edge availability
+                    continue
+
+                queue.append((x_1, y_1))
+                searched[y_1 - y_min, x_1 - x_min] = True
+    return False
 
     raise NotImplementedError  # TODO: remove this line for testing
 
