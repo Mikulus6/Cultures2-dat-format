@@ -79,7 +79,7 @@ class Continents(list, metaclass=SpecialSection):
                 assert continent.size <= 0
             else:
                 assert continent.type in (1, 2)
-                assert continent.size >= 0
+                assert continent.size >= 0  # TODO: this is not always satisfied (in custom made maps)
 
     def to_file(self, filename: str):
         # preferred file extension: *.csv

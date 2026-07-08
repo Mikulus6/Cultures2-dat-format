@@ -336,9 +336,16 @@ def get_sector_connections(data_object, sector_index, terrain_type: Literal["lan
             "left":  connections[2],
             "up":    connections[3]}
 
-def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end, terrain_type: Literal["land", "water"] = "land"):
-    # TODO: There are many exceptions where this function produces output different than the files present in the game.
-    #        I suspect this is because of the corrupted data, but I am unsure. More empirical testing or decomp is required.
+def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end,
+                            terrain_type: Literal["land", "water"] = "land"):
+    # This function does not always return output identical to the original external editor present in multiple games
+    # from the Cultures series. These exceptions are caused by the editor not updating walk sectors data correctly. For
+    # any given exception, one can verify this fact by opening the relevant map in the original external editor and
+    # updating the walk sector point by putting a landscape with a hitbox capable of blocking walking near it and then
+    # removing it. This action will result in an identical map, but with walk sector points now updated. For all tests
+    # performed so far, this method provided confirmation that walk sector points could be not updated correctly. Until
+    # a counter example is found, this method remains the most accurate known derivation algorithm coherent with
+    # knowledge provided by decompilation research done by push42.
 
     match terrain_type:
         case "land":  size_limit = 1
@@ -358,8 +365,7 @@ def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end, ter
 
     return max_vehicle_size
 
-def get_edge_numbers(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
-    # TODO: might not work correctly
+def get_sector_edge_numbers(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
     _number_of_neighbours = 8
     sectors_type = getattr(data_object.lasw, terrain_type)
     sector = sectors_type[sector_index]
@@ -368,8 +374,8 @@ def get_edge_numbers(data_object, sector_index, terrain_type: Literal["land", "w
         return [0] * _number_of_neighbours
 
     edge_numbers = [int(data_object.lmms[sector.points[0][::-1]])] * _number_of_neighbours
-    for direction_index, sector_neighbour_index in enumerate(get_neighbouring_sector_indices(data_object, sector_index)):
-
+    for direction_index, sector_neighbour_index in enumerate(get_neighbouring_sector_indices(data_object,
+                                                                                             sector_index)):
         if sector_neighbour_index is None:
             continue
 
