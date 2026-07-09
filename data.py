@@ -1,8 +1,10 @@
 import os
 import numpy as np
+import random
 from scripts.buffer import BufferGiver, BufferTaker
 from sections.generic import *
 from sections.special import *
+from supplements.initialization import encode
 from supplements.library import Library
 from PIL import Image
 
@@ -139,8 +141,20 @@ class Data:
         if os.path.dirname(filename) != "":
             os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        with open(filename, "wb") as file:
-            file.write(bytes(buffer_taker))
+        match filename.lower().split(".")[-1]:
+            case "dat":
+                with open(filename, "wb") as file:
+                    file.write(bytes(buffer_taker))
+            case "c2m":
+                template_text = f"[logiccontrol]\nversion 1\nmapsize {self.lsiz.width} {self.lsiz.height}\n" + \
+                                f"mapguid" + " ".join([str(random.randint(0, 255)) for _ in range(16)]) + \
+                                "\n[logiccontrolend]"
+
+                library = Library()
+                library["currentusermap\\map.cif"] = encode(template_text, cultures_1=False, sal_tab_file_format=False)
+                library["currentusermap\\map.dat"] = bytes(buffer_taker)
+                library.save(filename, cultures_1=False)
+                del library
 
     def extract(self, directory: str):
 
@@ -215,8 +229,6 @@ class Data:
     def get_section_bytes(self, name):
 
         section = getattr(self, name)
-        if name == "laco":
-            print(type(section))
         section_buffer_taker = BufferTaker()
 
         if section is None:
@@ -231,7 +243,6 @@ class Data:
 
         else:
             assert name in self.__class__._section_special.keys()
-            print(name)
             if   section.to_bytes.__code__.co_argcount == 1: section_buffer_taker.bytes(section.to_bytes())
             elif section.to_bytes.__code__.co_argcount == 2: section_buffer_taker.bytes(section.to_bytes(self))
             else: raise NotImplementedError
