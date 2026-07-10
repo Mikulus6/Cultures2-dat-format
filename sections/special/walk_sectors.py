@@ -345,7 +345,8 @@ def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end,
     # removing it. This action will result in an identical map, but with walk sector points now updated. For all tests
     # performed so far, this method provided confirmation that walk sector points could be not updated correctly. Until
     # a counter example is found, this method remains the most accurate known derivation algorithm coherent with
-    # knowledge provided by decompilation research done by push42.
+    # knowledge provided by decompilation research done by push42. For more details use WalkSectorsEdgesDecorrupter
+    # class defined in another file.
 
     match terrain_type:
         case "land":  size_limit = 1
