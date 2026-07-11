@@ -10,7 +10,7 @@ from sections.generic.geometry import get_neighbouring_vertices
 from sections.special.special import SpecialSection
 
 walk_sector_size = (10, 10)
-walk_sector_size_micro = type(walk_sector_size)(map(lambda x: 2 * x, walk_sector_size))
+walk_sector_size_micro = type(walk_sector_size)(map(lambda s: 2 * s, walk_sector_size))
 
 class WalkSector:
 
@@ -392,3 +392,26 @@ def get_sector_edge_numbers(data_object, sector_index, terrain_type: Literal["la
     edge_numbers[1::2] = [diagonal_edge_number] * len(edge_numbers[1::2])
 
     return edge_numbers
+
+def generate_hex_spiral():
+    x, y = walk_sector_size
+    seen = {(x, y)}
+    yield x, y
+
+    side_length = 1
+    active_loop = True
+    direction_start = 4
+
+    while active_loop:
+        active_loop = False
+        x, y = get_neighbouring_vertices((x, y))[direction_start]
+
+        for direction in range(6):
+            direction = (direction - 4 + direction_start) % 6
+            for _ in range(side_length):
+                if 0 <= x < walk_sector_size_micro[0] and 0 <= y < walk_sector_size_micro[1] and (x, y) not in seen:
+                    seen.add((x, y))
+                    yield x, y
+                    active_loop = True
+                x, y = get_neighbouring_vertices((x, y))[direction]
+        side_length += 1

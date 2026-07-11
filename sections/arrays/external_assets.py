@@ -19,6 +19,9 @@ def update_external_assets_references(array_section: np.ndarray,
 
     if text_section_new is None:  # If text_section_new is not specified, then generate new optimum content of it.
         text_section_new, array_section_new = np.unique(array_texts, return_inverse=True)
+        if "" in text_section_new:
+            text_section_new = text_section_new[1:]
+            array_section_new = np.where(array_section_new == 0, minus_one, array_section_new - 1)
         array_section_new = array_section_new.reshape(array_texts.shape)
 
     else:                         # If text_section_new is specified, substitute numerical values deterministically.
@@ -59,8 +62,8 @@ def update_transitions(data_object, eatd_new: list | None = None):
 
     emt_new, data_object.eatd = update_external_assets_references(emt, data_object.eatd, eatd_new)
 
-    emt[mask] = no_transition // transition_types_num
     emt_new = (emt_new * transition_types_num) + transition_types_array
+    emt_new[mask] = no_transition
 
     emt_a_new, emt_b_new = split_ab_sections(emt_new)
     emt1_new, emt3_new = split_ab_sections(emt_a_new)

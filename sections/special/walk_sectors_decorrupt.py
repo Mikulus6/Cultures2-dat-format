@@ -1,9 +1,11 @@
 import numpy as np
 import os
 import time
+from typing import Literal
 from data import Data
 from sections.arrays.external_assets import update_ea_d
-from sections.special.walk_sectors import sectors_grid_size, get_sector_edge_numbers, walk_sector_size_micro
+from sections.special.walk_sectors import sectors_grid_size, get_sector_edge_numbers, generate_hex_spiral, \
+                                          walk_sector_size_micro, walk_sector_size
 
 
 class WalkSectorsEdgesDecorrupter:
@@ -71,6 +73,22 @@ class WalkSectorsEdgesDecorrupter:
         data_object_new.load(self.editable_c2m_path)
         return data_object_new
 
+    @staticmethod
+    def _find_empty_vertex_in_sector(data_object, sector_center, terrain_type: Literal["land", "water"] = "land"):
+        match terrain_type:
+            case "land":  terrain_type = 1
+            case "water": terrain_type = 2
+            case _: raise ValueError
+
+        for x, y in generate_hex_spiral():
+            x_real = sector_center[0] + x - walk_sector_size[0]
+            y_real = sector_center[1] + y - walk_sector_size[1]
+            continent_type = data_object.laco[data_object.lmco[y_real, x_real]].type
+            if continent_type == terrain_type and data_object.emla[y_real, x_real] == 0xffff:
+                return x_real, y_real
+        else:
+            raise NotImplementedError # no free vertex (requires manual investigation)
+
     def check(self, data_object):
         data_object = update_ea_d(data_object)
         corruption_info = tuple(self._get_corruption_info(data_object))
@@ -79,8 +97,9 @@ class WalkSectorsEdgesDecorrupter:
         while len(corruption_info) > 0:
 
             sector_info = corruption_info[0]
+            empty_vertex = self._find_empty_vertex_in_sector(data_object, sector_info[0], sector_info[1][2])
             print(f"(Corruptions remaining: {len(corruption_info)}) " +\
-                  f"Refresh sectors near {sector_info[0]} at terrain type {sector_info[1][2]}.")
+                  f"Refresh sectors at {empty_vertex} on terrain type {sector_info[1][2]}.")
             data_object_new = self._await_c2m_edit(data_object)
             data_object_new = update_ea_d(data_object_new)
             if not self._simplify_and_compare(data_object, data_object_new):
