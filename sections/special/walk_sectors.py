@@ -1,12 +1,13 @@
 from collections import deque
-from collections.abc import Callable
-from math import ceil
+from collections.abc import Callable, Iterable
 import numpy as np
 import os
-from PIL import Image, ImageDraw, ImageFont
+import time
 from typing import Literal
 from scripts.buffer import BufferGiver, BufferTaker
 from sections.generic.geometry import get_neighbouring_vertices
+from sections.generic.minus_one import get_minus_one
+from sections.special.external_assets import update_ea_d
 from sections.special.special import SpecialSection
 
 walk_sector_size = (10, 10)
@@ -20,18 +21,18 @@ class WalkSector:
                             "down":  False,
                             "right": False}
 
-        self.edge_numbers = list()
-        # Starting from direction to the right and going clockwise, these eight edge numbers are used to determine how
-        # big can a vehicle be for navigation from walk sector in given direction. However, exact implementation in the
-        # game is not clear and this number does not satisy conditions to be redundant to undirected graph.
+        self.max_vehicle_sizes = list()
+        # Starting from the direction to the right and going clockwise, these eight numbers are used to determine how
+        # big a vehicle can be for navigation from a walk sector in a given direction. However, the original
+        # implementation in the game is flawed, and this number does not satisfy the conditions to be redundant to an
+        # undirected graph.
 
         self.points = list()
 
     def load(self, bytes_obj):
 
         sector_buffer = BufferGiver(bytes_obj)
-        assert sector_buffer.unsigned(1) in (0, 1) # assert sector_buffer.unsigned(1) == 1  # TODO: can be zero on void?
-                                                                                            # (not in any original map)
+        assert sector_buffer.unsigned(1) in (0, 1)
 
         connections_raw_bits = sector_buffer.binary(1)
         assert connections_raw_bits[::2] == "0000"  # Even bits (counting from zero) must be zero
@@ -43,9 +44,9 @@ class WalkSector:
         sector_buffer.skip(1) # continent number
         assert sector_buffer.unsigned(1) == 0
 
-        self.edge_numbers = list()
+        self.max_vehicle_sizes = list()
         for _ in range(8):
-            self.edge_numbers.append(sector_buffer.unsigned(4))
+            self.max_vehicle_sizes.append(sector_buffer.unsigned(4))
 
         coordinates_1 = (sector_buffer.unsigned(2), sector_buffer.unsigned(2))
         coordinates_2 = (sector_buffer.unsigned(2), sector_buffer.unsigned(2))
@@ -60,10 +61,10 @@ class WalkSector:
                 break
             self.points.append(coordinates)
 
-        assert self.edge_numbers[1] == self.edge_numbers[3] == self.edge_numbers[5] == self.edge_numbers[7]
-        assert max(self.edge_numbers) <= 7
+        assert self.max_vehicle_sizes[1] == self.max_vehicle_sizes[3] == self.max_vehicle_sizes[5] == self.max_vehicle_sizes[7]
+        assert max(self.max_vehicle_sizes) <= 7
         if coordinates_1 == (0, 0):
-            assert max(self.edge_numbers) == 0
+            assert max(self.max_vehicle_sizes) == 0
 
     def to_bytes(self, data_obj):
         buffer_taker = BufferTaker()
@@ -80,10 +81,10 @@ class WalkSector:
         buffer_taker.unsigned(int(data_obj.lmco[walk_point_1[::-1]]), length=1)
         buffer_taker.unsigned(0, length=1)
 
-        assert len(self.edge_numbers) == 8
-        assert max(self.edge_numbers) <= 7
+        assert len(self.max_vehicle_sizes) == 8
+        assert max(self.max_vehicle_sizes) <= 7
 
-        for edge_number in self.edge_numbers:
+        for edge_number in self.max_vehicle_sizes:
             buffer_taker.unsigned(edge_number, length=4)
 
         walk_points_used_count = 0
@@ -106,16 +107,16 @@ class WalkSector:
 
     def to_text(self) -> str:
         return self.__class__._text_subseparator_1.join(key for key, value in self.connections.items() if value)+ "," +\
-               self.__class__._text_subseparator_1.join(map(str, self.edge_numbers))+ "," +\
+               self.__class__._text_subseparator_1.join(map(str, self.max_vehicle_sizes))+ "," +\
                self.__class__._text_subseparator_1.join(str(point[0]) +
                                                         self.__class__._text_subseparator_2 +
                                                         str(point[1]) for point in self.points)
 
     def from_text(self, text_: str):
-        connections_raw, edge_numbers_raw, points_raw = text_.rstrip("\n").split(",")
+        connections_raw, max_vehicle_sizes_raw, points_raw = text_.rstrip("\n").split(",")
         self.connections = {direction: (direction in connections_raw.split("|")) for direction in ("up", "left",
                                                                                                    "down", "right")}
-        self.edge_numbers = list(map(int, edge_numbers_raw.split("|")))
+        self.max_vehicle_sizes = list(map(int, max_vehicle_sizes_raw.split("|")))
         points_raw_list =  points_raw.split("|")
         if len(points_raw_list[0]) == 0:
             points_raw_list = list()
@@ -187,66 +188,109 @@ class WalkSectors(metaclass=SpecialSection):
         with open(filename, "r") as file:
             self.from_text(file.read())
 
-    def draw_data(self, data_obj, filename, water: bool = False):
-        # TODO: function fo debugging only - remove later
-        sector_draw_size = 20
-        image = Image.new(size=(sector_draw_size * (ceil(data_obj.lsiz.width/10)),
-                                sector_draw_size * (ceil(data_obj.lsiz.height/10))), color=(0, 0, 0), mode="RGB")
 
-        font = ImageFont.truetype("verdana.ttf", 7)
-        draw = ImageDraw.Draw(image)
+class _WalkSectorsVehiclesDecorrupter:
+    # This class is used as an empirical verifier for walk sectors data corruption. It finds potentially corrupted
+    # information in the given data object and then asks the user to refresh this information by placing and removing a
+    # landscape with a tangible hitbox near the given coordinates in the original external editor of any game from the
+    # Cultures series. If the corruption is removed due to the user refreshing walk sectors data by placing and removing
+    # a landscape, and no other data is changed, it is proven to be corrupted data and not deterministically derivable
+    # information.
 
-        for sector_index in range(ceil(data_obj.lsiz.width/10) * ceil(data_obj.lsiz.height/10)):
-            y, x = divmod(sector_index, ceil(data_obj.lsiz.width/10))
-            x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
+    directions_dict = {0: "right",
+                       2: "down",
+                       4: "left",
+                       8: "up"}
 
-            draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
-                           fill=None, outline=(128, 128, 128), width=1)
-            if not water:
-                connections_dict = self.land[sector_index].connections  # noqa
-                edge_numbers = self.land[sector_index].edge_numbers  # noqa
-                points = self.land[sector_index].points  # noqa
-            else:
-                connections_dict = self.water[sector_index].connections  # noqa
-                edge_numbers = self.water[sector_index].edge_numbers  # noqa
-                points = self.water[sector_index].points  # noqa
+    def __init__(self, editable_c2m_path: str, refresh_time: float):
+        self.editable_c2m_path = editable_c2m_path
+        self.refresh_time = refresh_time  # seconds
 
-            colors = ((255, 0, 0), (255, 128, 0), (255, 255, 0), (0, 255, 0),
-                      (0, 255, 255), (0, 0, 255), (128, 0, 255), (255, 0, 255))
+        assert self.editable_c2m_path.lower().endswith(".c2m")
 
-            for con_index, connection_shift in enumerate(((2, 1), (1, 1),
-                                                          (1, 2), (1, 1), (0, 1),
-                                                          (1, 1), (1, 0), (1, 1))):
+    @staticmethod
+    def _simplify_and_compare(data_object_1, data_object_2):
+        data_object_1 = update_ea_d(data_object_1)
+        data_object_2 = update_ea_d(data_object_2)
 
-                    draw.rectangle(((x_draw + connection_shift[0] * sector_draw_size//3,
-                                     y_draw + connection_shift[1] * sector_draw_size//3),
-                                    (x_draw + (connection_shift[0] + 1) * sector_draw_size//3 - 1,
-                                     y_draw + (connection_shift[1] + 1) * sector_draw_size//3 - 1)),
-                                   fill=colors[edge_numbers[con_index]])
+        return np.all(data_object_1.emla == data_object_2.emla) and \
+               np.all(data_object_1.empa == data_object_2.empa) and \
+               np.all(data_object_1.empb == data_object_2.empb) and \
+               np.all(data_object_1.emmi == data_object_2.emmi) and \
+               np.all(data_object_1.lmhe == data_object_2.lmhe)
 
-                    mask = Image.new("1", (50, 20), 0)  # black background
-                    mask_draw = ImageDraw.Draw(mask)
+    def _get_corruption_info(self, data_object):
+        sectors_width, sectors_height = sectors_grid_size(data_object)
 
-                    mask_draw.text((1, -1), str(edge_numbers[con_index]), font=font, fill=1)
+        for terrain_type in ("land", "water"):
+            for sector_y in range(sectors_height):
+                for sector_x in range(sectors_width):
+                    sector_index = sector_y * sectors_width + sector_x
+                    sector_center = (sector_x * walk_sector_size_micro[0] + (walk_sector_size_micro[0] // 2),
+                                     sector_y * walk_sector_size_micro[1] + (walk_sector_size_micro[1] // 2))
+                    sector = getattr(data_object.lasw, terrain_type)[sector_index]
 
-                    # 2. Paste onto RGB image
-                    image.paste(
-                        (0, 0, 0),  # text color (black)
-                        (x_draw + connection_shift[0] * sector_draw_size // 3,
-                         y_draw + connection_shift[1] * sector_draw_size // 3), mask)
+                    sector_max_vehicle_sizes_old = sector.max_vehicle_sizes
+                    sector_max_vehicle_sizes_new = get_sector_max_vehicle_sizes(data_object, sector_index, terrain_type)
 
+                    if sector_max_vehicle_sizes_old != sector_max_vehicle_sizes_new:
+                        for size_index in range(len(sector_max_vehicle_sizes_old)):
+                            size_old = sector_max_vehicle_sizes_old[size_index]
+                            size_new = sector_max_vehicle_sizes_new[size_index]
+                            connection_iden = sector.connections.get(self.__class__.directions_dict.get(size_index,
+                                                                                                        None), None)
+                            if size_old != size_new:
+                                error_iden = (size_old, size_new, terrain_type, connection_iden)
+                                yield sector_center, error_iden
 
-            # if len(points) > 0:
-            #     draw.circle((x_draw + sector_draw_size//2,
-            #                  y_draw + sector_draw_size//2), sector_draw_size//8, (64, 64, 64))
+    def _await_c2m_edit(self, data_object):
+        data_object.save(self.editable_c2m_path)
+        time_edit_old = os.path.getmtime(self.editable_c2m_path)
+        time_edit_new = time_edit_old
+        while time_edit_new == time_edit_old:
+            time_edit_new = os.path.getmtime(self.editable_c2m_path)
+            time.sleep(self.refresh_time)
+        data_object_new = data_object.__class__()
+        data_object_new.load(self.editable_c2m_path)
+        return data_object_new
 
-        for sector_index in range(ceil(data_obj.lsiz.width/10) * ceil(data_obj.lsiz.height/10)):
-            y, x = divmod(sector_index, ceil(data_obj.lsiz.width/10))
-            x_draw, y_draw = x * sector_draw_size, y * sector_draw_size
+    @staticmethod
+    def _find_empty_vertex_in_sector(data_object, sector_center, terrain_type: Literal["land", "water"] = "land"):
 
-            draw.rectangle(((x_draw, y_draw), (x_draw + sector_draw_size, y_draw + sector_draw_size)),
-                           fill=None, outline=(128, 128, 128), width=1)
-        image.save(filename)
+        no_landscape = get_minus_one(data_object.emla.dtype)
+
+        match terrain_type:
+            case "land":  terrain_type = 1
+            case "water": terrain_type = 2
+            case _: raise ValueError
+
+        for x, y in generate_hex_spiral():
+            x_real = sector_center[0] + x - walk_sector_size[0]
+            y_real = sector_center[1] + y - walk_sector_size[1]
+            continent_type = data_object.laco[data_object.lmco[y_real, x_real]].type
+            if continent_type == terrain_type and data_object.emla[y_real, x_real] == no_landscape:
+                return x_real, y_real
+        else:
+            raise NotImplementedError # no free vertex (further manual investigation is required)
+
+    def check(self, data_object):
+        print(f"Started checking data file with macro map dimensions" + \
+              f"{data_object.lsiz.width}x{data_object.lsiz.height}")
+        data_object = update_ea_d(data_object)
+        corruption_info = tuple(self._get_corruption_info(data_object))
+        if len(corruption_info) > 0:
+            print(f"Please open {self.editable_c2m_path} in the external editor.")
+        while len(corruption_info) > 0:
+            sector_info = corruption_info[0]
+            empty_vertex = self._find_empty_vertex_in_sector(data_object, sector_info[0], sector_info[1][2])
+            print(f"(Corruptions remaining: {len(corruption_info)}) " + \
+                  f"Refresh sectors at {empty_vertex} on terrain type {sector_info[1][2]}.")
+            data_object_new = self._await_c2m_edit(data_object)
+            data_object_new = update_ea_d(data_object_new)
+            if not self._simplify_and_compare(data_object, data_object_new):
+                print(f"Primary data was not preserved. Please open the map again.")
+            corruption_info = tuple(self._get_corruption_info(data_object_new))
+        print("No corruptions were found.")
 
 
 def sectors_grid_size(data_object):
@@ -345,8 +389,8 @@ def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end,
     # removing it. This action will result in an identical map, but with walk sector points now updated. For all tests
     # performed so far, this method provided confirmation that walk sector points could be not updated correctly. Until
     # a counter example is found, this method remains the most accurate known derivation algorithm coherent with
-    # knowledge provided by decompilation research done by push42. For more details use WalkSectorsEdgesDecorrupter
-    # class defined in another file.
+    # knowledge provided by decompilation research done by push42. For more details use _WalkSectorsVehiclesDecorrupter
+    # class defined in this file.
 
     match terrain_type:
         case "land":  size_limit = 1
@@ -366,7 +410,7 @@ def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end,
 
     return max_vehicle_size
 
-def get_sector_edge_numbers(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
+def get_sector_max_vehicle_sizes(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
     _number_of_neighbours = 8
     sectors_type = getattr(data_object.lasw, terrain_type)
     sector = sectors_type[sector_index]
@@ -374,7 +418,7 @@ def get_sector_edge_numbers(data_object, sector_index, terrain_type: Literal["la
     if len(sector.points) == 0:
         return [0] * _number_of_neighbours
 
-    edge_numbers = [int(data_object.lmms[sector.points[0][::-1]])] * _number_of_neighbours
+    max_vehicle_sizes = [int(data_object.lmms[sector.points[0][::-1]])] * _number_of_neighbours
     for direction_index, sector_neighbour_index in enumerate(get_neighbouring_sector_indices(data_object,
                                                                                              sector_index)):
         if sector_neighbour_index is None:
@@ -384,14 +428,14 @@ def get_sector_edge_numbers(data_object, sector_index, terrain_type: Literal["la
         if len(sector_neighbour.points) == 0:
             continue
 
-        edge_numbers[2 * direction_index] = \
+        max_vehicle_sizes[2 * direction_index] = \
             get_cardinal_edge_value(data_object, sector.points[0], sector_neighbour.points[0], terrain_type)
 
     if len(sector.points) == 0: diagonal_edge_number = 0
-    else: diagonal_edge_number = max(edge_numbers)
-    edge_numbers[1::2] = [diagonal_edge_number] * len(edge_numbers[1::2])
+    else: diagonal_edge_number = max(max_vehicle_sizes)
+    max_vehicle_sizes[1::2] = [diagonal_edge_number] * len(max_vehicle_sizes[1::2])
 
-    return edge_numbers
+    return max_vehicle_sizes
 
 def generate_hex_spiral():
     x, y = walk_sector_size

@@ -1,7 +1,7 @@
 from io import BytesIO
-import os
 from math import sqrt
 import numpy as np
+import os
 from PIL import Image, ImageDraw
 from scripts.colormap import ColorMap, find_closest_color
 from supplements.external import patterns, transitions

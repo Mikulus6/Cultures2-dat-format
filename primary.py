@@ -2,8 +2,8 @@ import os
 import numpy as np
 from PIL import Image
 from scripts.colormap import ColorMap, apply_colormap
-from sections.arrays.common.ab_sections import combine_ab_sections
-from sections.arrays.common.minus_one import get_minus_one
+from sections.generic.ab_sections import combine_ab_sections
+from sections.generic.minus_one import get_minus_one
 from sections.arrays.infrastructure import emm_transition_types
 from supplements.textures import emp_colors_dict, emt_colors_dict
 from supplements.palettes import vertexcolors

@@ -1,13 +1,13 @@
-import os
 from dataclasses import dataclass
+import os
 from scripts.buffer import BufferGiver, BufferTaker
 from sections.special.special import SpecialSection
 
 @dataclass
 class Continent:
-    type: int
+    type:          int
     anchor_vertex: tuple[int, int]
-    size: int
+    size:          int
 
 class Continents(list, metaclass=SpecialSection):
     _continents_limit = 250
@@ -65,7 +65,6 @@ class Continents(list, metaclass=SpecialSection):
         return bytes(buffer_taker)
 
     def check_internal_consistency(self):
-
         assert len(self) <= self.__class__._continents_limit
 
         for index_, continent in enumerate(self):
@@ -79,7 +78,6 @@ class Continents(list, metaclass=SpecialSection):
                 assert continent.size <= 0
             else:
                 assert continent.type in (1, 2)
-                assert continent.size >= 0  # TODO: this is not always satisfied (in custom made maps)
 
     def to_file(self, filename: str):
         # preferred file extension: *.csv

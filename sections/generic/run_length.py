@@ -32,9 +32,7 @@ def run_length_decryption(sequence: bytes) -> bytes:
 
     return bytes(buffer_output)
 
-
 def run_length_encryption(sequence: bytes, bytes_per_entry: int) -> bytes:
-
     buffer_input = BufferGiver(sequence)
     buffer_output = BufferTaker()
     buffer_output_data = BufferTaker()

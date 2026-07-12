@@ -1,6 +1,6 @@
 import numpy as np
-from sections.arrays.common.minus_one import get_minus_one
-from supplements.external import landscapes
+from sections.generic.external_inis import landscapes
+from sections.generic.minus_one import get_minus_one
 
 def data_to_lmao(data_object):
     lmao = np.zeros(shape=data_object.lsiz.shape_micro, dtype=np.uint16)

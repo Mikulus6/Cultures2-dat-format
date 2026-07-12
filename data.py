@@ -1,9 +1,8 @@
-import os
 import numpy as np
+import os
 import random
 from scripts.buffer import BufferGiver, BufferTaker
-from sections.generic import *
-from sections.special import *
+from sections import *
 from supplements.initialization import encode
 from supplements.library import Library
 from PIL import Image
@@ -147,7 +146,7 @@ class Data:
                     file.write(bytes(buffer_taker))
             case "c2m":
                 template_text = f"[logiccontrol]\nversion 1\nmapsize {self.lsiz.width} {self.lsiz.height}\n" + \
-                                f"mapguid" + " ".join([str(random.randint(0, 255)) for _ in range(16)]) + \
+                                f"mapguid" + " ".join([str(random.randint(0, 0xff)) for _ in range(16)]) + \
                                 "\n[logiccontrolend]"
 
                 library = Library()
@@ -186,10 +185,6 @@ class Data:
 
         for name in self._section_special.keys():
             getattr(self, name).to_file(os.path.join(directory, f"{name}.csv"))
-
-        # TODO: this is temporary for further interpetation - not direct data
-        # self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_land.png"))
-        # self.lasw.draw_data(self, os.path.join(directory, "lasw_edges_water.png"), water=True)
 
     def pack(self, directory: str):
 

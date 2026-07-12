@@ -1,5 +1,5 @@
-from supplements.data_loader import load_ini_as_dict
 from itertools import count
+from supplements.data_loader import load_ini_as_dict
 
 
 class ExternalAssets(dict):
@@ -24,18 +24,15 @@ class ExternalAssets(dict):
         del assets_count, assets_dict
 
 
-palettes_path    = "data\\engine2d\\inis\\palettes\\palettes.cif"
 patterns_path    = "data\\engine2d\\inis\\patterns\\pattern.cif"
 transitions_path = "data\\engine2d\\inis\\patterntransitions\\transitions.cif"
 landscapes_path  = "data\\engine2d\\inis\\landscapes\\landscapes.cif"
 
-palettes_entries_keys_duplicated    = ()
 patterns_entries_keys_duplicated    = ()
 transitions_entries_keys_duplicated = ("GfxCoordsA", "GfxCoordsB")
 landscapes_entries_keys_duplicated  = ("LogicWalkBlockArea", "LogicBuildBlockArea", "LogicWorkArea",
                                        "LogicAdditionalAttachPointArea", "GfxFrames", "GfxTransition")
 
-palettes    = ExternalAssets(palettes_path,    section_name="GfxPalette256", key_name="editname", entries_duplicated=palettes_entries_keys_duplicated)
 patterns    = ExternalAssets(patterns_path,    section_name="GfxPattern",    key_name="EditName", entries_duplicated=patterns_entries_keys_duplicated)
 transitions = ExternalAssets(transitions_path, section_name="transition",    key_name="name"    , entries_duplicated=transitions_entries_keys_duplicated)
 landscapes  = ExternalAssets(landscapes_path,  section_name="GfxLandscape",  key_name="EditName", entries_duplicated=landscapes_entries_keys_duplicated)

@@ -1,7 +1,7 @@
-import numpy as np
 from collections import deque
-from sections.generic.geometry import get_neighbouring_vertices
+import numpy as np
 from sections.arrays.continents import get_adjacent_logic_types, continents_logic_types_inverse
+from sections.generic.geometry import get_neighbouring_vertices
 
 max_vehicle_size = 7
 

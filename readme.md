@@ -3,7 +3,6 @@
 ## Progress
 
 ✅ - solved (derivation algo exists or section is understood to have non-derivable primary data)  
-🟡 - partially solved (in progress)  
 ❌ - unsolved  
 
 | name   | read algo | write algo | comment                                                                    |
@@ -27,7 +26,7 @@
 | `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                           |
 | `lmao` | ✅         | ✅          | vectorized landscapes `LogicAdditionalAttachPointArea` (`emla`+`eald`)     |
 | `laco` | ✅         | ✅          | continents metadata (secondary, derivable from `lmco`)                     |
-| `lasw` | ✅         | ❌          | walk sectors (interpretation required!)                                    |
+| `lasw` | ✅         | ❌          | walk sectors (most likely secondary)                                       |
 | `lafm` | ✅         | ✅          | fishes (primary)                                                           |
 | `lmhf` | ✅         | ✅          | 2d array, always zeros                                                     |
 | `emmm` | ✅         | ✅          | empty                                                                      |
