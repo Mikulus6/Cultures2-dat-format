@@ -264,7 +264,7 @@ class _WalkSectorsVehiclesDecorrupter:
             case "water": terrain_type = 2
             case _: raise ValueError
 
-        for x, y in generate_hex_spiral():
+        for x, y in generate_square_spiral():
             x_real = sector_center[0] + x - walk_sector_size[0]
             y_real = sector_center[1] + y - walk_sector_size[1]
             continent_type = data_object.laco[data_object.lmco[y_real, x_real]].type
@@ -437,25 +437,57 @@ def get_sector_max_vehicle_sizes(data_object, sector_index, terrain_type: Litera
 
     return max_vehicle_sizes
 
-def generate_hex_spiral():
+def generate_square_spiral():
     x, y = walk_sector_size
-    seen = {(x, y)}
     yield x, y
+    side_length = 0
 
-    side_length = 1
-    active_loop = True
-    direction_start = 4
+    while True:
+        x -= 1
+        y -= 1
+        side_length += 2
 
-    while active_loop:
-        active_loop = False
-        x, y = get_neighbouring_vertices((x, y))[direction_start]
+        if (x, y) == (0, 0):
+            break
 
-        for direction in range(6):
-            direction = (direction - 4 + direction_start) % 6
+        for direction in range(4):
+            match direction:
+                case 0: offset = (1,  0)
+                case 1: offset = (0,  1)
+                case 2: offset = (-1, 0)
+                case 3: offset = (0, -1)
+                case _: raise ValueError
+
             for _ in range(side_length):
-                if 0 <= x < walk_sector_size_micro[0] and 0 <= y < walk_sector_size_micro[1] and (x, y) not in seen:
-                    seen.add((x, y))
-                    yield x, y
-                    active_loop = True
-                x, y = get_neighbouring_vertices((x, y))[direction]
-        side_length += 1
+                yield x, y
+                x += offset[0]
+                y += offset[1]
+
+def decorrupt(iterable_of_data_objects: Iterable, editable_c2m_path: str, refresh_time: float):
+    decorrupter = _WalkSectorsVehiclesDecorrupter(editable_c2m_path, refresh_time)
+    for data_object in iterable_of_data_objects:
+        decorrupter.check(data_object)
+
+def continents_in_sector_by_size(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
+    # TODO: function written with the help of ai, requires manual verification
+    sectors_in_row = sectors_grid_size(data_object)[0]
+    sector_x_micro = ((sector_index % sectors_in_row) * walk_sector_size_micro[0])
+    sector_y_micro = ((sector_index // sectors_in_row) * walk_sector_size_micro[1])
+
+    match terrain_type:
+        case "land":  continent_type = 1
+        case "water": continent_type = 2
+        case _: raise ValueError
+
+    region = data_object.lmco[sector_y_micro: sector_y_micro + walk_sector_size_micro[1] + 1,
+                              sector_x_micro: sector_x_micro + walk_sector_size_micro[0] + 1]
+
+    if region.size == 0: return []
+    vectorized_f = np.vectorize(lambda continent_id: data_object.laco[continent_id].type == continent_type)
+    mask = vectorized_f(region)
+    filtered_elements = region[mask]
+    if filtered_elements.size == 0: return []
+    values, counts = np.unique(filtered_elements, return_counts=True)
+    sort_indices = np.lexsort((values, -counts))
+
+    return values[sort_indices].tolist()
