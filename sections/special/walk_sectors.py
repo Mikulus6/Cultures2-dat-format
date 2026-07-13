@@ -5,9 +5,9 @@ import os
 import time
 from typing import Literal
 from scripts.buffer import BufferGiver, BufferTaker
+from sections.special.external_assets import update_ea_d
 from sections.generic.geometry import get_neighbouring_vertices
 from sections.generic.minus_one import get_minus_one
-from sections.special.external_assets import update_ea_d
 from sections.special.special import SpecialSection
 
 walk_sector_size = (10, 10)
@@ -219,6 +219,7 @@ class _WalkSectorsVehiclesDecorrupter:
                np.all(data_object_1.emmi == data_object_2.emmi) and \
                np.all(data_object_1.lmhe == data_object_2.lmhe)
 
+    @staticmethod
     def _get_corruption_info(self, data_object):
         sectors_width, sectors_height = sectors_grid_size(data_object)
 
@@ -233,15 +234,14 @@ class _WalkSectorsVehiclesDecorrupter:
                     sector_max_vehicle_sizes_old = sector.max_vehicle_sizes
                     sector_max_vehicle_sizes_new = get_sector_max_vehicle_sizes(data_object, sector_index, terrain_type)
 
-                    if sector_max_vehicle_sizes_old != sector_max_vehicle_sizes_new:
-                        for size_index in range(len(sector_max_vehicle_sizes_old)):
-                            size_old = sector_max_vehicle_sizes_old[size_index]
-                            size_new = sector_max_vehicle_sizes_new[size_index]
-                            connection_iden = sector.connections.get(self.__class__.directions_dict.get(size_index,
-                                                                                                        None), None)
-                            if size_old != size_new:
-                                error_iden = (size_old, size_new, terrain_type, connection_iden)
-                                yield sector_center, error_iden
+                    base_point_old = None if len(sector.points) == 0 else sector.points[0]
+                    base_point_new = get_base_point(data_object, sector_index, terrain_type)
+
+                    corrupted = (sector_max_vehicle_sizes_old != sector_max_vehicle_sizes_new) or \
+                                (base_point_old != base_point_new)
+
+                    if corrupted:
+                        yield sector_center, terrain_type
 
     def _await_c2m_edit(self, data_object):
         data_object.save(self.editable_c2m_path)
@@ -274,22 +274,22 @@ class _WalkSectorsVehiclesDecorrupter:
             raise NotImplementedError # no free vertex (further manual investigation is required)
 
     def check(self, data_object):
-        print(f"Started checking data file with macro map dimensions" + \
+        print(f"Started checking data file with macro map dimensions " + \
               f"{data_object.lsiz.width}x{data_object.lsiz.height}")
-        data_object = update_ea_d(data_object)
         corruption_info = tuple(self._get_corruption_info(data_object))
         if len(corruption_info) > 0:
             print(f"Please open {self.editable_c2m_path} in the external editor.")
         while len(corruption_info) > 0:
-            sector_info = corruption_info[0]
-            empty_vertex = self._find_empty_vertex_in_sector(data_object, sector_info[0], sector_info[1][2])
+            sector_center, terrain_type = corruption_info[0]
+            empty_vertex = self._find_empty_vertex_in_sector(data_object, sector_center, terrain_type)
             print(f"(Corruptions remaining: {len(corruption_info)}) " + \
-                  f"Refresh sectors at {empty_vertex} on terrain type {sector_info[1][2]}.")
+                  f"Refresh sectors at {empty_vertex} on terrain type {terrain_type}.")
             data_object_new = self._await_c2m_edit(data_object)
-            data_object_new = update_ea_d(data_object_new)
             if not self._simplify_and_compare(data_object, data_object_new):
                 print(f"Primary data was not preserved. Please open the map again.")
-            corruption_info = tuple(self._get_corruption_info(data_object_new))
+                corruption_info = tuple(self._get_corruption_info(data_object))
+            else:
+                corruption_info = tuple(self._get_corruption_info(data_object_new))
         print("No corruptions were found.")
 
 
@@ -463,31 +463,63 @@ def generate_square_spiral():
                 x += offset[0]
                 y += offset[1]
 
-def decorrupt(iterable_of_data_objects: Iterable, editable_c2m_path: str, refresh_time: float):
-    decorrupter = _WalkSectorsVehiclesDecorrupter(editable_c2m_path, refresh_time)
-    for data_object in iterable_of_data_objects:
-        decorrupter.check(data_object)
+def get_base_point(data_object, sector_index, terrain_type: Literal["land", "water"]):
+    # This function does not always return output identical to the original external editor present in multiple games
+    # from the Cultures series. These exceptions are caused by the editor not updating walk sectors data correctly. For
+    # any given exception, one can verify this fact by opening the relevant map in the original external editor and
+    # updating the walk sector point by putting a landscape with a hitbox capable of blocking walking near it and then
+    # removing it. This action will result in an identical map, but with walk sector points now updated. For all tests
+    # performed so far, this method provided confirmation that walk sector points could be not updated correctly. Until
+    # a counter example is found, this method remains the most accurate known derivation algorithm coherent with
+    # knowledge provided by decompilation research done by Basssiiie. For more details use
+    # _WalkSectorsVehiclesDecorrupter class defined in this file.
 
-def continents_in_sector_by_size(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
-    # TODO: function written with the help of ai, requires manual verification
     sectors_in_row = sectors_grid_size(data_object)[0]
-    sector_x_micro = ((sector_index % sectors_in_row) * walk_sector_size_micro[0])
+    sector_x_micro = ((sector_index %  sectors_in_row) * walk_sector_size_micro[0])
     sector_y_micro = ((sector_index // sectors_in_row) * walk_sector_size_micro[1])
 
     match terrain_type:
-        case "land":  continent_type = 1
-        case "water": continent_type = 2
+        case "land":  continent_type = 1; size_limit = 1
+        case "water": continent_type = 2; size_limit = 4
         case _: raise ValueError
 
-    region = data_object.lmco[sector_y_micro: sector_y_micro + walk_sector_size_micro[1] + 1,
-                              sector_x_micro: sector_x_micro + walk_sector_size_micro[0] + 1]
+    solutions = dict()
 
-    if region.size == 0: return []
-    vectorized_f = np.vectorize(lambda continent_id: data_object.laco[continent_id].type == continent_type)
-    mask = vectorized_f(region)
-    filtered_elements = region[mask]
-    if filtered_elements.size == 0: return []
-    values, counts = np.unique(filtered_elements, return_counts=True)
-    sort_indices = np.lexsort((values, -counts))
+    for x, y in generate_square_spiral():
+        x += sector_x_micro
+        y += sector_y_micro
 
-    return values[sort_indices].tolist()
+        if x >= 2 * data_object.lsiz.width or\
+           y >= 2 * data_object.lsiz.height:
+            continue
+
+        if data_object.lmwb[y, x] == 1:
+            continue
+
+        continent_id = int(data_object.lmco[y, x])
+
+        if data_object.laco[continent_id].type != continent_type:
+            continue
+
+        lmms_value = min(int(data_object.lmms[y, x]), size_limit)
+
+        solutions.setdefault(continent_id, [(x, y), -1, 0])
+
+        if lmms_value > solutions[continent_id][1]:
+            solutions[continent_id][0] = (x, y)
+            solutions[continent_id][1] = lmms_value
+            solutions[continent_id][2] += 1
+
+    solution_max_continent = None
+    for solution_continent in sorted(solutions.keys()):
+        if solution_max_continent is None or \
+           solutions[solution_continent][2] > solutions[solution_max_continent][2]:
+            solution_max_continent = solution_continent
+
+    return solutions.get(solution_max_continent, (None,))[0]
+
+def get_decorrupt_func(editable_c2m_path: str, refresh_time: float):
+    decorrupter = _WalkSectorsVehiclesDecorrupter(editable_c2m_path, refresh_time)
+    def decorrupt(data_object):
+        decorrupter.check(data_object)
+    return decorrupt
