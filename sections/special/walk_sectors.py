@@ -1,5 +1,5 @@
 from collections import deque
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 import numpy as np
 import os
 import time
@@ -213,14 +213,22 @@ class _WalkSectorsVehiclesDecorrupter:
         data_object_1 = update_ea_d(data_object_1)
         data_object_2 = update_ea_d(data_object_2)
 
-        return np.all(data_object_1.emla == data_object_2.emla) and \
-               np.all(data_object_1.empa == data_object_2.empa) and \
-               np.all(data_object_1.empb == data_object_2.empb) and \
-               np.all(data_object_1.emmi == data_object_2.emmi) and \
-               np.all(data_object_1.lmhe == data_object_2.lmhe)
+        if data_object_1.lsiz != data_object_2.lsiz:
+            return False
+
+        primary_sections = ("lmhe", "lmlv", "lmlp", "lafm", "emmi", "empa", "empb",
+                            "emt1", "emt2", "emt3", "emt4", "emla", "emvc")  # TODO: This info should be eventually
+                                                                             #       defined in another file.
+
+        for primary_section in primary_sections:
+            if hasattr(data_object_1, primary_section) and hasattr(data_object_2, primary_section):
+                if not np.all(getattr(data_object_1, primary_section) == getattr(data_object_2, primary_section)):
+                    print(primary_section)
+                    return False
+        return True
 
     @staticmethod
-    def _get_corruption_info(self, data_object):
+    def _get_corruption_info(data_object):
         sectors_width, sectors_height = sectors_grid_size(data_object)
 
         for terrain_type in ("land", "water"):
@@ -237,8 +245,12 @@ class _WalkSectorsVehiclesDecorrupter:
                     base_point_old = None if len(sector.points) == 0 else sector.points[0]
                     base_point_new = get_base_point(data_object, sector_index, terrain_type)
 
+                    supplementary_points_old = sector.points[1:]
+                    supplementary_points_new = get_supplementary_points(data_object, base_point_old, terrain_type)
+
                     corrupted = (sector_max_vehicle_sizes_old != sector_max_vehicle_sizes_new) or \
-                                (base_point_old != base_point_new)
+                                (base_point_old != base_point_new) or \
+                                (supplementary_points_old != supplementary_points_new)
 
                     if corrupted:
                         yield sector_center, terrain_type
@@ -489,20 +501,16 @@ def get_base_point(data_object, sector_index, terrain_type: Literal["land", "wat
         x += sector_x_micro
         y += sector_y_micro
 
-        if x >= 2 * data_object.lsiz.width or\
-           y >= 2 * data_object.lsiz.height:
-            continue
-
-        if data_object.lmwb[y, x] == 1:
+        if x >= 2 * data_object.lsiz.width  or \
+           y >= 2 * data_object.lsiz.height or \
+           data_object.lmwb[y, x] == 1:
             continue
 
         continent_id = int(data_object.lmco[y, x])
-
         if data_object.laco[continent_id].type != continent_type:
             continue
 
         lmms_value = min(int(data_object.lmms[y, x]), size_limit)
-
         solutions.setdefault(continent_id, [(x, y), -1, 0])
 
         if lmms_value > solutions[continent_id][1]:
@@ -517,6 +525,47 @@ def get_base_point(data_object, sector_index, terrain_type: Literal["land", "wat
             solution_max_continent = solution_continent
 
     return solutions.get(solution_max_continent, (None,))[0]
+
+def get_supplementary_points(data_object, base_point, terrain_type: Literal["land", "water"]):
+    if base_point is None: return []
+
+    x_min = (base_point[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0]
+    y_min = (base_point[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1]
+    x_max = x_min + walk_sector_size_micro[0] - 1
+    y_max = y_min + walk_sector_size_micro[1] - 1
+
+    match terrain_type:
+        case "land":  size_limit = 1
+        case "water": size_limit = 4
+        case _: raise ValueError
+
+    queue = deque([base_point])
+    searched = np.zeros(shape=(walk_sector_size_micro[::-1]), dtype=bool)
+    searched[base_point[1] - y_min, base_point[0] - x_min] = True
+    start_continent_id = int(data_object.lmco[base_point[::-1]])
+    solutions = dict()
+
+    while len(queue) > 0:
+        x, y = queue.popleft()
+
+        for direction, coordinates in enumerate(get_neighbouring_vertices((x, y))):
+            x_1, y_1 = coordinates
+
+            if 0 <= x_1 < 2 * data_object.lsiz.width  and \
+               0 <= y_1 < 2 * data_object.lsiz.height and \
+               x_min <= x_1 <= x_max                  and \
+               y_min <= y_1 <= y_max                  and \
+               not searched[y_1 - y_min, x_1 - x_min] and \
+               data_object.lmwb[y_1, x_1] == 0        and \
+               data_object.lmco[y_1, x_1] == start_continent_id:
+
+                lmms_value = min(int(data_object.lmms[y_1, x_1]), size_limit)
+                solutions.setdefault(lmms_value, []).append((x_1, y_1))
+                searched[y_1 - y_min, x_1 - x_min] = True
+                queue.append((x_1, y_1))
+
+    if len(solutions) == 0: return []
+    else:                   return solutions[max(solutions.keys())][:2]
 
 def get_decorrupt_func(editable_c2m_path: str, refresh_time: float):
     decorrupter = _WalkSectorsVehiclesDecorrupter(editable_c2m_path, refresh_time)
