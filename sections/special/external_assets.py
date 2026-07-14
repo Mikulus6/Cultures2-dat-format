@@ -1,8 +1,8 @@
 import numpy as np
-from sections.generic.ab_sections import combine_ab_sections, split_ab_sections
-from sections.generic.imports import patterns, landscapes
-from sections.generic.minus_one import get_minus_one
-from sections.special.texts import TextSection
+from ..generic.ab_sections import combine_ab_sections, split_ab_sections
+from ..generic.imports import patterns, landscapes
+from ..generic.minus_one import get_minus_one
+from ..special.texts import TextSection
 
 eapd_global = TextSection(list_=patterns.editnames_ordered)
 eald_global = TextSection(list_=landscapes.editnames_ordered)

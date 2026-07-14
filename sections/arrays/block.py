@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Literal
-from sections.generic.imports import landscapes
-from sections.generic.minus_one import get_minus_one
+from ..generic.imports import landscapes
+from ..generic.minus_one import get_minus_one
 
 # lm_b = {lmwb, lmbb}
 def data_to_lm_b(data_object, *, block_type: Literal["Walk", "Build"] = "Walk"):

@@ -5,11 +5,11 @@ import numpy as np
 import os
 import time
 from typing import Literal
-from sections.generic.imports import BufferGiver, BufferTaker
-from sections.generic.geometry import get_neighbouring_vertices, hexagonal_norm
-from sections.generic.minus_one import get_minus_one
-from sections.special.external_assets import update_ea_d
-from sections.special.special import SpecialSection
+from ..generic.imports import BufferGiver, BufferTaker
+from ..generic.geometry import get_neighbouring_vertices, hexagonal_norm
+from ..generic.minus_one import get_minus_one
+from ..special.external_assets import update_ea_d
+from ..special.special import SpecialSection
 
 walk_sector_size = (10, 10)
 walk_sector_size_micro = type(walk_sector_size)(2 * s for s in walk_sector_size)

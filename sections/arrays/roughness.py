@@ -1,6 +1,6 @@
 import numpy as np
-from sections.arrays.continents import continents_logic_types
-from sections.arrays.logic_type import get_adjacent_logic_types
+from ..arrays.continents import continents_logic_types
+from ..arrays.logic_type import get_adjacent_logic_types
 
 logic_types_roughness = {0: 0, 1: 1, 2: 2, 3: 4, 4: 3, 5: 0, 6: 0, 7: 5, 8: 3, 9: 3, 10: 1}
 

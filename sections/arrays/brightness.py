@@ -1,6 +1,6 @@
 from math import floor
 import numpy as np
-from sections.generic.imports import patterns
+from ..generic.imports import patterns
 
 # shadow kernel
 shadow_kernel_center = (2, 0)

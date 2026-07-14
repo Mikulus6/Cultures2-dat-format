@@ -1,6 +1,6 @@
 import numpy as np
-from sections.arrays.continents import get_continent_type
-from sections.generic.geometry import get_neighbouring_vertices
+from ..arrays.continents import get_continent_type
+from ..generic.geometry import get_neighbouring_vertices
 
 def check_boundary(data_object, coordinates):
     x, y = coordinates
@@ -22,7 +22,7 @@ def data_to_lmtw(data_object):
     # be properly finished (as there are *.bak files present), which would explain presence of uexpected values in lmtw.
 
     lmtw = np.zeros(data_object.lsiz.shape_micro, dtype=np.uint8)
-    continent_types = -1 * np.ones(data_object.lsiz.shape_micro, dtype=np.uint8)
+    continent_types = -1 * np.ones(data_object.lsiz.shape_micro, dtype=np.int8)
 
     for y in range(0, 2 * data_object.lsiz.height):
         for x in range(0, 2 * data_object.lsiz.width):
