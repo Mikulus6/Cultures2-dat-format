@@ -28,3 +28,11 @@ def get_tangent_triangles(coordinates_1, coordinates_2) -> (tuple, tuple):
     a2, b2 = get_adjacent_triangles(coordinates_2)
     return tuple(coord for coord in a1 if coord in a2), \
            tuple(coord for coord in b1 if coord in b2)
+
+def hexagonal_norm(coordinates_1, coordinates_2) -> int:
+    # https://www.redblobgames.com/grids/hexagons/
+    x1, y1 = coordinates_1
+    x2, y2 = coordinates_2
+    dq = (x1 - (y1 >> 1)) - (x2 - (y2 >> 1))
+    dr = y1 - y2
+    return max(abs(dq), abs(dr), abs(dq + dr))

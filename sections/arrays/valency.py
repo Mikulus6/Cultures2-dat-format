@@ -1,5 +1,5 @@
 import numpy as np
-from sections.generic.external_inis import landscapes
+from sections.generic.imports import landscapes
 from sections.generic.minus_one import get_minus_one
 
 def data_to_maximum_lmlv(data_object):

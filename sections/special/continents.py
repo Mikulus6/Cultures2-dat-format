@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-from scripts.buffer import BufferGiver, BufferTaker
+from sections.generic.imports import BufferGiver, BufferTaker
 from sections.special.special import SpecialSection
 
 @dataclass

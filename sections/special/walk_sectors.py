@@ -1,28 +1,26 @@
 from collections import deque
 from collections.abc import Callable
+import heapq
 import numpy as np
 import os
 import time
 from typing import Literal
-from scripts.buffer import BufferGiver, BufferTaker
-from sections.special.external_assets import update_ea_d
-from sections.generic.geometry import get_neighbouring_vertices
+from sections.generic.imports import BufferGiver, BufferTaker
+from sections.generic.geometry import get_neighbouring_vertices, hexagonal_norm
 from sections.generic.minus_one import get_minus_one
+from sections.special.external_assets import update_ea_d
 from sections.special.special import SpecialSection
 
 walk_sector_size = (10, 10)
-walk_sector_size_micro = type(walk_sector_size)(map(lambda s: 2 * s, walk_sector_size))
+walk_sector_size_micro = type(walk_sector_size)(2 * s for s in walk_sector_size)
 
 class WalkSector:
 
     def __init__(self):
 
         self.points = list()
-        self.max_vehicle_sizes = list()
-        self.connections = {"up":    False,
-                            "left":  False,
-                            "down":  False,
-                            "right": False}
+        self.max_vehicle_sizes = [False] * 8  # right, right+down, down, left+down, left, left+up, up, up+right
+        self.connections =       [False] * 4  # up, left, down, right
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and \
@@ -33,14 +31,11 @@ class WalkSector:
     def load(self, bytes_obj):
 
         sector_buffer = BufferGiver(bytes_obj)
-        assert sector_buffer.unsigned(1) in (0, 1)
+        assert sector_buffer.unsigned(1) in (0, 1) # In all original maps this value is equal to 1.
 
         connections_raw_bits = sector_buffer.binary(1)
-        assert connections_raw_bits[::2] == "0000"  # Even bits (counting from zero) must be zero
-        self.connections = {"up":    connections_raw_bits[1] == "1",
-                            "left":  connections_raw_bits[3] == "1",
-                            "down":  connections_raw_bits[5] == "1",
-                            "right": connections_raw_bits[7] == "1"}
+        assert connections_raw_bits[::2] == "0000"  # Even bits (counting from zero) must be zero.
+        self.connections = [(connections_raw_bits[i] == "1") for i in range(1, 8, 2)]
 
         sector_buffer.skip(1) # continent number
         assert sector_buffer.unsigned(1) == 0
@@ -56,24 +51,24 @@ class WalkSector:
         assert sector_buffer.unsigned(4) == sum(coordinates != (0, 0) for coordinates in (coordinates_1,
                                                                                           coordinates_2,
                                                                                           coordinates_3))
-
         for coordinates in (coordinates_1, coordinates_2, coordinates_3):
             if coordinates == (0, 0):
                 break
             self.points.append(coordinates)
 
-        assert self.max_vehicle_sizes[1] == self.max_vehicle_sizes[3] == self.max_vehicle_sizes[5] == self.max_vehicle_sizes[7]
+        assert self.max_vehicle_sizes[1] == \
+               self.max_vehicle_sizes[3] == \
+               self.max_vehicle_sizes[5] == \
+               self.max_vehicle_sizes[7]
         assert max(self.max_vehicle_sizes) <= 7
         if coordinates_1 == (0, 0):
             assert max(self.max_vehicle_sizes) == 0
 
     def to_bytes(self, data_obj):
         buffer_taker = BufferTaker()
-        buffer_taker.unsigned(1, length=1)  # TODO: meaning of this bit is not yet known (can be zero, not only one!!!)
-        connections_raw_bits = ("01" if self.connections["up"]    else "00") + \
-                               ("01" if self.connections["left"]  else "00") + \
-                               ("01" if self.connections["down"]  else "00") + \
-                               ("01" if self.connections["right"] else "00")
+        buffer_taker.unsigned(1, length=1)  # This flag can be equal to zero in custom maps, but if it is the case,
+                                            # then it is caused by data corruption.
+        connections_raw_bits = "".join(("01" if self.connections[i] else "00") for i in range(4))
         buffer_taker.binary(connections_raw_bits)
 
         if len(self.points) == 0: walk_point_1 = (0, 0)
@@ -103,22 +98,26 @@ class WalkSector:
 
         return bytes(buffer_taker)
 
+    _text_separator      = ","
     _text_subseparator_1 = "|"
     _text_subseparator_2 = ";"
 
     def to_text(self) -> str:
-        return self.__class__._text_subseparator_1.join(key for key, value in self.connections.items() if value)+ "," +\
-               self.__class__._text_subseparator_1.join(map(str, self.max_vehicle_sizes))+ "," +\
+        return self.__class__._text_subseparator_1.join(map(lambda c: str(int(c)), self.connections)) + \
+               self.__class__._text_separator + \
+               self.__class__._text_subseparator_1.join(map(str, self.max_vehicle_sizes)) + \
+               self.__class__._text_separator +\
                self.__class__._text_subseparator_1.join(str(point[0]) +
                                                         self.__class__._text_subseparator_2 +
                                                         str(point[1]) for point in self.points)
 
     def from_text(self, text_: str):
-        connections_raw, max_vehicle_sizes_raw, points_raw = text_.rstrip("\n").split(",")
-        self.connections = {direction: (direction in connections_raw.split("|")) for direction in ("up", "left",
-                                                                                                   "down", "right")}
-        self.max_vehicle_sizes = list(map(int, max_vehicle_sizes_raw.split("|")))
-        points_raw_list =  points_raw.split("|")
+        connections_raw, max_vehicle_sizes_raw, points_raw = text_.rstrip("\n").split(self.__class__._text_separator)
+
+        self.connections       = list(map(int, connections_raw.split(      self.__class__._text_subseparator_1)))
+        self.max_vehicle_sizes = list(map(int, max_vehicle_sizes_raw.split(self.__class__._text_subseparator_1)))
+
+        points_raw_list =  points_raw.split(self.__class__._text_subseparator_1)
         if len(points_raw_list[0]) == 0:
             points_raw_list = list()
         self.points = list(map(lambda point_text:tuple(map(int, point_text.split(self.__class__._text_subseparator_2))),
@@ -138,15 +137,10 @@ class WalkSectors(metaclass=SpecialSection):
             return False
 
         for terrain_type in self.__class__.walkable_terrain_types:
-            list_of_sectors_1 = getattr(self,  terrain_type)
-            list_of_sectors_2 = getattr(other, terrain_type)
-
-            if not len(list_of_sectors_1) == len(list_of_sectors_2):
+            if getattr(self,  terrain_type) != \
+               getattr(other, terrain_type):
                 return False
 
-            for sector_index in range(len(list_of_sectors_1)):
-                if list_of_sectors_1[sector_index] != list_of_sectors_2[sector_index]:
-                    return False
         return True
 
     def load(self, bytes_obj: bytes):
@@ -214,11 +208,6 @@ class WalkSectorsDecorrupter:
     # a landscape, and no other data is changed, it is proven to be corrupted data and not deterministically derivable
     # information. So far this class has successfully proven that all encountered discrepancies between original data
     # and derived content of sections are caused by corruption present in data, not by an incorrectly working algorithm.
-
-    directions_dict = {0: "right",
-                       2: "down",
-                       4: "left",
-                       8: "up"}
 
     def __init__(self, editable_c2m_path: str, refresh_time: float):
         self.editable_c2m_path = editable_c2m_path
@@ -301,7 +290,7 @@ class WalkSectorsDecorrupter:
             if continent_type == terrain_type and data_object.emla[y_real, x_real] == no_landscape:
                 return x_real, y_real
         else:
-            raise NotImplementedError # no free vertex (further manual investigation is required)
+            raise NotImplementedError # There is no free vertex. Further manual investigation is required.
 
     def check(self, data_object):
         print(f"Started checking data file with macro map dimensions " + \
@@ -322,9 +311,12 @@ class WalkSectorsDecorrupter:
                 corruption_info = tuple(self._get_corruption_info(data_object_new))
                 if len(corruption_info) == 0:
                     assert data_to_lasw(data_object) == data_object_new.lasw
+                    print(f"Modified map is coherent with known derivations.")
         print("No corruptions were found.")
 
+
 def generate_square_spiral():
+    offsets = ((1, 0), (0, 1), (-1, 0), (0, -1))
     x, y = walk_sector_size
     yield x, y
     side_length = 0
@@ -338,13 +330,7 @@ def generate_square_spiral():
             break
 
         for direction in range(4):
-            match direction:
-                case 0: offset = (1,  0)
-                case 1: offset = (0,  1)
-                case 2: offset = (-1, 0)
-                case 3: offset = (0, -1)
-                case _: raise ValueError
-
+            offset = offsets[direction]
             for _ in range(side_length):
                 yield x, y
                 x += offset[0]
@@ -400,6 +386,7 @@ def get_base_point(data_object, sector_index, terrain_type: Literal["land", "wat
     return solutions.get(solution_max_continent, (None,))[0]
 
 def get_supplementary_points(data_object, base_point, terrain_type: Literal["land", "water"]):
+    _max_number_of_points = 2
     if base_point is None: return []
 
     x_min = (base_point[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0]
@@ -437,8 +424,11 @@ def get_supplementary_points(data_object, base_point, terrain_type: Literal["lan
                 searched[y_1 - y_min, x_1 - x_min] = True
                 queue.append((x_1, y_1))
 
+        if len(solutions.get(size_limit, [])) >= _max_number_of_points:
+            break  # It is unnecessary to preform rest of flood fill, because optimal solution is already found.
+
     if len(solutions) == 0: return []
-    else:                   return solutions[max(solutions.keys())][:2]
+    else:                   return solutions[max(solutions.keys())][:_max_number_of_points]
 
 def pathfind_bounds(coordinates_1, coordinates_2):
     x_min = min((coordinates_1[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0],
@@ -452,7 +442,7 @@ def pathfind_bounds(coordinates_1, coordinates_2):
     return (x_min, y_min), (x_max, y_max)
 
 def pathfind(data_object, coordinates_start, coordinates_end,
-             vextex_availability_func: Callable = lambda *args, **kwargs: True):
+             vertex_availability_func: Callable = lambda *args, **kwargs: True, norm_func: Callable = hexagonal_norm):
 
     coords_min, coords_max = pathfind_bounds(coordinates_start, coordinates_end)
     x_min, y_min = coords_min
@@ -461,30 +451,30 @@ def pathfind(data_object, coordinates_start, coordinates_end,
     if coordinates_start == coordinates_end:
         return True
 
-    if not vextex_availability_func(coordinates_end) or \
+    if not vertex_availability_func(coordinates_end) or \
        data_object.lmco[coordinates_start[::-1]] != data_object.lmco[coordinates_end[::-1]]:
         return False
 
-    queue = deque([coordinates_start])
+    queue = [(norm_func(coordinates_start, coordinates_end), 0, coordinates_start)]
     searched = np.zeros(shape=(y_max - y_min + 1, x_max - x_min + 1), dtype=bool)
     searched[coordinates_start[1] - y_min, coordinates_start[0] - x_min] = True
 
     while len(queue) > 0:
-        x, y = queue.popleft()
-        if vextex_availability_func((x, y)):
+        _, cum_cost, (x, y) = heapq.heappop(queue)
+        if vertex_availability_func((x, y)):
             if (x, y) == coordinates_end:
                 return True
 
             for direction, coordinates in enumerate(get_neighbouring_vertices((x, y))):
                 x_1, y_1 = coordinates
-                if not(x_min <= x_1 <= x_max) or \
-                   not(y_min <= y_1 <= y_max) or \
-                   searched[y_1 - y_min, x_1 - x_min] or \
-                   (data_object.lmtw[y, x] & (1 << direction)) == 0:  # edge availability
-                    continue
+                if x_min <= x_1 <= x_max and \
+                   y_min <= y_1 <= y_max and \
+                   not searched[y_1 - y_min, x_1 - x_min] and \
+                   (data_object.lmtw[y, x] & (1 << direction)) != 0:
 
-                queue.append((x_1, y_1))
-                searched[y_1 - y_min, x_1 - x_min] = True
+                    searched[y_1 - y_min, x_1 - x_min] = True
+                    heapq.heappush(queue, (cum_cost + 1 + norm_func((x_1, y_1), coordinates_end),
+                                           cum_cost + 1, (x_1, y_1)))
     return False
 
 def get_neighbouring_sector_indices(data_object, sector_index):
@@ -564,10 +554,7 @@ def get_sector_connections(data_object, lasw_updated, sector_index, terrain_type
     else:
         connections = [False, False, False, False]
 
-    return {"right": connections[0],
-            "down":  connections[1],
-            "left":  connections[2],
-            "up":    connections[3]}
+    return connections[::-1]
 
 def get_decorrupt_func(editable_c2m_path: str, refresh_time: float):
     decorrupter = WalkSectorsDecorrupter(editable_c2m_path, refresh_time)

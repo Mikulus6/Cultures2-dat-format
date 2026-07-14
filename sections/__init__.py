@@ -19,4 +19,4 @@ from .special.fishes          import Fishes
 from .special.size            import Size, update_lsiz
 from .special.special         import SpecialSection
 from .special.texts           import TextSection
-from .special.walk_sectors    import WalkSectors, WalkSector
+from .special.walk_sectors    import WalkSectors, WalkSector, update_lasw

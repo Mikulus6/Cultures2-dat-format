@@ -26,22 +26,22 @@
 | `lmsb` | ✅         | ✅          | sector blocks (secondary, derivable from `lasw`)                           |
 | `lmao` | ✅         | ✅          | vectorized landscapes `LogicAdditionalAttachPointArea` (`emla`+`eald`)     |
 | `laco` | ✅         | ✅          | continents metadata (secondary, derivable from `lmco`)                     |
-| `lasw` | ✅         | ❌          | walk sectors (most likely secondary)                                       |
+| `lasw` | ✅         | ✅          | walk sectors (secondary, usually heavily corrupted in existing files)      |
 | `lafm` | ✅         | ✅          | fishes (primary)                                                           |
 | `lmhf` | ✅         | ✅          | 2d array, always zeros                                                     |
 | `emmm` | ✅         | ✅          | empty                                                                      |
 | `embr` | ✅         | ✅          | brightness (secondary, derivable from `lmhe`+`empa`+`empb`)                |
 | `emm1` | ✅         | ✅          | visibility of infrastructure (secondary, derivable from `emmi`)            |
 | `emmi` | ✅         | ✅          | roads/houses vertex type (primary, devs never used houses overlay here)    |
-| `eapd` | ✅         | ✅          | patterns ids, text (kind of primary)                                       |
+| `eapd` | ✅         | ✅          | patterns ids, text (semi-primary)                                          |
 | `empa` | ✅         | ✅          | A-triangles (primary)                                                      |
 | `empb` | ✅         | ✅          | B-triangles (primary)                                                      |
-| `eatd` | ✅         | ✅          | transitions ids divided by 6, text (primary)                               |
+| `eatd` | ✅         | ✅          | transitions ids divided by 6, text (semi-primary)                          |
 | `emt1` | ✅         | ✅          | transitions A, foreground (primary)                                        |
 | `emt2` | ✅         | ✅          | transitions B, foreground (primary)                                        |
 | `emt3` | ✅         | ✅          | transitions A, background (primary)                                        |
 | `emt4` | ✅         | ✅          | transitions B, background (primary)                                        |
-| `eald` | ✅         | ✅          | landscapes ids, text (kind of primary)                                     |
+| `eald` | ✅         | ✅          | landscapes ids, text (semi-primary)                                        |
 | `emla` | ✅         | ✅          | landscapes (primary)                                                       |
 | `emvc` | ✅         | ✅          | vertex colors (primary)                                                    |
 | `xend` | ✅         | ✅          | empty                                                                      |
