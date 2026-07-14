@@ -41,7 +41,7 @@ def update_lm_b(data_object):
 
 def data_to_lmsb(data_object):
     lmsb = np.zeros_like(data_object.lmsb)
-    for walkable_terrain_type in data_object.lasw.__class__._walkable_terrain_types: # noqa
+    for walkable_terrain_type in data_object.lasw.__class__.walkable_terrain_types: # noqa
         for walk_sector in getattr(data_object.lasw, walkable_terrain_type):
             for point in walk_sector.points:
                 lmsb[*point[::-1]] = 1

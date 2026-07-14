@@ -16,18 +16,19 @@ walk_sector_size_micro = type(walk_sector_size)(map(lambda s: 2 * s, walk_sector
 class WalkSector:
 
     def __init__(self):
+
+        self.points = list()
+        self.max_vehicle_sizes = list()
         self.connections = {"up":    False,
                             "left":  False,
                             "down":  False,
                             "right": False}
 
-        self.max_vehicle_sizes = list()
-        # Starting from the direction to the right and going clockwise, these eight numbers are used to determine how
-        # big a vehicle can be for navigation from a walk sector in a given direction. However, the original
-        # implementation in the game is flawed, and this number does not satisfy the conditions to be redundant to an
-        # undirected graph.
-
-        self.points = list()
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and \
+               self.connections == other.connections and \
+               self.max_vehicle_sizes == other.max_vehicle_sizes and \
+               self.points == other.points
 
     def load(self, bytes_obj):
 
@@ -68,7 +69,7 @@ class WalkSector:
 
     def to_bytes(self, data_obj):
         buffer_taker = BufferTaker()
-        buffer_taker.unsigned(1, length=1)
+        buffer_taker.unsigned(1, length=1)  # TODO: meaning of this bit is not yet known (can be zero, not only one!!!)
         connections_raw_bits = ("01" if self.connections["up"]    else "00") + \
                                ("01" if self.connections["left"]  else "00") + \
                                ("01" if self.connections["down"]  else "00") + \
@@ -125,34 +126,50 @@ class WalkSector:
 
 
 class WalkSectors(metaclass=SpecialSection):
-    _walkable_terrain_types = ("land", "water")
+    walkable_terrain_types = ("land", "water")
     _bytes_per_sector = 52
 
     def __init__(self):
-        for terrain_type in self.__class__._walkable_terrain_types:
+        for terrain_type in self.__class__.walkable_terrain_types:
             setattr(self, terrain_type, list())
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        for terrain_type in self.__class__.walkable_terrain_types:
+            list_of_sectors_1 = getattr(self,  terrain_type)
+            list_of_sectors_2 = getattr(other, terrain_type)
+
+            if not len(list_of_sectors_1) == len(list_of_sectors_2):
+                return False
+
+            for sector_index in range(len(list_of_sectors_1)):
+                if list_of_sectors_1[sector_index] != list_of_sectors_2[sector_index]:
+                    return False
+        return True
 
     def load(self, bytes_obj: bytes):
-        assert len(bytes_obj) % (self.__class__._bytes_per_sector * len(self._walkable_terrain_types)) == 0
+        assert len(bytes_obj) % (self.__class__._bytes_per_sector * len(self.walkable_terrain_types)) == 0
         buffer = BufferGiver(bytes_obj)
 
-        for terrain_type in self.__class__._walkable_terrain_types:
+        for terrain_type in self.__class__.walkable_terrain_types:
             setattr(self, terrain_type, list())
-            for _ in range(len(bytes_obj) // (self.__class__._bytes_per_sector * len(self._walkable_terrain_types))):
+            for _ in range(len(bytes_obj) // (self.__class__._bytes_per_sector * len(self.walkable_terrain_types))):
                 walk_sector = WalkSector()
                 walk_sector.load(buffer.bytes(self.__class__._bytes_per_sector))
                 getattr(self, terrain_type).append(walk_sector)
 
     def to_bytes(self, data_obj):
         buffer_taker = BufferTaker()
-        for terrain_type in self.__class__._walkable_terrain_types:
+        for terrain_type in self.__class__.walkable_terrain_types:
             for walk_sector in getattr(self, terrain_type):
                 buffer_taker.bytes(walk_sector.to_bytes(data_obj))
         return bytes(buffer_taker)
 
     def to_text(self) -> dict:
         text = str()
-        for terrain_type in self.__class__._walkable_terrain_types:
+        for terrain_type in self.__class__.walkable_terrain_types:
             text += terrain_type + "\n"
             for sector_point in getattr(self, terrain_type, list()):
                 text += sector_point.to_text() + "\n"
@@ -164,7 +181,7 @@ class WalkSectors(metaclass=SpecialSection):
         current_terrain_type_sectors = list()
 
         for line in (*text.rstrip("\n").split("\n"), None):  # None means eof.
-            for terrain_type in self.__class__._walkable_terrain_types:
+            for terrain_type in self.__class__.walkable_terrain_types:
                 if line == terrain_type or line is None:
                     if current_terrain_type is not None:
                         setattr(self, current_terrain_type, current_terrain_type_sectors)
@@ -189,13 +206,14 @@ class WalkSectors(metaclass=SpecialSection):
             self.from_text(file.read())
 
 
-class _WalkSectorsVehiclesDecorrupter:
+class WalkSectorsDecorrupter:
     # This class is used as an empirical verifier for walk sectors data corruption. It finds potentially corrupted
     # information in the given data object and then asks the user to refresh this information by placing and removing a
     # landscape with a tangible hitbox near the given coordinates in the original external editor of any game from the
     # Cultures series. If the corruption is removed due to the user refreshing walk sectors data by placing and removing
     # a landscape, and no other data is changed, it is proven to be corrupted data and not deterministically derivable
-    # information.
+    # information. So far this class has successfully proven that all encountered discrepancies between original data
+    # and derived content of sections are caused by corruption present in data, not by an incorrectly working algorithm.
 
     directions_dict = {0: "right",
                        2: "down",
@@ -216,14 +234,13 @@ class _WalkSectorsVehiclesDecorrupter:
         if data_object_1.lsiz != data_object_2.lsiz:
             return False
 
-        primary_sections = ("lmhe", "lmlv", "lmlp", "lafm", "emmi", "empa", "empb",
-                            "emt1", "emt2", "emt3", "emt4", "emla", "emvc")  # TODO: This info should be eventually
-                                                                             #       defined in another file.
+        # Fishes and colors of vertices are not included here.
+        directly_editable_arrays = ("lmhe", "lmlv", "lmlp", "emmi", "empa",
+                                    "empb", "emt1", "emt2", "emt3", "emt4", "emla")
 
-        for primary_section in primary_sections:
-            if hasattr(data_object_1, primary_section) and hasattr(data_object_2, primary_section):
-                if not np.all(getattr(data_object_1, primary_section) == getattr(data_object_2, primary_section)):
-                    print(primary_section)
+        for section_name in directly_editable_arrays:
+            if hasattr(data_object_1, section_name) and hasattr(data_object_2, section_name):
+                if not np.all(getattr(data_object_1, section_name) == getattr(data_object_2, section_name)):
                     return False
         return True
 
@@ -231,7 +248,7 @@ class _WalkSectorsVehiclesDecorrupter:
     def _get_corruption_info(data_object):
         sectors_width, sectors_height = sectors_grid_size(data_object)
 
-        for terrain_type in ("land", "water"):
+        for terrain_type in data_object.lasw.__class__.walkable_terrain_types:
             for sector_y in range(sectors_height):
                 for sector_x in range(sectors_width):
                     sector_index = sector_y * sectors_width + sector_x
@@ -239,14 +256,15 @@ class _WalkSectorsVehiclesDecorrupter:
                                      sector_y * walk_sector_size_micro[1] + (walk_sector_size_micro[1] // 2))
                     sector = getattr(data_object.lasw, terrain_type)[sector_index]
 
-                    sector_max_vehicle_sizes_old = sector.max_vehicle_sizes
-                    sector_max_vehicle_sizes_new = get_sector_max_vehicle_sizes(data_object, sector_index, terrain_type)
-
                     base_point_old = None if len(sector.points) == 0 else sector.points[0]
                     base_point_new = get_base_point(data_object, sector_index, terrain_type)
 
                     supplementary_points_old = sector.points[1:]
                     supplementary_points_new = get_supplementary_points(data_object, base_point_old, terrain_type)
+
+                    sector_max_vehicle_sizes_old = sector.max_vehicle_sizes
+                    sector_max_vehicle_sizes_new = get_sector_max_vehicle_sizes(data_object, data_object.lasw,
+                                                                                sector_index, terrain_type)
 
                     corrupted = (sector_max_vehicle_sizes_old != sector_max_vehicle_sizes_new) or \
                                 (base_point_old != base_point_new) or \
@@ -267,7 +285,7 @@ class _WalkSectorsVehiclesDecorrupter:
         return data_object_new
 
     @staticmethod
-    def _find_empty_vertex_in_sector(data_object, sector_center, terrain_type: Literal["land", "water"] = "land"):
+    def _find_empty_vertex_in_sector(data_object, sector_center, terrain_type: Literal["land", "water"]):
 
         no_landscape = get_minus_one(data_object.emla.dtype)
 
@@ -302,152 +320,9 @@ class _WalkSectorsVehiclesDecorrupter:
                 corruption_info = tuple(self._get_corruption_info(data_object))
             else:
                 corruption_info = tuple(self._get_corruption_info(data_object_new))
+                if len(corruption_info) == 0:
+                    assert data_to_lasw(data_object) == data_object_new.lasw
         print("No corruptions were found.")
-
-
-def sectors_grid_size(data_object):
-    sectors_width =  ( data_object.lsiz.width  // walk_sector_size[0]) + \
-                     ((data_object.lsiz.width  %  walk_sector_size[0]) != 0)
-    sectors_height = ( data_object.lsiz.height // walk_sector_size[1]) + \
-                     ((data_object.lsiz.height %  walk_sector_size[1]) != 0)
-    return sectors_width, sectors_height
-
-def pathfind_bounds(coordinates_1, coordinates_2):
-    x_min = min((coordinates_1[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0],
-                (coordinates_2[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0])
-    y_min = min((coordinates_1[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1],
-                (coordinates_2[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1])
-    x_max = max(((coordinates_1[0] // walk_sector_size_micro[0]) + 1) * walk_sector_size_micro[0],
-                ((coordinates_2[0] // walk_sector_size_micro[0]) + 1) * walk_sector_size_micro[0]) - 1
-    y_max = max(((coordinates_1[1] // walk_sector_size_micro[1]) + 1) * walk_sector_size_micro[1],
-                ((coordinates_2[1] // walk_sector_size_micro[1]) + 1) * walk_sector_size_micro[1]) - 1
-    return (x_min, y_min), (x_max, y_max)
-
-def pathfind(data_object, coordinates_start, coordinates_end,
-             vextex_availability_func: Callable = lambda *args, **kwargs: True):
-
-    coords_min, coords_max = pathfind_bounds(coordinates_start, coordinates_end)
-    x_min, y_min = coords_min
-    x_max, y_max = coords_max
-
-    if coordinates_start == coordinates_end:
-        return True
-
-    if not vextex_availability_func(coordinates_end) or \
-       data_object.lmco[coordinates_start[::-1]] != data_object.lmco[coordinates_end[::-1]]:
-        return False
-
-    queue = deque([coordinates_start])
-    searched = np.zeros(shape=(y_max - y_min + 1, x_max - x_min + 1), dtype=bool)
-    searched[coordinates_start[1] - y_min, coordinates_start[0] - x_min] = True
-
-    while len(queue) > 0:
-        x, y = queue.popleft()
-        if vextex_availability_func((x, y)):
-            if (x, y) == coordinates_end:
-                return True
-
-            for direction, coordinates in enumerate(get_neighbouring_vertices((x, y))):
-                x_1, y_1 = coordinates
-                if not(x_min <= x_1 <= x_max) or \
-                   not(y_min <= y_1 <= y_max) or \
-                   searched[y_1 - y_min, x_1 - x_min] or \
-                   (data_object.lmtw[y, x] & (1 << direction)) == 0:  # edge availability
-                    continue
-
-                queue.append((x_1, y_1))
-                searched[y_1 - y_min, x_1 - x_min] = True
-    return False
-
-def get_neighbouring_sector_indices(data_object, sector_index):
-    sectors_width, sectors_height = sectors_grid_size(data_object)
-    return (sector_index + 1             if sector_index % sectors_width != sectors_width - 1   else None, # right
-            sector_index + sectors_width if sector_index < sectors_width * (sectors_height - 1) else None, # down
-            sector_index - 1             if sector_index % sectors_width != 0                   else None, # left
-            sector_index - sectors_width if sector_index >= sectors_width                       else None) # up
-
-def get_sector_connections(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
-    sectors_type = getattr(data_object.lasw, terrain_type)
-    sector = sectors_type[sector_index]
-    if len(sector.points) != 0:
-        availability_func = lambda coordinates: (data_object.lmwb[coordinates[::-1]] == 0)
-
-        connections = list()
-        for sector_neighbour_index in get_neighbouring_sector_indices(data_object, sector_index):
-            if sector_neighbour_index is None:
-                connections.append(False)
-                continue
-
-            sector_neighbour = sectors_type[sector_neighbour_index]
-            if len(sector_neighbour.points) == 0:
-                connections.append(False)
-                continue
-
-            connections.append(pathfind(data_object, sector.points[0], sector_neighbour.points[0], availability_func))
-    else:
-        connections = [False, False, False, False]
-
-    return {"right": connections[0],
-            "down":  connections[1],
-            "left":  connections[2],
-            "up":    connections[3]}
-
-def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end,
-                            terrain_type: Literal["land", "water"] = "land"):
-    # This function does not always return output identical to the original external editor present in multiple games
-    # from the Cultures series. These exceptions are caused by the editor not updating walk sectors data correctly. For
-    # any given exception, one can verify this fact by opening the relevant map in the original external editor and
-    # updating the walk sector point by putting a landscape with a hitbox capable of blocking walking near it and then
-    # removing it. This action will result in an identical map, but with walk sector points now updated. For all tests
-    # performed so far, this method provided confirmation that walk sector points could be not updated correctly. Until
-    # a counter example is found, this method remains the most accurate known derivation algorithm coherent with
-    # knowledge provided by decompilation research done by push42. For more details use _WalkSectorsVehiclesDecorrupter
-    # class defined in this file.
-
-    match terrain_type:
-        case "land":  size_limit = 1
-        case "water": size_limit = 4
-        case _: raise ValueError
-
-    max_vehicle_size = int(data_object.lmms[coordinates_start[::-1]])
-    size_cap = min(max_vehicle_size, size_limit)
-
-    for vehicle_size in range(size_cap, -1, -1):
-
-        def availability_func(coordinates):
-            return (data_object.lmwb[coordinates[::-1]] == 0) and vehicle_size <= data_object.lmms[coordinates[::-1]]
-
-        if pathfind(data_object, coordinates_start, coordinates_end, availability_func):
-            return vehicle_size
-
-    return max_vehicle_size
-
-def get_sector_max_vehicle_sizes(data_object, sector_index, terrain_type: Literal["land", "water"] = "land"):
-    _number_of_neighbours = 8
-    sectors_type = getattr(data_object.lasw, terrain_type)
-    sector = sectors_type[sector_index]
-
-    if len(sector.points) == 0:
-        return [0] * _number_of_neighbours
-
-    max_vehicle_sizes = [int(data_object.lmms[sector.points[0][::-1]])] * _number_of_neighbours
-    for direction_index, sector_neighbour_index in enumerate(get_neighbouring_sector_indices(data_object,
-                                                                                             sector_index)):
-        if sector_neighbour_index is None:
-            continue
-
-        sector_neighbour = sectors_type[sector_neighbour_index]
-        if len(sector_neighbour.points) == 0:
-            continue
-
-        max_vehicle_sizes[2 * direction_index] = \
-            get_cardinal_edge_value(data_object, sector.points[0], sector_neighbour.points[0], terrain_type)
-
-    if len(sector.points) == 0: diagonal_edge_number = 0
-    else: diagonal_edge_number = max(max_vehicle_sizes)
-    max_vehicle_sizes[1::2] = [diagonal_edge_number] * len(max_vehicle_sizes[1::2])
-
-    return max_vehicle_sizes
 
 def generate_square_spiral():
     x, y = walk_sector_size
@@ -475,16 +350,14 @@ def generate_square_spiral():
                 x += offset[0]
                 y += offset[1]
 
+def sectors_grid_size(data_object):
+    sectors_width =  ( data_object.lsiz.width  // walk_sector_size[0]) + \
+                     ((data_object.lsiz.width  %  walk_sector_size[0]) != 0)
+    sectors_height = ( data_object.lsiz.height // walk_sector_size[1]) + \
+                     ((data_object.lsiz.height %  walk_sector_size[1]) != 0)
+    return sectors_width, sectors_height
+
 def get_base_point(data_object, sector_index, terrain_type: Literal["land", "water"]):
-    # This function does not always return output identical to the original external editor present in multiple games
-    # from the Cultures series. These exceptions are caused by the editor not updating walk sectors data correctly. For
-    # any given exception, one can verify this fact by opening the relevant map in the original external editor and
-    # updating the walk sector point by putting a landscape with a hitbox capable of blocking walking near it and then
-    # removing it. This action will result in an identical map, but with walk sector points now updated. For all tests
-    # performed so far, this method provided confirmation that walk sector points could be not updated correctly. Until
-    # a counter example is found, this method remains the most accurate known derivation algorithm coherent with
-    # knowledge provided by decompilation research done by Basssiiie. For more details use
-    # _WalkSectorsVehiclesDecorrupter class defined in this file.
 
     sectors_in_row = sectors_grid_size(data_object)[0]
     sector_x_micro = ((sector_index %  sectors_in_row) * walk_sector_size_micro[0])
@@ -567,8 +440,167 @@ def get_supplementary_points(data_object, base_point, terrain_type: Literal["lan
     if len(solutions) == 0: return []
     else:                   return solutions[max(solutions.keys())][:2]
 
+def pathfind_bounds(coordinates_1, coordinates_2):
+    x_min = min((coordinates_1[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0],
+                (coordinates_2[0] // walk_sector_size_micro[0]) * walk_sector_size_micro[0])
+    y_min = min((coordinates_1[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1],
+                (coordinates_2[1] // walk_sector_size_micro[1]) * walk_sector_size_micro[1])
+    x_max = max(((coordinates_1[0] // walk_sector_size_micro[0]) + 1) * walk_sector_size_micro[0],
+                ((coordinates_2[0] // walk_sector_size_micro[0]) + 1) * walk_sector_size_micro[0]) - 1
+    y_max = max(((coordinates_1[1] // walk_sector_size_micro[1]) + 1) * walk_sector_size_micro[1],
+                ((coordinates_2[1] // walk_sector_size_micro[1]) + 1) * walk_sector_size_micro[1]) - 1
+    return (x_min, y_min), (x_max, y_max)
+
+def pathfind(data_object, coordinates_start, coordinates_end,
+             vextex_availability_func: Callable = lambda *args, **kwargs: True):
+
+    coords_min, coords_max = pathfind_bounds(coordinates_start, coordinates_end)
+    x_min, y_min = coords_min
+    x_max, y_max = coords_max
+
+    if coordinates_start == coordinates_end:
+        return True
+
+    if not vextex_availability_func(coordinates_end) or \
+       data_object.lmco[coordinates_start[::-1]] != data_object.lmco[coordinates_end[::-1]]:
+        return False
+
+    queue = deque([coordinates_start])
+    searched = np.zeros(shape=(y_max - y_min + 1, x_max - x_min + 1), dtype=bool)
+    searched[coordinates_start[1] - y_min, coordinates_start[0] - x_min] = True
+
+    while len(queue) > 0:
+        x, y = queue.popleft()
+        if vextex_availability_func((x, y)):
+            if (x, y) == coordinates_end:
+                return True
+
+            for direction, coordinates in enumerate(get_neighbouring_vertices((x, y))):
+                x_1, y_1 = coordinates
+                if not(x_min <= x_1 <= x_max) or \
+                   not(y_min <= y_1 <= y_max) or \
+                   searched[y_1 - y_min, x_1 - x_min] or \
+                   (data_object.lmtw[y, x] & (1 << direction)) == 0:  # edge availability
+                    continue
+
+                queue.append((x_1, y_1))
+                searched[y_1 - y_min, x_1 - x_min] = True
+    return False
+
+def get_neighbouring_sector_indices(data_object, sector_index):
+    sectors_width, sectors_height = sectors_grid_size(data_object)
+    return (sector_index + 1             if sector_index % sectors_width != sectors_width - 1   else None, # right
+            sector_index + sectors_width if sector_index < sectors_width * (sectors_height - 1) else None, # down
+            sector_index - 1             if sector_index % sectors_width != 0                   else None, # left
+            sector_index - sectors_width if sector_index >= sectors_width                       else None) # up
+
+def get_cardinal_edge_value(data_object, coordinates_start, coordinates_end, terrain_type: Literal["land", "water"]):
+
+    match terrain_type:
+        case "land":  size_limit = 1
+        case "water": size_limit = 4
+        case _: raise ValueError
+
+    max_vehicle_size = int(data_object.lmms[coordinates_start[::-1]])
+    size_cap = min(max_vehicle_size, size_limit)
+
+    for vehicle_size in range(size_cap, -1, -1):
+
+        def availability_func(coordinates):
+            return (data_object.lmwb[coordinates[::-1]] == 0) and vehicle_size <= data_object.lmms[coordinates[::-1]]
+
+        if pathfind(data_object, coordinates_start, coordinates_end, availability_func):
+            return vehicle_size
+
+    return max_vehicle_size
+
+def get_sector_max_vehicle_sizes(data_object, lasw_updated, sector_index, terrain_type: Literal["land", "water"]):
+    _number_of_neighbours = 8
+    sectors_type = getattr(lasw_updated, terrain_type)
+    sector = sectors_type[sector_index]
+
+    if len(sector.points) == 0:
+        return [0] * _number_of_neighbours
+
+    max_vehicle_sizes = [int(data_object.lmms[sector.points[0][::-1]])] * _number_of_neighbours
+    for direction_index, sector_neighbour_index in enumerate(get_neighbouring_sector_indices(data_object,
+                                                                                             sector_index)):
+        if sector_neighbour_index is None:
+            continue
+
+        sector_neighbour = sectors_type[sector_neighbour_index]
+        if len(sector_neighbour.points) == 0:
+            continue
+
+        max_vehicle_sizes[2 * direction_index] = get_cardinal_edge_value(data_object, sector.points[0],
+                                                                         sector_neighbour.points[0], terrain_type)
+
+    if len(sector.points) == 0: diagonal_edge_number = 0
+    else:                       diagonal_edge_number = max(max_vehicle_sizes)
+
+    max_vehicle_sizes[1::2] = [diagonal_edge_number] * len(max_vehicle_sizes[1::2])
+
+    return max_vehicle_sizes
+
+def get_sector_connections(data_object, lasw_updated, sector_index, terrain_type: Literal["land", "water"]):
+    sectors_type = getattr(lasw_updated, terrain_type)
+    sector = sectors_type[sector_index]
+
+    if len(sector.points) != 0:
+        availability_func = lambda coordinates: (data_object.lmwb[coordinates[::-1]] == 0)
+
+        connections = list()
+        for sector_neighbour_index in get_neighbouring_sector_indices(data_object, sector_index):
+            if sector_neighbour_index is None:
+                connections.append(False)
+                continue
+
+            sector_neighbour = sectors_type[sector_neighbour_index]
+            if len(sector_neighbour.points) == 0:
+                connections.append(False)
+                continue
+
+            connections.append(pathfind(data_object, sector.points[0], sector_neighbour.points[0], availability_func))
+    else:
+        connections = [False, False, False, False]
+
+    return {"right": connections[0],
+            "down":  connections[1],
+            "left":  connections[2],
+            "up":    connections[3]}
+
 def get_decorrupt_func(editable_c2m_path: str, refresh_time: float):
-    decorrupter = _WalkSectorsVehiclesDecorrupter(editable_c2m_path, refresh_time)
+    decorrupter = WalkSectorsDecorrupter(editable_c2m_path, refresh_time)
     def decorrupt(data_object):
         decorrupter.check(data_object)
     return decorrupt
+
+def data_to_lasw(data_object):
+    sectors_width, sectors_height = sectors_grid_size(data_object)
+
+    lasw = WalkSectors()
+
+    for terrain_type in WalkSectors.walkable_terrain_types:
+        for sector_y in range(sectors_height):
+            for sector_x in range(sectors_width):
+                sector_index = sector_y * sectors_width + sector_x
+
+                walk_sector = WalkSector()
+
+                base_point = get_base_point(data_object, sector_index, terrain_type)
+                supplementary_points = get_supplementary_points(data_object, base_point, terrain_type)
+                walk_sector.points = [] if base_point is None else [base_point, *supplementary_points]
+                getattr(lasw, terrain_type).append(walk_sector)
+
+        for sector_y in range(sectors_height):
+            for sector_x in range(sectors_width):
+                sector_index = sector_y * sectors_width + sector_x
+                walk_sector = getattr(lasw, terrain_type)[sector_index]
+                walk_sector.max_vehicle_sizes = get_sector_max_vehicle_sizes(data_object, lasw, sector_index, terrain_type)
+                walk_sector.connections = get_sector_connections(data_object, lasw, sector_index, terrain_type)
+
+    return lasw
+
+def update_lasw(data_object):
+    data_object.lasw = data_to_lasw(data_object)
+    return data_object
