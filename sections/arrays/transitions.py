@@ -4,7 +4,17 @@ from ..generic.imports import transitions, points, patterns
 from ..generic.minus_one import get_minus_one
 from ..generic.geometry import get_adjacent_triangles, get_triangle_corner_vertices
 
-points_inversed = {point["patterngroup"] : point["name"] for point in points.values()}
+# Capitalization of various names is not consistent across game files related to transitions.
+# To prevent any confusion, it was decided to turn all ambigious strings into lowercase.
+
+# TODO: Check what should be turned into lowercase and what can remain as original string (maybe change it to lowercase
+#       only when required?) It would be cool if original capitalization was preserved after doing some operations on
+#       lowercase string without the need of manually interating all of them and reverting to original capitalization.
+#       Right now I just pasted some str.lower methods to make the stuff work, but I'm not sure if all of them are
+#       necessary.
+
+points_editnames_ordered_lowercase = list(map(str.lower, points.editnames_ordered))
+points_inversed = {point["patterngroup"].lower() : point["name"].lower() for point in points.values()}
 
 permutations_per_transition = 6
 cover_presence = {0: (False, True,  True ),
@@ -29,12 +39,12 @@ def get_corner_characteristic(data_object, coordinates):
             continue
 
         match triangle_type:
-            case "a": triangle_info = data_object.eapd[data_object.empa[triangle_coordinates[::-1]]]
-            case "b": triangle_info = data_object.eapd[data_object.empb[triangle_coordinates[::-1]]]
+            case "a": triangle_name = data_object.eapd[data_object.empa[triangle_coordinates[::-1]]]
+            case "b": triangle_name = data_object.eapd[data_object.empb[triangle_coordinates[::-1]]]
             case _: raise ValueError
 
-        for editgroup in patterns[triangle_info]["EditGroups"]:
-            point_name = points_inversed.get(editgroup)
+        for editgroup in patterns[triangle_name]["EditGroups"]:
+            point_name = points_inversed.get(editgroup.lower())
             if point_name is not None:
                 point_names.append(point_name)
                 break  # TODO: I'm not sure is this correct. Can a single point have multiple types?
@@ -72,32 +82,87 @@ def get_transitions(data_object, coordinates, triangle_type: Literal["a", "b"], 
         if as_pointtype:
             terrain_type = transitions[terrain_type]["pointtype"]
 
-        transitions_data.append(tuple(terrain_type if cover_type[i] else None for i in range(3)))
+        transitions_data.append(tuple(terrain_type.lower() if cover_type[i] else None for i in range(3)))
 
     return transitions_data
 
-def trans_test_data(data_object):
-    # TODO: for testing only
-    for y in range(data_object.lsiz.height):
-        for x in range(data_object.lsiz.width):
-            for triangle_type in ("a", "b"):
-                current_transitions = get_transitions(data_object, (x, y), triangle_type, as_pointtype=True)
+class StatisticalPriority(dict):
+    # This class is supposed to be used to determine the priority of transitions based on frequencies of occurrence of
+    # different transitions in existing maps.
 
-                for i, corner in enumerate(get_triangle_corner_vertices((x, y), triangle_type)):
-                    corner_characteristic = get_corner_characteristic(data_object, corner)
-                    current_upper_transition = current_transitions[0][i]
-                    current_lower_transition = current_transitions[1][i]
+    def __init__(self):
+        super().__init__(dict())
 
-                    print(corner,
-                          f"'{current_upper_transition}'" if isinstance(current_upper_transition, str) else current_upper_transition,
-                          f"'{current_lower_transition}'" if isinstance(current_lower_transition, str) else current_lower_transition,
-                          corner_characteristic)
+    def analyze(self, data_object):
+        for y in range(data_object.lsiz.height):
+            for x in range(data_object.lsiz.width):
+                for triangle_type in ("a", "b"):
+                    current_transitions = get_transitions(data_object, (x, y), triangle_type, as_pointtype=True)
 
-                print()
+                    for i, corner in enumerate(get_triangle_corner_vertices((x, y), triangle_type)):
+                        corner_characteristic = get_corner_characteristic(data_object, corner)
+                        current_upper_transition = current_transitions[0][i]
+                        current_lower_transition = current_transitions[1][i]
 
-                # Corner characteristic is what I can derive by now, current transition is what is present in game and
-                # what I need to figure out how to derive.
+                        if current_upper_transition is None and current_lower_transition is not None:
+                            current_upper_transition, current_lower_transition = \
+                            current_lower_transition, current_upper_transition
 
-                # In general current transition (upper+lower) should be derivable from 3 corner characteristics
-                # If single-vertex bjection is not satisfied and one of the potential values is None, it means that all
-                # three transitions would be the same, so the game ignores it and changes pattern triangle instead.
+                        if current_upper_transition is not None and current_lower_transition is None:
+                            less_important = set(corner_characteristic) - {current_upper_transition, None}
+                            more_important = current_upper_transition
+
+                            for item in less_important:
+                                self.setdefault((more_important, item), 0)
+                                self[more_important, item] += 1
+
+    def is_priority_correct(self, more_important, less_important, cutoff: int = 0) -> bool:
+        count_normal   = self.get((more_important, less_important), 0)
+        count_reversed = self.get((less_important, more_important), 0)
+        return count_normal > max(count_reversed, cutoff)
+
+    @property
+    def linear_order(self):
+        # Earlier elements have higher priority.
+        for cutoff in (0, *sorted(self.values())):
+            dependencies = {}
+            for key in self.keys():
+                if not self.is_priority_correct(*key, cutoff=cutoff):
+                    continue
+
+                dependencies.setdefault(key[0], set())
+                dependencies.setdefault(key[1], set()).add(key[0])
+
+            priority_list = list()
+            try:
+                while dependencies:
+                    print(dependencies.keys())
+                    print(points_editnames_ordered_lowercase)
+
+                    free = next(key for key in sorted(dependencies.keys(),
+                                key=lambda name: points_editnames_ordered_lowercase.index(name), reverse=True)
+                                if not dependencies[key])
+
+                    # The only reason why reversed sorting is applied here above is the ambiguous priority between
+                    # transitions "DesertBrown" and "DesertBrown d". Examples existing in various original maps show
+                    # that "DesertBrown" should have a higher priority. However, those examples are so rare that when
+                    # using cutoff to prevent cycles in the graph of priority in other existing transitions, those rare
+                    # examples are being entirely removed as well in many cases. The original editor often crashes when
+                    # the user is trying to apply the "DesertBrown" transition, leaving it as an experimentally
+                    # unverifiable presupposition extrapolated from scarce data present in various Cultures games.
+
+                    dependencies.pop(free)
+                    for deps in dependencies.values():
+                        deps.discard(free)
+
+                    priority_list.append(free)
+            except StopIteration:
+                continue  # Cycle is present in priority graph. Increase edges cutoff until no cycle is found.
+            break
+
+        return priority_list
+
+# TODO: This is the result I found after checking all unique maps from c2+c3+c4+c4 and using StatisticalPriority class:
+#       ['ice', 'snow', 'meadow megadark', 'meadow', 'meadow dark', 'mountain', 'swamp', 'concrete', 'desertbrown d',
+#       'desertbrown', 'desertbrown c', 'desertbrown b', 'desertbrown a', 'mud', 'sand', 'water bright', 'water']
+#       I should do something with it.

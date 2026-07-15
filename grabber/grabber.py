@@ -52,13 +52,19 @@ def generate_all_dat_content(dir_path: str, *, text_output: bool = False):
 
 def iterate_grabbed_paths():
     for item in os.listdir(dirname):
-        if item.endswith(".dat"):
+        if item.endswith(".dat") or item.endswith(".c2m"):
             yield os.path.join(dirname, item)
 
 def grab_files_from_games(games_base_directories, *, omit_datax: bool = False, text_output: bool = False):
+    hashes = set()
     path_datax = None
     for version, path in games_base_directories.items():
         for num, data in enumerate(generate_all_dat_content(path, text_output=text_output)):
+            hash_value = hash(data)
+            if hash_value in hashes:
+                print(f"Duplicate found in game no. {version} data file no. {num:03d}")
+                continue
+            hashes.add(hash_value)
             if text_output:
                 print(f"Grabbing from game no. {version} data file no. {num:03d}")
             os.makedirs(dirname, exist_ok=True)
