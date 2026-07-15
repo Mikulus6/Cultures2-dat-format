@@ -1,5 +1,5 @@
 from .arrays.valency import check_lmlv_limits
-from .parameters import section_optional, sections_primary, derivations_dependencies, update_functions
+from .parameters import sections_optional, sections_primary, derivations_dependencies, update_functions
 from .special.external_assets import update_ea_d
 
 def get_sections_with_common_update_function(update_funcs):
@@ -35,6 +35,6 @@ def update(data_object):
     assert check_lmlv_limits(data_object)
     data_object = update_ea_d(data_object)  # This one update is only to reduce memory usage.
     for section_name in update_order:
-        if section_name in section_optional and getattr(data_object, section_name) is None: continue
+        if section_name in sections_optional and getattr(data_object, section_name) is None: continue
         data_object = update_functions[section_name](data_object)
     return data_object

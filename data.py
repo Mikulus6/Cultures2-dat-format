@@ -78,7 +78,7 @@ class Data:
 
         # optional sections, not present in some versions of Cultures 2
         assert set(key for key in self.__dict__
-                   if getattr(self, key) is None).issubset(section_optional)
+                   if getattr(self, key) is None).issubset(sections_optional)
 
     def save(self, filename: str):
         buffer_taker = BufferTaker()
@@ -90,7 +90,7 @@ class Data:
 
             section_existence = getattr(self, name, None) is not None
 
-            if not section_existence and name in section_optional:
+            if not section_existence and name in sections_optional:
                 continue
 
             buffer_taker.string("xioh"[::-1])
@@ -182,7 +182,7 @@ class Data:
             try:
                 setattr(self, name, from_image_func(os.path.join(directory, f"{name}.png")))
             except FileNotFoundError:
-                if name in section_optional: pass
+                if name in sections_optional: pass
                 else: raise FileNotFoundError
 
         for name in section_texts:
@@ -223,4 +223,4 @@ class Data:
 
     @staticmethod
     def _get_section_type(name):
-        return section_types_special.get(name, section_type_default)
+        return sections_types_special.get(name, section_type_default)

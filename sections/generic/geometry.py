@@ -1,3 +1,5 @@
+from typing import Literal
+
 def get_neighbouring_vertices(coordinates) -> list:
     x, y = coordinates
     # Order of elements in lists is important here due to directions being ordered in some cases.
@@ -36,3 +38,13 @@ def hexagonal_norm(coordinates_1, coordinates_2) -> int:
     dq = (x1 - (y1 >> 1)) - (x2 - (y2 >> 1))
     dr = y1 - y2
     return max(abs(dq), abs(dr), abs(dq + dr))
+
+def get_triangle_corner_vertices(coordinates, triangle_type: Literal["a", "b"]):
+    x, y = coordinates
+    # Order of elements in lists is important here due to corners being ordered in some cases.
+    match triangle_type, y % 2:
+        case "a", 0: return (2 * x + 1, 2 * y + 2), (2 * x - 1, 2 * y + 2), (2 * x,     2 * y)
+        case "b", 0: return (2 * x + 1, 2 * y + 2), (2 * x + 2, 2 * y    ), (2 * x,     2 * y)
+        case "a", 1: return (2 * x + 2, 2 * y + 2), (2 * x    , 2 * y + 2), (2 * x + 1, 2 * y)
+        case "b", 1: return (2 * x + 2, 2 * y + 2), (2 * x + 3, 2 * y    ), (2 * x + 1, 2 * y)
+        case _: raise ValueError

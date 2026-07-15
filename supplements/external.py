@@ -29,10 +29,12 @@ transitions_path = "data\\engine2d\\inis\\patterntransitions\\transitions.cif"
 landscapes_path  = "data\\engine2d\\inis\\landscapes\\landscapes.cif"
 
 patterns_entries_keys_duplicated    = ()
+points_entries_keys_duplicated      = ()
 transitions_entries_keys_duplicated = ("GfxCoordsA", "GfxCoordsB")
 landscapes_entries_keys_duplicated  = ("LogicWalkBlockArea", "LogicBuildBlockArea", "LogicWorkArea",
                                        "LogicAdditionalAttachPointArea", "GfxFrames", "GfxTransition")
 
 patterns    = ExternalAssets(patterns_path,    section_name="GfxPattern",    key_name="EditName", entries_duplicated=patterns_entries_keys_duplicated)
+points      = ExternalAssets(transitions_path, section_name="pointtype",     key_name="name",     entries_duplicated=points_entries_keys_duplicated)
 transitions = ExternalAssets(transitions_path, section_name="transition",    key_name="name"    , entries_duplicated=transitions_entries_keys_duplicated)
 landscapes  = ExternalAssets(landscapes_path,  section_name="GfxLandscape",  key_name="EditName", entries_duplicated=landscapes_entries_keys_duplicated)

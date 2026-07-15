@@ -27,10 +27,10 @@ section_matrices = {"lmhe": (1, 1), "lmpa": (1, 1), "lmpb": (1, 1), "lmlt": (1, 
                     "emmi": (1, 2), "empa": (2, 1), "empb": (2, 1), "emt1": (1, 1), "emt2": (1, 1), "emt3": (1, 1),
                     "emt4": (1, 1), "emla": (2, 2), "emvc": (1, 1)} # name: (bytes_per_vertex, width_multiplicator)
 
-section_optional      = {"lmhf", "emvc"}
-section_texts         = {"eapd", "eatd", "eald"}
-section_type_default  = 1
-section_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
+section_texts          = {"eapd", "eatd", "eald"}
+section_type_default   = 1
+sections_optional      = {"lmhf", "emvc"}
+sections_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
 
 section_special = {"lsiz": Size,
                    "laco": Continents,
@@ -50,14 +50,14 @@ derivations_dependencies = {"lsiz": ("empa",),
                             "lmpr": ("lsiz", "lmpa", "lmpb", "lmco", "lmro", "laco"),
                             "lmwb": ("lsiz", "eald", "emla"),
                             "lmbb": ("lsiz", "eald", "emla"),
-                            "lmro": ("lsiz", "emmi",),
-                            "lmsb": ("lsiz", "lasw",),
+                            "lmro": ("lsiz", "emmi"),
+                            "lmsb": ("lsiz", "lasw"),
                             "lmao": ("lsiz", "eald", "emla"),
-                            "laco": ("lsiz", "lmco",),
+                            "laco": ("lsiz", "lmco"),
                             "lasw": ("lsiz", "lmco", "lmtw", "lmms", "lmwb", "laco"),
                             "lmhf": ("lsiz",),
                             "embr": ("lsiz", "lmhe", "eapd", "empa", "empb"),
-                            "emm1": ("lsiz", "emmi",)}
+                            "emm1": ("lsiz", "emmi")}
 
 update_functions = {"lsiz": update_lsiz,
                     "lmpa": update_lmp_,
@@ -78,5 +78,5 @@ update_functions = {"lsiz": update_lsiz,
                     "embr": update_embr,
                     "emm1": update_emm1}
 
-assert len(update_functions) == len(derivations_dependencies)
+assert update_functions.keys() == derivations_dependencies.keys()
 assert set.union(sections_empty, sections_primary, derivations_dependencies) == set(section_names)
