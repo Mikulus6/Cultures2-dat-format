@@ -44,5 +44,5 @@ class Size(metaclass=SpecialSection):
 
 
 def update_lsiz(data_object):
-    data_object.lsiz.height, data_object.lsiz_width = data_object.empa.shape
+    data_object.lsiz.height, data_object.lsiz.width = data_object.empa.shape
     return data_object

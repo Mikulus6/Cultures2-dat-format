@@ -1,5 +1,9 @@
 from typing import Literal
 
+def is_vertex_macro(coordinates):
+    x, y = coordinates
+    return y % 4 == 2 * (x % 2)
+
 def get_neighbouring_vertices(coordinates) -> list:
     x, y = coordinates
     # Order of elements in lists is important here due to directions being ordered in some cases.

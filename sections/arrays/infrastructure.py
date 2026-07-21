@@ -2,10 +2,10 @@ import numpy as np
 from ..generic.ab_sections import combine_ab_sections, split_ab_sections
 from ..generic.geometry import get_adjacent_triangles
 
-emm_transition_types = {3: "overlay road 1",
-                        4: "overlay road 2",
-                        5: "overlay house 1",
-                        6: "overlay house 2"}
+emm_pattern_types = {3: "overlay road 1",
+                     4: "overlay road 2",
+                     5: "overlay house 1",
+                     6: "overlay house 2"}
 
 def emm1_to_binary(emm1: np.ndarray) -> np.ndarray:
     return combine_ab_sections(*(np.divmod(emm1, 2)[::-1]))

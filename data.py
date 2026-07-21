@@ -17,6 +17,23 @@ class Data:
         for name in set(section_names) - set(sections_empty):
             setattr(self, name, None)
 
+    def __getitem__(self, item):
+        return get_vertex(self, item)
+
+    def __setitem__(self, key, value):
+        self.__dict__.update(vars(set_vertex(self, key, value)))
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__) or vars(self).keys() != vars(other).keys():
+            return False
+
+        for key, val1 in vars(self).items():
+            val2 = getattr(other, key)
+            if isinstance(val1, np.ndarray) or isinstance(val2, np.ndarray):
+                if not np.array_equal(val1, val2): return False
+            elif val1 != val2:                     return False
+        return True
+
     def load(self, filename: str):
 
         match filename.lower().split(".")[-1]:
@@ -40,7 +57,7 @@ class Data:
             assert self.__class__._get_section_type(name) == section_type
 
             assert buffer.unsigned(length=4) == 0
-            checksum = buffer.unsigned(length=4)  # noqa
+            checksum = buffer.unsigned(length=4)
             assert buffer.unsigned(length=8) == 0
 
             section_buffer = BufferGiver(buffer.bytes(length=length))
@@ -103,7 +120,7 @@ class Data:
             else:
 
                 section_bytes = self._get_section_bytes(name)
-                checksum = calculate_checksum(section_bytes)  # noqa
+                checksum = calculate_checksum(section_bytes)
 
                 buffer_taker.unsigned(self.__class__._get_section_type(name), length=4)
                 buffer_taker.unsigned(len(section_bytes), length=4)
