@@ -31,10 +31,19 @@ def get_linear_order(sources, dependencies_dict, update_funcs) -> list:
 
 update_order = list(get_linear_order(sections_primary, derivations_dependencies, update_functions))
 
-def update(data_object):
+primary_refreshable = sections_primary.intersection(derivations_dependencies.keys())
+primary_refreshable_funcs = {update_functions[section_name] for section_name in primary_refreshable}
+
+def update(data_object, *, refresh_primary: bool = False):
+
     assert check_lmlv_limits(data_object)
     data_object = update_ea_d(data_object)  # This one update is only to reduce memory usage.
+
     for section_name in update_order:
         if section_name in sections_optional and getattr(data_object, section_name) is None: continue
         data_object = update_functions[section_name](data_object)
+    if refresh_primary:
+        for update_function in primary_refreshable_funcs:
+            data_object = update_function(data_object)
+
     return data_object

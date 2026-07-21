@@ -1,18 +1,19 @@
-from .arrays.attach           import update_lmao
-from .arrays.block            import update_lm_b, update_lmsb
-from .arrays.brightness       import update_embr
-from .arrays.continents       import update_lmco_laco
-from .arrays.empty            import update_lmhf
-from .arrays.infrastructure   import update_emm1
-from .arrays.logic_type       import update_lmlt, update_lmp_
-from .arrays.moveable_size    import update_lmms
-from .arrays.roads            import update_lmro
-from .arrays.roughness        import update_lmpr
-from .arrays.travel_way       import update_lmtw
-from .special.continents      import Continents
-from .special.fishes          import Fishes
-from .special.size            import Size, update_lsiz
-from .special.walk_sectors    import WalkSectors, update_lasw
+from .arrays.attach         import update_lmao
+from .arrays.block          import update_lm_b, update_lmsb
+from .arrays.brightness     import update_embr
+from .arrays.continents     import update_lmco_laco
+from .arrays.empty          import update_lmhf
+from .arrays.infrastructure import update_emm1
+from .arrays.logic_type     import update_lmlt, update_lmp_
+from .arrays.moveable_size  import update_lmms
+from .arrays.roads          import update_lmro
+from .arrays.roughness      import update_lmpr
+from .arrays.transitions    import update_emt_
+from .arrays.travel_way     import update_lmtw
+from .special.continents    import Continents
+from .special.fishes        import Fishes
+from .special.size          import Size, update_lsiz
+from .special.walk_sectors  import WalkSectors, update_lasw
 
 
 sections_empty = {"logi", "lgmm", "emmm", "xend", "tend"}
@@ -27,8 +28,8 @@ section_matrices = {"lmhe": (1, 1), "lmpa": (1, 1), "lmpb": (1, 1), "lmlt": (1, 
                     "emmi": (1, 2), "empa": (2, 1), "empb": (2, 1), "emt1": (1, 1), "emt2": (1, 1), "emt3": (1, 1),
                     "emt4": (1, 1), "emla": (2, 2), "emvc": (1, 1)} # name: (bytes_per_vertex, width_multiplicator)
 
-section_texts          = {"eapd", "eatd", "eald"}
 section_type_default   = 1
+sections_texts         = {"eapd", "eatd", "eald"}
 sections_optional      = {"lmhf", "emvc"}
 sections_types_special = {"logi": 0, "lgmm": 0, "emmm": 0, "xend": 0, "tend": 0, "lafm": 2, "lasw": 4}
 
@@ -57,7 +58,11 @@ derivations_dependencies = {"lsiz": ("empa",),
                             "lasw": ("lsiz", "lmco", "lmtw", "lmms", "lmwb", "laco"),
                             "lmhf": ("lsiz",),
                             "embr": ("lsiz", "lmhe", "eapd", "empa", "empb"),
-                            "emm1": ("lsiz", "emmi")}
+                            "emm1": ("lsiz", "emmi"),
+                            "emt1": ("lsiz", "lmpa", "lmpb", "eapd", "empa", "empb", "eatd"),
+                            "emt2": ("lsiz", "lmpa", "lmpb", "eapd", "empa", "empb", "eatd"),
+                            "emt3": ("lsiz", "lmpa", "lmpb", "eapd", "empa", "empb", "eatd"),
+                            "emt4": ("lsiz", "lmpa", "lmpb", "eapd", "empa", "empb", "eatd")}
 
 update_functions = {"lsiz": update_lsiz,
                     "lmpa": update_lmp_,
@@ -76,7 +81,11 @@ update_functions = {"lsiz": update_lsiz,
                     "lasw": update_lasw,
                     "lmhf": update_lmhf,
                     "embr": update_embr,
-                    "emm1": update_emm1}
+                    "emm1": update_emm1,
+                    "emt1": update_emt_,
+                    "emt2": update_emt_,
+                    "emt3": update_emt_,
+                    "emt4": update_emt_}
 
 assert update_functions.keys() == derivations_dependencies.keys()
 assert set.union(sections_empty, sections_primary, derivations_dependencies) == set(section_names)

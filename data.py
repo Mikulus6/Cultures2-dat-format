@@ -67,7 +67,7 @@ class Data:
                                                                      self.lsiz.width  * size_multiplicator).copy()
                 setattr(self, name, section_ndarray)
 
-            elif name in section_texts:
+            elif name in sections_texts:
                 text_section = TextSection()
                 text_section.load(section_buffer)
                 setattr(self, name, text_section)
@@ -154,7 +154,7 @@ class Data:
 
             to_image_func(section_ndarray).save(os.path.join(directory, f"{name}.png"))
 
-        for name in section_texts:
+        for name in sections_texts:
             text_section = getattr(self, name)
             text_section.to_file(os.path.join(directory, f"{name}.txt"))
 
@@ -186,7 +186,7 @@ class Data:
                 if name in sections_optional: pass
                 else: raise FileNotFoundError
 
-        for name in section_texts:
+        for name in sections_texts:
             text_section = TextSection()
             text_section.from_file(os.path.join(directory, f"{name}.txt"))
             setattr(self, name, text_section)
@@ -196,8 +196,8 @@ class Data:
             setattr(self, name, section_special[name]())
             getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
 
-    def update(self):
-        self.__dict__.update(vars(update(self)))
+    def update(self, *, refresh_primary: bool = False):
+        self.__dict__.update(vars(update(self, refresh_primary=refresh_primary)))
 
     def _get_section_bytes(self, name):
 
@@ -211,7 +211,7 @@ class Data:
             section_buffer_taker.bytes(run_length_encryption(section.tobytes(),
                                                              bytes_per_entry=section_matrices[name][0]))
 
-        elif name in section_texts:
+        elif name in sections_texts:
             section_buffer_taker.bytes(bytes(section))
 
         else:

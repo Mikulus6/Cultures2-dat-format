@@ -1,13 +1,11 @@
-from collections.abc import Iterable
-from copy import deepcopy
+from functools import cache
 from itertools import product, repeat
 import numpy as np
 from random import randint
 from typing import Literal
-from ..arrays.brightness import default_light_value
+from ..generic.geometry import get_adjacent_triangles, get_triangle_corner_vertices
 from ..generic.imports import transitions, points, patterns
 from ..generic.minus_one import get_minus_one
-from ..generic.geometry import get_adjacent_triangles, get_triangle_corner_vertices
 
 # Capitalization of various names is not consistent across game files related to transitions.
 # To prevent any confusion, it was decided to turn all ambigious strings into lowercase.
@@ -21,6 +19,7 @@ for transition in transitions.values():
     transitions_inversed[transition["pointtype"].lower()].append(transition["name"].lower())
 
 transitions_per_pointtype_upper_limit = 2
+logic_type_void = 0
 
 priority_lowercase = ('ice', 'snow', 'meadow megadark', 'meadow', 'meadow dark', 'mountain', 'swamp', 'concrete',
                       'desertbrown d', 'desertbrown', 'desertbrown c', 'desertbrown b', 'desertbrown a', 'mud', 'sand',
@@ -181,41 +180,7 @@ def triangle_in_bounds(data_object, coordinates, *, margin: int = 0):
     return margin <= coordinates[0] < data_object.lsiz.width  - margin and \
            margin <= coordinates[1] < data_object.lsiz.height - margin
 
-def get_triangle_pointtypes_allowed(data_object, coordinates, triangle_type: Literal["a", "b"]):
-    # TODO: this function doesn't work correctly yet
-    for corner_vertex in get_triangle_corner_vertices(coordinates, triangle_type):
-        triangle_coordinates = tuple(map(lambda v: v // 2, corner_vertex))
-
-        try:
-            logic_type_a = data_object.lmpa[triangle_coordinates[::-1]]
-            logic_type_b = data_object.lmpb[triangle_coordinates[::-1]]
-        except IndexError:
-            logic_type_a = 0
-            logic_type_b = 0
-
-        if logic_type_a == 0 and logic_type_b == 0:
-            yield tuple()
-
-        elif logic_type_a == 0 or logic_type_b == 0:
-
-            pattern_name_a = data_object.eapd[data_object.empa[triangle_coordinates[::-1]]]
-            pattern_name_b = data_object.eapd[data_object.empb[triangle_coordinates[::-1]]]
-
-            for logic_type, pattern_name in zip((logic_type_a, logic_type_b),
-                                                (pattern_name_a, pattern_name_b)):
-                if logic_type == 0:
-                    continue
-
-                for editgroup in patterns[pattern_name]["EditGroups"]:
-                    point_name = points_inversed.get(editgroup.lower())
-                    if point_name is not None:
-                        yield (point_name, )
-                        break
-                else:
-                    yield tuple()
-        else:
-            yield priority_lowercase # everything is allowed
-
+@cache
 def get_triangle_pointtype(data_object, coordinates, triangle_type: Literal["a", "b"]):
     match triangle_type:
         case "a": triangle_name = data_object.eapd[data_object.empa[coordinates[::-1]]]
@@ -229,18 +194,21 @@ def get_triangle_pointtype(data_object, coordinates, triangle_type: Literal["a",
             return point_name
     return None
 
+@cache
 def get_corner_characteristic(data_object, coordinates):
     triangles_a, triangles_b = get_adjacent_triangles(coordinates)
+    characteristic = set()
     for triangle_coordinates, triangle_type in tuple(zip(triangles_a, repeat("a"))) + \
                                                tuple(zip(triangles_b, repeat("b"))):
         if not triangle_in_bounds(data_object, triangle_coordinates):
             continue
 
-        yield get_triangle_pointtype(data_object, triangle_coordinates, triangle_type)
+        characteristic.add(get_triangle_pointtype(data_object, triangle_coordinates, triangle_type))
+    return characteristic
 
 def get_triangle_corners_characteristics(data_object, coordinates, triangle_type: Literal["a", "b"]):
     for corner in get_triangle_corner_vertices(coordinates, triangle_type):
-        yield set(get_corner_characteristic(data_object, corner))
+        yield get_corner_characteristic(data_object, corner)
 
 def get_vertex_type_by_characteristic(characteristic, priority_order):
     for pointtype in priority_order:
@@ -248,44 +216,47 @@ def get_vertex_type_by_characteristic(characteristic, priority_order):
             return pointtype
     return None
 
-def is_pointtype_redundant(pointtype: str):
-    return transitions_inversed.get(pointtype.lower()) is None
-
 def get_new_transitions(data_object, coordinates, triangle_type: Literal["a", "b"], priority_order,
                         as_pointtype: bool = False):
-    # TODO: this function doesn't work correctly yet
+    # This method is not the same as what is present in the original games or editors. Those contain many visual
+    # mistakes, including corruption of data on lower layers, lack of transitions near map borders, unnecessary presence
+    # of transitions on top of void triangles or nearby map borders. Moreover, it is likely that the original algorithm
+    # was modified between "Cultures 2: The Gates of Asgard" and newer games from the Cultures series, as the maps from
+    # the aforementioned game contain invalid transitions nearby map borders such that original external editors cannot
+    # recreate those invalid transitions in any way, suggesting by this that the one correct transition layout does not
+    # exist either way. This function updates transitions in such a way that is meant to make them visually coherent.
+
     _transition_layers = 2
     transitions_data = [[None, None, None] for _ in range(_transition_layers)]
 
-    if not triangle_in_bounds(data_object, coordinates, margin=2):
+    match triangle_type:
+        case "a": logic_type = int(data_object.lmpa[coordinates[::-1]])
+        case "b": logic_type = int(data_object.lmpb[coordinates[::-1]])
+        case _: raise ValueError
+
+    if logic_type == logic_type_void:
         return transitions_data
 
-    triangle_pointtype      = get_triangle_pointtype(data_object, coordinates, triangle_type)
     corners_characteristics = list(get_triangle_corners_characteristics(data_object, coordinates, triangle_type))
-    pointtypes_allowed      = list(get_triangle_pointtypes_allowed(data_object, coordinates, triangle_type))
 
     for transitions_layer in range(_transition_layers):
         corner_types = tuple(map(lambda characteristic:
                                  get_vertex_type_by_characteristic(characteristic, priority_order),
                                  corners_characteristics))
 
-        if len(set(corner_types)) == 1 and corner_types[0] == triangle_pointtype:
+        if len(set(corner_types)) == 1:
             break
 
         try: pointtype = priority_order[min(map(lambda corner_type:
                                         priority_order.index(corner_type) if corner_type is not None else float('inf'),
                                         corner_types))]
         except IndexError: break
-        except TypeError:  break
 
         for _index, corner_characteristic in enumerate(corners_characteristics):
 
             if pointtype in corner_characteristic:
-
                 transitions_data[transitions_layer][_index] = \
-                    None if ((transitions_inversed.get(pointtype.lower()) is None) or
-                             (pointtype not in pointtypes_allowed[_index])) \
-                    else pointtype
+                    None if (transitions_inversed.get(pointtype.lower()) is None) else pointtype
 
             corners_characteristics[_index] = set(corners_characteristics[_index]) - {pointtype}
 
@@ -303,82 +274,17 @@ def get_new_transitions(data_object, coordinates, triangle_type: Literal["a", "b
                                                              transitions_per_pointtype_upper_limit) - 1)
 
                 transitions_data[index_1][index_2] = transitions_available[forced_choices[index_1]]
-
     return transitions_data
 
-class TransMismatchAnalyzer:
-    # TODO: temp class
-    def __init__(self, c2m_path):
-        self.c2m_path = c2m_path
-        assert self.c2m_path.lower().endswith(".c2m")
+def update_emt_(data_object):
+    # This is not a derivation algorithm, because transitions are a primary data.
+    # It also is not meant to be historically-accurate, but visually correct.
 
-    @staticmethod
-    def get_incorrect_transitions(data_object):
-        for y, x, triangle_type in product(range(data_object.lsiz.height),
-                                           range(data_object.lsiz.width),
-                                           ("a", "b")):
+    data_object.emt1 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
+    data_object.emt2 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
+    data_object.emt3 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
+    data_object.emt4 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
 
-            old_data = get_current_transitions(data_object, (x, y), triangle_type, as_pointtype=True)
-            new_data = get_new_transitions(data_object, (x, y), triangle_type, priority_lowercase, as_pointtype=True)
-
-            if old_data != new_data:
-
-                if old_data[0] == old_data[1] == new_data[0] and new_data[1] == [None, None, None]:
-                    continue  # corrupted data (proven)
-
-                print(2*x, 2*y, triangle_type)
-                print(old_data)
-                print(new_data)
-                print()
-                yield x, y, triangle_type
-
-    @staticmethod
-    def clusterize_triangles(triangles: Iterable, cluster_max_size: (int, int)):
-        clusters = [{pt[:2]} for pt in triangles]
-
-        # Agglomerative Hierarchical Clustering
-        merged = True
-        while merged:
-            merged = False
-            for i in range(len(clusters)):
-                for j in range(i + 1, len(clusters)):
-
-                    combined = clusters[i] | clusters[j]
-
-                    cluster_values_x = [x for x, _ in combined]
-                    cluster_values_y = [y for _, y in combined]
-
-                    if max(cluster_values_x) - min(cluster_values_x) <= cluster_max_size[0] and \
-                       max(cluster_values_y) - min(cluster_values_y) <= cluster_max_size[1]:
-
-                        clusters[i] = combined
-                        del clusters[j]
-                        merged = True
-
-                    if merged: break
-                if merged: break
-
-        return {frozenset(cluster) for cluster in clusters}
-
-    def get_incorrect_clusters_info(self, data_object, cluster_max_size):
-        clusters = self.clusterize_triangles(self.get_incorrect_transitions(data_object), cluster_max_size)
-        for cluster in clusters:
-            cluster_values_x = [x for x, _ in cluster]
-            cluster_values_y = [y for _, y in cluster]
-
-            yield 2 * sum(cluster_values_x) // len(cluster_values_x), \
-                  2 * sum(cluster_values_y) // len(cluster_values_y)
-
-    def save_as_distorted(self, data_object):
-        data_object_new = deepcopy(data_object)
-        data_object_new.emla = np.zeros_like(data_object_new.emla) + get_minus_one(data_object_new.emla.dtype)
-        data_object_new.lmlv = np.zeros_like(data_object_new.lmlv)
-        data_object_new.lmlp = np.zeros_like(data_object_new.lmlp) + get_minus_one(data_object_new.emla.dtype)
-        data_object_new.lmhe = np.zeros_like(data_object_new.lmhe)
-        data_object_new.embr = np.ones_like(data_object_new.embr) * default_light_value
-        data_object_new.save(self.c2m_path)
-
-def update_transitions(data_object):
     for y, x, triangle_type in product(range(data_object.lsiz.height),
                                        range(data_object.lsiz.width),
                                        ("a", "b")):
@@ -386,28 +292,37 @@ def update_transitions(data_object):
         trans_new_data = get_new_transitions(data_object, (x, y), triangle_type, priority_lowercase, as_pointtype=False)
         data_object = set_transitions(data_object, (x, y), triangle_type, trans_new_data)
 
+        get_triangle_pointtype.cache_clear()
+        get_corner_characteristic.cache_clear()
+
     return data_object
 
-def test_trans(data_object):
-    # TODO: temp func
-    all_c = 0
-    win_c = 0
-    win_easy_c = 0
+def get_transitions_accuracy(data_object) -> float:
+
+    all_transitions = 0
+    correct_transitions = 0
+    correct_transitions_empty = 0
+
     for y, x, triangle_type in product(range(data_object.lsiz.height),
                                        range(data_object.lsiz.width),
                                        ("a", "b")):
-        a = get_new_transitions(data_object, (x, y), triangle_type, priority_lowercase, as_pointtype=True)
-        b = get_current_transitions(data_object, (x, y), triangle_type, as_pointtype=True)
-        c = [[None, None, None], [None, None, None]]
 
-        all_c += 1
-        win_c += int(a == b)
-        win_easy_c += int(a == b == c)
+        data_old = get_current_transitions(data_object, (x, y), triangle_type, as_pointtype=True)
+        data_new = get_new_transitions(data_object, (x, y), triangle_type, priority_lowercase, as_pointtype=True)
+        data_empty = [[None, None, None], [None, None, None]]
 
-    coeff_good  = win_c / all_c
-    coeff_naive = win_easy_c / all_c
+        all_transitions += 1
+        correct_transitions += int(data_old == data_new)
+        correct_transitions_empty += int(data_old == data_new == data_empty)
+
+    get_triangle_pointtype.cache_clear()
+    get_corner_characteristic.cache_clear()
+
+    coeff_full  = correct_transitions / all_transitions
+    coeff_naive = correct_transitions_empty / all_transitions
+
     try:
-        print(((1/(1-coeff_naive)) * coeff_good) - (coeff_naive/(1-coeff_naive)))
+        return ((1/(1-coeff_naive)) * coeff_full) - (coeff_naive / (1 - coeff_naive))
     except ZeroDivisionError:
-        print(1.0)
-        assert coeff_good == 1.0
+        assert coeff_full == 1.0
+        return 1.0
