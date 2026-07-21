@@ -62,8 +62,9 @@ class Data:
 
                 size_multiplicator = section_matrices[name][1]
                 section_ndarray = np.frombuffer(run_length_decryption(bytes(section_buffer)),
-                                                dtype=ndarray_dtype).reshape(self.lsiz.height * size_multiplicator,
-                                                                             self.lsiz.width  * size_multiplicator)
+                                                dtype=ndarray_dtype).reshape(
+                                                                     self.lsiz.height * size_multiplicator,
+                                                                     self.lsiz.width  * size_multiplicator).copy()
                 setattr(self, name, section_ndarray)
 
             elif name in section_texts:
