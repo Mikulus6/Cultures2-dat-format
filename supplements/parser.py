@@ -1,4 +1,4 @@
-from supplements.read import read
+from .read import read
 
 
 def line_split(line_: str):

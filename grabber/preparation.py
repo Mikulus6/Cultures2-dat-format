@@ -1,5 +1,5 @@
 import os
-from scripts.buffer import data_encoding
+from supplements.buffer import data_encoding
 from supplements.initialization import decode
 from supplements.read import library_global, load_global_library
 

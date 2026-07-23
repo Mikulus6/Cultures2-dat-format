@@ -1,17 +1,17 @@
 from typing import Literal
-from scripts.buffer import BufferGiver, BufferTaker
+from .buffer import BufferGiver, BufferTaker
 
 newline_representation = "\\r\\n"
 newline_factual = "\r\n"
 
 # Cultures Initialization File (*.cif) format
 
-# Following code written below was initially constructed around years 2009 - 2010 on XeNTaX forum.
+# Following code written below was initially constructed in 2010 on XeNTaX forum.
 # Original discussion was available here: https://forum.xentax.com/viewtopic.php?t=3711
 
 def apply_cipher(bytes_obj: bytes, mode: Literal["decode", "encode"]) -> bytes:
     result = BufferTaker()
-    c, d = 71, 126 # coprime factors
+    c, d = 71, 126  # coprime factors
 
     for b in bytes_obj:
         match mode:

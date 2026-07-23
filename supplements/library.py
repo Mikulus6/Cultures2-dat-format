@@ -1,5 +1,5 @@
 import os
-from scripts.buffer import BufferGiver, BufferTaker
+from .buffer import BufferGiver, BufferTaker
 
 separator = "\\"
 

@@ -1,10 +1,7 @@
 import os
 import numpy as np
-from PIL import Image
-
-from data import Data
+from map_data import MapData
 from grabber.grabber import iterate_grabbed_paths, grab_source_files
-from primary import extract_primary
 
 # grab_source_files() # Run it only once, after specifying paths in "grabber\info.json" file.
 
@@ -14,7 +11,7 @@ for item in iterate_grabbed_paths():
 
     solution_dir = os.path.join(solutions, os.path.basename(item).split(".")[0])
 
-    data_object = Data()
+    data_object = MapData()
     data_object.load(item)
     data_object.extract(solution_dir)
     extract_primary(data_object, solution_dir)

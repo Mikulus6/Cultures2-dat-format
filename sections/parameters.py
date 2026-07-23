@@ -38,6 +38,7 @@ section_special = {"lsiz": Size,
                    "lasw": WalkSectors,
                    "lafm": Fishes}
 
+# lsiz is a primary section, but should be treated as secondary if arrays are already interpreted as two-dimensional.
 sections_primary = {"lmhe", "lmlv", "lmlp", "lafm", "emmi", "eapd", "empa", "empb",
                     "eatd", "emt1", "emt2", "emt3", "emt4", "eald", "emla", "emvc"}
 

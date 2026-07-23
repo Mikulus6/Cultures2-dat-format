@@ -1,27 +1,28 @@
 import numpy as np
 import os
-import random
-from scripts.buffer import BufferGiver, BufferTaker
-from sections import *
-from supplements.initialization import encode
-from supplements.library import Library
 from PIL import Image
+import random
+from sections import *
+from supplements import BufferGiver, BufferTaker, Library, encode
+
+assert all(isinstance(section_special_class, SpecialSection) for section_special_class in section_special.values())
+assert isinstance(TextSection, SpecialSection)
 
 
-class Data:
-    assert all(isinstance(section_special_class, SpecialSection) for section_special_class in section_special.values())
-    assert isinstance(TextSection, SpecialSection)
+class MapData:
+    """Data from *.dat files in the Cultures game series, processed into an interpretable object-oriented form."""
+
 
     def __init__(self):
 
         for name in set(section_names) - set(sections_empty):
             setattr(self, name, None)
 
-    def __getitem__(self, item):
-        return get_vertex(self, item)
+    def __getitem__(self, coordinates):
+        return get_vertex(self, coordinates)
 
-    def __setitem__(self, key, value):
-        self.__dict__.update(vars(set_vertex(self, key, value)))
+    def __setitem__(self, coordinates, vertex: Vertex):
+        self.__dict__.update(vars(set_vertex(self, coordinates, vertex)))
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__) or vars(self).keys() != vars(other).keys():
@@ -35,6 +36,7 @@ class Data:
         return True
 
     def load(self, filename: str):
+        """Load data from a file into the object."""
 
         match filename.lower().split(".")[-1]:
             case "dat":
@@ -45,6 +47,8 @@ class Data:
                 library.load(filename, cultures_1=False)
                 buffer = BufferGiver(library["currentusermap\\map.dat"])
                 del library
+            case _:
+                raise ValueError
 
         while len(buffer) != 0:
             assert buffer.string(length=4, encoding="ascii")[::-1] == "xioh"  # "x input-output handler"
@@ -99,6 +103,7 @@ class Data:
                    if getattr(self, key) is None).issubset(sections_optional)
 
     def save(self, filename: str):
+        """Save object data to a file."""
         buffer_taker = BufferTaker()
 
         names_ordered = [name for name in section_names if name[0] == "l"] + ["xend"] + \
@@ -137,6 +142,8 @@ class Data:
                 with open(filename, "wb") as file:
                     file.write(bytes(buffer_taker))
             case "c2m":
+                # Note that original *.c2m maps might not have the mapguid values randomized, but generated in a
+                # deterministic way based on map content. This is however unverified and does not seem to be important.
                 template_text = f"[logiccontrol]\nversion 1\nmapsize {self.lsiz.width} {self.lsiz.height}\n" + \
                                 f"mapguid" + " ".join([str(random.randint(0, 0xff)) for _ in range(16)]) + \
                                 "\n[logiccontrolend]"
@@ -146,8 +153,11 @@ class Data:
                 library["currentusermap\\map.dat"] = bytes(buffer_taker)
                 library.save(filename, cultures_1=False)
                 del library
+            case _:
+                raise ValueError
 
     def extract(self, directory: str):
+        """Extract the object data as a collection of text files and images."""
 
         os.makedirs(directory, exist_ok=True)
 
@@ -179,6 +189,7 @@ class Data:
             getattr(self, name).to_file(os.path.join(directory, f"{name}.csv"))
 
     def pack(self, directory: str):
+        """Load data from a collection of text files and images into the object."""
 
         self.lsiz = Size()  # noqa, precaculate map size
         assert min(section_matrices.values(), key=lambda x: x[1])[1] == 1

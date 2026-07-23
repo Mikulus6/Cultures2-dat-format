@@ -1,4 +1,6 @@
-# All project-specific external imports should be done via this file.
+# All sections-specific external imports should be done via this file.
 
-from scripts.buffer import BufferGiver, BufferTaker
-from supplements.external import patterns, points, transitions, landscapes
+try:
+    from supplements import BufferGiver, BufferTaker, patterns, points, transitions, landscapes
+except FileNotFoundError:
+    raise FileNotFoundError("Unable to find game files in the current working directory.")

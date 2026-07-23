@@ -1,8 +1,8 @@
 import os
 from typing import Literal
-from scripts.buffer import data_encoding
-from supplements.initialization import decode
-from supplements.library import Library
+from .buffer import data_encoding
+from .initialization import decode
+from .library import Library
 
 # cultures 1
 libraries_directory = "data_l"

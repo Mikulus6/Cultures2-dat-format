@@ -1,5 +1,5 @@
 from itertools import count
-from supplements.data_loader import load_ini_as_dict
+from .parser import load_ini_as_dict
 
 
 class ExternalAssets(dict):

@@ -1,4 +1,4 @@
-from data import Data
+from map_data import MapData
 import os
 import time
 
@@ -15,7 +15,7 @@ while True:
         last_modified_time = os.path.getmtime(input_path)  # noqa
 
         if last_modified_time != last_modified_time_old:
-            data = Data()
+            data = MapData()
             data.load(input_path)
             data.extract(output_path)
     except FileNotFoundError:

@@ -27,7 +27,7 @@ class MacroVertex:
 
 @dataclass
 class Vertex:
-    macro_vertex : MacroVertex | None = None
+    macro_vertex : MacroVertex | None = None  # Not every vertex is a macro vertex.
     micro_vertex : MicroVertex = field(default_factory=lambda: MicroVertex())
 
 
@@ -111,7 +111,7 @@ def set_macro_vertex(data_object, coordinates, macro_vertex):
 
 def get_vertex(data_object, coordinates) -> Vertex:
     if is_vertex_macro(coordinates):
-        macro_coordinates = type(coordinates)(map(lambda v: v // 2, coordinates))
+        macro_coordinates = type(coordinates)(v // 2 for v in coordinates)
         macro_vertex = get_macro_vertex(data_object, macro_coordinates)
     else:
         macro_vertex = None
@@ -123,7 +123,7 @@ def set_vertex(data_object, coordinates, vertex):
     set_micro_vertex(data_object, coordinates, vertex.micro_vertex)
 
     if is_vertex_macro(coordinates):
-        macro_coordinates = type(coordinates)(map(lambda v: v // 2, coordinates))
+        macro_coordinates = type(coordinates)(v // 2 for v in coordinates)
         data_object = set_macro_vertex(data_object, macro_coordinates, vertex.macro_vertex)
         assert vertex.macro_vertex is not None
     else:

@@ -36,14 +36,15 @@ primary_refreshable_funcs = {update_functions[section_name] for section_name in 
 
 def update(data_object, *, refresh_primary: bool = False):
 
+    if refresh_primary:
+        for update_function in primary_refreshable_funcs:
+            data_object = update_function(data_object)
+
     assert check_lmlv_limits(data_object)
     data_object = update_ea_d(data_object)  # This one update is only to reduce memory usage.
 
     for section_name in update_order:
         if section_name in sections_optional and getattr(data_object, section_name) is None: continue
         data_object = update_functions[section_name](data_object)
-    if refresh_primary:
-        for update_function in primary_refreshable_funcs:
-            data_object = update_function(data_object)
 
     return data_object

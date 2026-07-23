@@ -70,7 +70,7 @@ class StatisticalPriority(dict):
         return count_normal > max(count_reversed, cutoff)
 
     def is_priority_ambiguous(self, pointtype_1, pointtype_2, *, cutoff: int = 0) -> bool:
-        return not(self.is_priority_correct(pointtype_1, pointtype_2, cutoff=cutoff) or\
+        return not(self.is_priority_correct(pointtype_1, pointtype_2, cutoff=cutoff) or
                    self.is_priority_correct(pointtype_2, pointtype_1, cutoff=cutoff))
 
     def get_linear_order(self):
@@ -176,9 +176,9 @@ def set_transitions(data_object, coordinates, triangle_type: Literal["a", "b"], 
 
     return data_object
 
-def triangle_in_bounds(data_object, coordinates, *, margin: int = 0):
-    return margin <= coordinates[0] < data_object.lsiz.width  - margin and \
-           margin <= coordinates[1] < data_object.lsiz.height - margin
+def triangle_in_bounds(data_object, coordinates):
+    return 0 <= coordinates[0] < data_object.lsiz.width and \
+           0 <= coordinates[1] < data_object.lsiz.height
 
 @cache
 def get_triangle_pointtype(data_object, coordinates, triangle_type: Literal["a", "b"]):
