@@ -28,7 +28,7 @@ files present there and is only relevant for `map.dat` files.
 Terrain contained in `*.dat` files is composed of a two-dimensional triangular
 grid. Triangles present on such a grid can be divided into two types:
 triangles A (Δ) and triangles B (∇). These two types of triangles always
-appear paired with each other. Ignoring distortion caused by heightmap, the
+appear paired with each other. Ignoring distortion caused by elevation, the
 composition of a pair of triangles is a parallelogram (Δ∇).
 
 Vertices present in top left corners of parallelograms composed of paired A
@@ -170,10 +170,10 @@ in-game meaning primary sections have.
 |--------|-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
 | `logi` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
 | `lgmm` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
-| `lsiz` | 🗺️&nbsp;primary   | [`size.py`](./sections/special/size.py)                       | map size expressed as number of macro triangles in each dimension                                                                     |
+| `lsiz` | 🗺️&nbsp;primary   | [`size.py`](./sections/special/size.py)                       | map size expressed as number of triangles in each dimension                                                                           |
 | `lmhe` | 🗺️&nbsp;primary   | -                                                             | terrain elevation defined as an array with one byte per macro vertex                                                                  |
-| `lmpa` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles A patterns `LogicType` defined as an array with one byte per macro triangle A                                       |
-| `lmpb` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles B patterns `LogicType` defined as an array with one byte per macro triangle B                                       |
+| `lmpa` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles A patterns `LogicType` defined as an array with one byte per triangle                                               |
+| `lmpb` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles B patterns `LogicType` defined as an array with one byte per triangle                                               |
 | `lmlt` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | landscapes `LogicType` defined as an array with one byte per micro vertex                                                             |
 | `lmlv` | 🗺️&nbsp;primary   | -                                                             | landscape valency (usually indicates durability, size or custom properties) defined as an array with one byte per micro vertex        |
 | `lmlp` | 🗺️&nbsp;primary   | -                                                             | landscape player (used for indicating ownership and palette of stockade and gates) defined as an array with one byte per micro vertex |
@@ -195,13 +195,13 @@ in-game meaning primary sections have.
 | `emm1` | ⚙️&nbsp;secondary | [`infrastructure.py`](./sections/arrays/infrastructure.py)    | binary indication of visibility of road overlay defined as an array with one byte per macro vertex                                    |
 | `emmi` | 🗺️&nbsp;primary   | -                                                             | type of road overlay on top of terrain patterns defined as an array with one byte per micro vertex                                    |
 | `eapd` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of pattern names stored as plain text                                                                                    |
-| `empa` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles A defined as an array with two bytes per macro triangle A                                              |
-| `empb` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles B defined as an array with two bytes per macro triangle B                                              |
+| `empa` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles A defined as an array with two bytes per triangle                                                      |
+| `empb` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles B defined as an array with two bytes per triangle                                                      |
 | `eatd` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of transition names stored as plain text                                                                                 |
-| `emt1` | 🗺️&nbsp;primary   | -                                                             | upper transitions for triangles A defined as an array with one byte per macro triangle A                                              |
-| `emt2` | 🗺️&nbsp;primary   | -                                                             | upper transitions for triangles B defined as an array with one byte per macro triangle B                                              |
-| `emt3` | 🗺️&nbsp;primary   | -                                                             | lower transitions for triangles A defined as an array with one byte per macro triangle A                                              |
-| `emt4` | 🗺️&nbsp;primary   | -                                                             | lower transitions for triangles B defined as an array with one byte per macro triangle B                                              |
+| `emt1` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | upper transitions for triangles A defined as an array with one byte per triangle                                                      |
+| `emt2` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | upper transitions for triangles B defined as an array with one byte per triangle                                                      |
+| `emt3` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | lower transitions for triangles A defined as an array with one byte per triangle                                                      |
+| `emt4` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | lower transitions for triangles B defined as an array with one byte per triangle                                                      |
 | `eald` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of landscape names stored as plain text                                                                                  |
 | `emla` | 🗺️&nbsp;primary   | -                                                             | landscapes defined as an array with two bytes per micro vertex                                                                        |
 | `emvc` | 🗺️&nbsp;primary   | -                                                             | colors of macro vertices (known as `vertexcolors`) defined as an array with one byte per macro vertex (absent in older `*.dat` files) |

@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from PIL import Image
-import random
+from random import randint
 from sections import *
 from supplements import BufferGiver, BufferTaker, Library, encode
 
@@ -12,13 +12,11 @@ assert isinstance(TextSection, SpecialSection)
 class MapData:
     """Data from *.dat files in the Cultures game series, processed into an interpretable object-oriented form."""
 
-
     def __init__(self):
-
         for name in set(section_names) - set(sections_empty):
             setattr(self, name, None)
 
-    def __getitem__(self, coordinates):
+    def __getitem__(self, coordinates) -> Vertex:
         return get_vertex(self, coordinates)
 
     def __setitem__(self, coordinates, vertex: Vertex):
@@ -145,7 +143,7 @@ class MapData:
                 # Note that original *.c2m maps might not have the mapguid values randomized, but generated in a
                 # deterministic way based on map content. This is however unverified and does not seem to be important.
                 template_text = f"[logiccontrol]\nversion 1\nmapsize {self.lsiz.width} {self.lsiz.height}\n" + \
-                                f"mapguid" + " ".join([str(random.randint(0, 0xff)) for _ in range(16)]) + \
+                                f"mapguid" + " ".join([str(randint(0, 0xff)) for _ in range(16)]) + \
                                 "\n[logiccontrolend]"
 
                 library = Library()
@@ -225,6 +223,7 @@ class MapData:
             getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
 
     def update(self, *, refresh_primary: bool = False):
+        """Modify all secondary sections accordingly to derivation algorithms"""
         self.__dict__.update(vars(update(self, refresh_primary=refresh_primary)))
 
     def _get_section_bytes(self, name):
