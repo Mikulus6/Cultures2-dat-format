@@ -4,13 +4,13 @@
 
 The following project is meant to be a tool for various mapping and modding
 efforts regarding `*.dat` files in video games from [*Cultures*](https://de.wikipedia.org/wiki/Cultures_(Computerspielreihe))
-series whichs engines are based on [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard). These are, including
-the aforementioned game, the following:
+series whichs engines are based on [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard).
+These are, including the aforementioned game, listed below.
 
  - [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard)
  - [*Northland*](https://www.mobygames.com/game/8938/northland/)
  - [*8th Wonder of the World*](https://www.mobygames.com/game/8939/8th-wonder-of-the-world/)
- - [*Cultures: Die Saga*](https://www.mobygames.com/game/11159/cultures-die-saga/).
+ - [*Cultures: Die Saga*](https://www.mobygames.com/game/11159/cultures-die-saga/)
 
 
 Using [`MapData`](./map_data.py) class defined in this project one can freely
@@ -166,47 +166,47 @@ in-game meaning primary sections have.
 
 ### Sections
 
-| name   | type      | algorithms                                                    | comment                                                                     |
-|--------|-----------|---------------------------------------------------------------|-----------------------------------------------------------------------------|
-| `logi` | empty     | -                                                             | empty                                                                       |
-| `lgmm` | empty     | -                                                             | empty                                                                       |
-| `lsiz` | primary   | [`size.py`](./sections/special/size.py)                       | map size expressed as number of macro triangles in each dimension           |
-| `lmhe` | primary   | -                                                             | terrain elevation defined for every macro vertex                            |
-| `lmpa` | secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain tringles A patterns `LogicType`                                     |
-| `lmpb` | secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain tringles B patterns `LogicType`                                     |
-| `lmlt` | secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | landscapes `LogicType`                                                      |
-| `lmlv` | primary   | -                                                             | landscape valency (usually indicates durability, size or custom properties) |
-| `lmlp` | primary   | -                                                             | landscape player (used for indicating ownership of stockade and gates)      |
-| `lmco` | secondary | [`continents.py`](./sections/arrays/continents.py)            | continents (numerical indicators of enclosed area of land or water)         |
-| `lmtw` | secondary | [`travel_way.py`](./sections/arrays/travel_way.py)            | availability of edges for movement                                          |
-| `lmms` | secondary | [`moveable_size.py`](./sections/arrays/moveable_size.py)      | maximum allowed vehicle size                                                |
-| `lmpr` | secondary | [`roughness.py`](./sections/arrays/roughness.py)              | roughness determining how much moving units are being slowed down           |
-| `lmwb` | secondary | [`block.py`](./sections/arrays/block.py)                      | landscapes `LogicWalkBlockArea`                                             |
-| `lmbb` | secondary | [`block.py`](./sections/arrays/block.py)                      | landscapes `LogicBuildBlockArea`                                            |
-| `lmro` | secondary | [`roads.py`](./sections/arrays/roads.py)                      | binary indication of presence of road overlay for every micro vertex        |
-| `lmsb` | secondary | [`block.py`](./sections/arrays/block.py)                      | binary indication of walk sector point presence                             |
-| `lmao` | secondary | [`attach.py`](./sections/arrays/attach.py)                    | vectorized landscapes `LogicAdditionalAttachPointArea`                      |
-| `laco` | secondary | [`continents.py`](./sections/arrays/continents.py)            | additional information for continents defined in `lmco` section             |
-| `lasw` | secondary | [`walk_sectors.py`](./sections/special/walk_sectors.py)       | walk sectors data used by pathfinding algorithm                             |
-| `lafm` | primary   | [`fishes.py`](./sections/special/fishes.py)                   | fish swarms                                                                 |
-| `lmhf` | secondary | [`empty.py`](./sections/arrays/empty.py)                      | always zeros                                                                |
-| `emmm` | empty     | -                                                             | empty                                                                       |
-| `embr` | secondary | [`brightness.py`](./sections/arrays/brightness.py)            | brightness defined for every macro vertex                                   |
-| `emm1` | secondary | [`infrastructure.py`](./sections/arrays/infrastructure.py)    | binary indication of visibility of road overlay for every micro triangle    |
-| `emmi` | primary   | -                                                             | type of road overlay on top of terrain patterns                             |
-| `eapd` | primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of pattern names                                               |
-| `empa` | primary   | -                                                             | terrain patterns for triangles A                                            |
-| `empb` | primary   | -                                                             | terrain patterns for triangles B                                            |
-| `eatd` | primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of transition names                                            |
-| `emt1` | primary   | -                                                             | upper transitions for triangles A                                           |
-| `emt2` | primary   | -                                                             | upper transitions for triangles B                                           |
-| `emt3` | primary   | -                                                             | lower transitions for triangles A                                           |
-| `emt4` | primary   | -                                                             | lower transitions for triangles A                                           |
-| `eald` | primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of landscape names                                             |
-| `emla` | primary   | -                                                             | landscape for every micro vertex                                            |
-| `emvc` | primary   | -                                                             | colors of macro vertices (known as `vertexcolors`)                          |
-| `xend` | empty     | -                                                             | empty                                                                       |
-| `tend` | empty     | -                                                             | empty                                                                       |
+| name   | type              | algorithms                                                    | comment                                                                                                                               |
+|--------|-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| `logi` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `lgmm` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `lsiz` | 🗺️&nbsp;primary   | [`size.py`](./sections/special/size.py)                       | map size expressed as number of macro triangles in each dimension                                                                     |
+| `lmhe` | 🗺️&nbsp;primary   | -                                                             | terrain elevation defined as an array with one byte per macro vertex                                                                  |
+| `lmpa` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles A patterns `LogicType` defined as an array with one byte per macro triangle A                                       |
+| `lmpb` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles B patterns `LogicType` defined as an array with one byte per macro triangle B                                       |
+| `lmlt` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | landscapes `LogicType` defined as an array with one byte per micro vertex                                                             |
+| `lmlv` | 🗺️&nbsp;primary   | -                                                             | landscape valency (usually indicates durability, size or custom properties) defined as an array with one byte per micro vertex        |
+| `lmlp` | 🗺️&nbsp;primary   | -                                                             | landscape player (used for indicating ownership and palette of stockade and gates) defined as an array with one byte per micro vertex |
+| `lmco` | ⚙️&nbsp;secondary | [`continents.py`](./sections/arrays/continents.py)            | continents (numerical indicators of enclosed areas of land or water) defined as an array with one byte per micro vertex               |
+| `lmtw` | ⚙️&nbsp;secondary | [`travel_way.py`](./sections/arrays/travel_way.py)            | availability of edges for movement defined as an array with one byte per micro vertex where six bits indicate six directions          |
+| `lmms` | ⚙️&nbsp;secondary | [`moveable_size.py`](./sections/arrays/moveable_size.py)      | maximum allowed vehicle size with a limit of size `7` defined as an array with one byte per micro vertex                              |
+| `lmpr` | ⚙️&nbsp;secondary | [`roughness.py`](./sections/arrays/roughness.py)              | roughness determining how much moving units are being slowed down defined as an array with one byte per micro vertex                  |
+| `lmwb` | ⚙️&nbsp;secondary | [`block.py`](./sections/arrays/block.py)                      | binary indication of landscapes `LogicWalkBlockArea` defined as an array with one byte per micro vertex                               |
+| `lmbb` | ⚙️&nbsp;secondary | [`block.py`](./sections/arrays/block.py)                      | binary indication of landscapes `LogicBuildBlockArea` defined as an array with one byte per micro vertex                              |
+| `lmro` | ⚙️&nbsp;secondary | [`roads.py`](./sections/arrays/roads.py)                      | binary indication of presence of road overlay defined as an array with one byte per micro vertex                                      |
+| `lmsb` | ⚙️&nbsp;secondary | [`block.py`](./sections/arrays/block.py)                      | binary indication of walk sector point presence defined as an array with one byte per micro vertex                                    |
+| `lmao` | ⚙️&nbsp;secondary | [`attach.py`](./sections/arrays/attach.py)                    | vectorized landscapes `LogicAdditionalAttachPointArea` defined as an array with two bytes per micro vertex                            |
+| `laco` | ⚙️&nbsp;secondary | [`continents.py`](./sections/arrays/continents.py)            | additional information for continents defined in the `lmco` section                                                                   |
+| `lasw` | ⚙️&nbsp;secondary | [`walk_sectors.py`](./sections/special/walk_sectors.py)       | walk sectors data used by a pathfinding algorithm                                                                                     |
+| `lafm` | 🗺️&nbsp;primary   | [`fishes.py`](./sections/special/fishes.py)                   | list of fish swarms                                                                                                                   |
+| `lmhf` | ⚙️&nbsp;secondary | [`empty.py`](./sections/arrays/empty.py)                      | array of zeros with one byte per micro vertex (absent in older `*.dat` files)                                                         |
+| `emmm` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `embr` | ⚙️&nbsp;secondary | [`brightness.py`](./sections/arrays/brightness.py)            | brightness of terrain vertices defined as an array with one byte per macro vertex                                                     |
+| `emm1` | ⚙️&nbsp;secondary | [`infrastructure.py`](./sections/arrays/infrastructure.py)    | binary indication of visibility of road overlay defined as an array with one byte per macro vertex                                    |
+| `emmi` | 🗺️&nbsp;primary   | -                                                             | type of road overlay on top of terrain patterns defined as an array with one byte per micro vertex                                    |
+| `eapd` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of pattern names stored as plain text                                                                                    |
+| `empa` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles A defined as an array with two bytes per macro triangle A                                              |
+| `empb` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles B defined as an array with two bytes per macro triangle B                                              |
+| `eatd` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of transition names stored as plain text                                                                                 |
+| `emt1` | 🗺️&nbsp;primary   | -                                                             | upper transitions for triangles A defined as an array with one byte per macro triangle A                                              |
+| `emt2` | 🗺️&nbsp;primary   | -                                                             | upper transitions for triangles B defined as an array with one byte per macro triangle B                                              |
+| `emt3` | 🗺️&nbsp;primary   | -                                                             | lower transitions for triangles A defined as an array with one byte per macro triangle A                                              |
+| `emt4` | 🗺️&nbsp;primary   | -                                                             | lower transitions for triangles B defined as an array with one byte per macro triangle B                                              |
+| `eald` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of landscape names stored as plain text                                                                                  |
+| `emla` | 🗺️&nbsp;primary   | -                                                             | landscapes defined as an array with two bytes per micro vertex                                                                        |
+| `emvc` | 🗺️&nbsp;primary   | -                                                             | colors of macro vertices (known as `vertexcolors`) defined as an array with one byte per macro vertex (absent in older `*.dat` files) |
+| `xend` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `tend` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
 
 ## Credits
 
