@@ -2,8 +2,8 @@
 
 ## Introduction
 
-The following project is meant to be a tool for various mapping and modding
-efforts regarding `*.dat` files in video games from [*Cultures*](https://de.wikipedia.org/wiki/Cultures_(Computerspielreihe))
+The following project is meant to be a package and documentation for various
+mapping and modding efforts regarding `*.dat` files in video games from [*Cultures*](https://de.wikipedia.org/wiki/Cultures_(Computerspielreihe))
 series whose engines are based on [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard).
 These are, including the aforementioned game, listed below.
 
@@ -15,7 +15,7 @@ These are, including the aforementioned game, listed below.
 
 Using the [`MapData`](./map_data.py) class defined in this project one can
 freely read data from and write data to `*.dat` files. Exemplary usage is
-shown in [`modifier.py`](./modifier.py) file. This project also serves as
+shown in [`modifier.py`](coupler.py) file. This project also serves as
 complete documentation of `*.dat` files. Do not confuse this file format with
 the one present in *Cultures: Discovery of Vinland* and in the other older
 games released as part of the *Cultures* series. This file format is
@@ -48,13 +48,13 @@ Macro vertices and micro vertices together make all the vertices on which
 landscapes can be placed and between which creatures can move. When working
 on problems related to these concepts, it is useful to imagine only vertices
 without underlying triangles. One can easily see that by rotating the image of
-flat terrain by 45° the structure of vertices is geometrically equivalent to
+flat terrain by 45°, the structure of vertices is geometrically equivalent to
 the regular grid made out of squares. This explains intuitively why creatures
 in the game can move in eight directions, which inherently is caused by
 triangles not having all sides of the same length.
 
 For cases without the constraint of predefined visual distance between
-vertices one can notice that moving on triangular grid vertex by vertex is
+vertices, one can notice that moving on triangular grid vertex by vertex is
 topologically equivalent to moving on hexagonal grid tile by tile. This idea
 in many cases simplifies required geometrical imagination.
 
@@ -153,7 +153,7 @@ there is no mathematical difference between primary information and corrupted
 information. However, there exists a simple empirical method to differentiate
 between those two. Consider an original editor present in various games from
 the Cultures series. Assume that for every simple action done in this editor
-(such as, for example, placing a landscape on an empty vertex) there exists
+(such as, for example, placing a landscape on an empty vertex), there exists
 also an inverse action (such as removing a landscape from the same vertex). It
 is reasonable to assume that the algebraic composition of inverse actions should
 result in the `*.dat` file content remaining the same. This is, in fact, not
@@ -168,12 +168,12 @@ in-game meaning primary sections have.
 
 Instances of the [`MapData`](./map_data.py) class have five methods available.
 These are named `load`, `save`, `extract`, `pack` and `update`. The first two
-of these (`load`, `save`) make it possible for data from a `*.dat` file to be
-loaded into an object and to be saved again as a `*.dat` file. It is also
+of these (`load` and `save`) make it possible for data from a `*.dat` file to
+be loaded into an object and to be saved again as a `*.dat` file. It is also
 possible to load and save a `*.c2m` archive using these methods, but note that
 anything inside a `*.c2m` archive that is not a part of a `*.dat` file will be
-lost during those processes. The next two methods (`extract`, `pack`) are used
-respectively to extract the content of an object as a conventional set of
+lost during those processes. The next two methods (`extract` and `pack`) are
+used respectively to extract the content of an object as a conventional set of
 image and text files and to pack it back into the object. This makes it
 possible to analyze any binary data present in a `*.dat` file in a more
 readable form of image and text files. The last method (`update`) is used to

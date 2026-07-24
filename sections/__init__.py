@@ -7,3 +7,6 @@ from .special.size       import Size
 from .special.special    import SpecialSection
 from .special.texts      import TextSection
 from .update             import update
+
+assert all(isinstance(section_special_class, SpecialSection) for section_special_class in section_special.values())
+assert isinstance(TextSection, SpecialSection)
