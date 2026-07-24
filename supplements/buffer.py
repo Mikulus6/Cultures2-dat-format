@@ -1,10 +1,12 @@
 from typing import Literal
+from warnings import warn
+
 data_encoding = "cp1252"
+unknown_char_placeholder = "?"
 
 
 class BufferGiver(bytes):
-    """Bytes-like class for giving data from bytes object
-    in selected portions as for example: numbers, strings, bits."""
+    """Bytes-like class for giving data from bytes object in selected portions as for example: numbers, strings, bits."""
     _bits_per_byte = 8
 
     def __init__(self, sequence: bytes):
@@ -13,7 +15,12 @@ class BufferGiver(bytes):
         self.offset = 0
 
     def __repr__(self):
-        return str(self.sequence[self.offset:], encoding=data_encoding)
+        string_var = self.sequence[self.offset:].decode(encoding=data_encoding, errors="replace")
+        if '\ufffd' in string_var:
+            # This is relevant only for game files from language versions other than German and English.
+            warn("Unrecognizable character encountered in text file.", BytesWarning)
+            return string_var.replace('\ufffd', unknown_char_placeholder)
+        return string_var
 
     def __str__(self):
         return self.__repr__()
@@ -56,8 +63,7 @@ class BufferGiver(bytes):
 
 
 class BufferTaker(bytes):
-    """Bytes-like class for taking data to bytes object
-    in selected portions as for example: numbers, strings, bits."""
+    """Bytes-like class for taking data to bytes object in selected portions as for example: numbers, strings, bits."""
     _bits_per_byte = 8
 
     def __init__(self):
