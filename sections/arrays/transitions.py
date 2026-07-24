@@ -1,4 +1,3 @@
-from functools import cache
 from itertools import product, repeat
 import numpy as np
 from random import randint
@@ -180,7 +179,6 @@ def triangle_in_bounds(data_object, coordinates):
     return 0 <= coordinates[0] < data_object.lsiz.width and \
            0 <= coordinates[1] < data_object.lsiz.height
 
-@cache
 def get_triangle_pointtype(data_object, coordinates, triangle_type: Literal["a", "b"]):
     match triangle_type:
         case "a": triangle_name = data_object.eapd[data_object.empa[coordinates[::-1]]]
@@ -194,7 +192,6 @@ def get_triangle_pointtype(data_object, coordinates, triangle_type: Literal["a",
             return point_name
     return None
 
-@cache
 def get_corner_characteristic(data_object, coordinates):
     triangles_a, triangles_b = get_adjacent_triangles(coordinates)
     characteristic = set()
@@ -277,7 +274,7 @@ def get_new_transitions(data_object, coordinates, triangle_type: Literal["a", "b
     return transitions_data
 
 def update_emt_(data_object):
-    # This is not a derivation algorithm, because transitions are a primary data.
+    # This is not a derivation algorithm, because transitions are primary data.
     # It also is not meant to be historically-accurate, but visually correct.
 
     data_object.emt1 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
@@ -291,9 +288,6 @@ def update_emt_(data_object):
 
         trans_new_data = get_new_transitions(data_object, (x, y), triangle_type, priority_lowercase, as_pointtype=False)
         data_object = set_transitions(data_object, (x, y), triangle_type, trans_new_data)
-
-        get_triangle_pointtype.cache_clear()
-        get_corner_characteristic.cache_clear()
 
     return data_object
 
@@ -314,9 +308,6 @@ def get_transitions_accuracy(data_object) -> float:
         all_transitions += 1
         correct_transitions += int(data_old == data_new)
         correct_transitions_empty += int(data_old == data_new == data_empty)
-
-    get_triangle_pointtype.cache_clear()
-    get_corner_characteristic.cache_clear()
 
     coeff_full  = correct_transitions / all_transitions
     coeff_naive = correct_transitions_empty / all_transitions

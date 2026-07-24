@@ -3,7 +3,5 @@ __pycache__/
 *$py.class
 
 .idea/
-
 data/
-
-tests/
+test_sources/
