@@ -15,11 +15,12 @@ These are, including the aforementioned game, listed below.
 
 Using [`MapData`](./map_data.py) class defined in this project one can freely
 read data from and write data to `*.dat` files. Exemplary usage is shown in
-[`main.py`](./main.py) file. Do not confuse this file format with the one
-present in *Cultures: Discovery of Vinland* and in the other older games
+[`modifier.py`](./modifier.py) file. Do not confuse this file format with the
+one present in *Cultures: Discovery of Vinland* and in the other older games
 released as part of the *Cultures* series. This file format is completely
 different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
-files present there and is only relevant for `map.dat` files.  
+files present there and is only relevant for `map.dat` files.  This project
+also serves as a complete documentation of `*.dat` files.
 
 ## Documentation
 
@@ -92,15 +93,6 @@ file. After that, again eight bytes are empty and they constitute the end of
 the section header. Next, the body of a section is present, whose length was
 given in the header.  
 
-The exact binary interpretation of the section body is dependent on the
-section name and type. Most of them however contain compressed two-dimensional
-arrays which can be read using the run-length decryption algorithm present in
-[`run_length.py`](./sections/generic/run_length.py) file. All other cases of
-non-empty sections are handled using the [`SpecialSection`](./sections/special/special.py)
-metaclass and are considered in [`MapData`](./map_data.py) methods. Some of
-them represent one-dimensional arrays of strings - those are handled by the
-[`TextSection`](./sections/special/texts.py) class.  
-
 In short, each section present in `*.dat` file has the following structure:
 ```txt
 char[4]  string_hoix;       // always "hoix"
@@ -112,6 +104,15 @@ ubyte[4] checksum;          // can be calculated from body
 ubyte[8] zeros_2;           // always zero
 ubyte[section_length] body;
 ```
+
+The exact binary interpretation of the section body is dependent on the
+section name and type. Most of them however contain compressed two-dimensional
+arrays which can be read using the run-length decryption algorithm present in
+[`run_length.py`](./sections/generic/run_length.py) file. All other cases of
+non-empty sections are handled using the [`SpecialSection`](./sections/special/special.py)
+metaclass and are considered in [`MapData`](./map_data.py) methods. Some of
+them represent one-dimensional arrays of strings - those are handled by the
+[`TextSection`](./sections/special/texts.py) class.  
 
 ### Derivations
 
@@ -164,12 +165,38 @@ does not remain the same afterward. Primary sections can be corrupted as well
 in the same way, but it is not so significant when it is directly known what
 in-game meaning primary sections have.
 
+### Usage
+
+Objects from class [`MapData`](./map_data.py) have five methods available.
+These are named `load`, `save`, `extract`, `pack` and `update`. The first two
+of these (`load`, `save`) make it possible for data from a `*.dat` file to be
+loaded into an object and to be saved again as a `*.dat` file. It is also
+possible to load and save a `*.c2m` archive using these methods, but note that
+anything inside a `*.c2m` archive that is not a part of a `*.dat` file will be
+lost during those processes. The next two methods (`extract`, `pack`) are used
+respectively to extract the content of an object as a conventional set of
+image and text files and to pack it back into the object. This makes it
+possible to analyze any binary data present in a `*.dat` file in a more
+readable form of image and text files. The last method (`update`) is used to
+update all secondary sections accordingly to known derivation algorithms. It
+is also possible to get primary information about vertices and triangles by
+specifying coordinates as an element of an object. Usage of all these methods
+is visualized below.  
+
+![class structure](./assets/class_structure.png)
+
+Note that it is necessary to firstly load some game files in order to use the
+aforementioned class. This can be simply done by running the [`prepare_readable`](./supplements/__init__.py)
+function once. This way the necessary game files will be copied into the main
+project directory and processed into the form that makes them both quicker to
+load and more human-readable.  
+
 ### Sections
 
 | name   | type              | algorithms                                                    | comment                                                                                                                               |
 |--------|-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `logi` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
-| `lgmm` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `logi` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                     |
+| `lgmm` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                     |
 | `lsiz` | 🗺️&nbsp;primary   | [`size.py`](./sections/special/size.py)                       | map size expressed as number of triangles in each dimension                                                                           |
 | `lmhe` | 🗺️&nbsp;primary   | -                                                             | terrain elevation defined as an array with one byte per macro vertex                                                                  |
 | `lmpa` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles A patterns `LogicType` defined as an array with one byte per triangle                                               |
@@ -190,7 +217,7 @@ in-game meaning primary sections have.
 | `lasw` | ⚙️&nbsp;secondary | [`walk_sectors.py`](./sections/special/walk_sectors.py)       | walk sectors data used by a pathfinding algorithm                                                                                     |
 | `lafm` | 🗺️&nbsp;primary   | [`fishes.py`](./sections/special/fishes.py)                   | list of fish swarms                                                                                                                   |
 | `lmhf` | ⚙️&nbsp;secondary | [`empty.py`](./sections/arrays/empty.py)                      | array of zeros with one byte per micro vertex (absent in older `*.dat` files)                                                         |
-| `emmm` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `emmm` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                     |
 | `embr` | ⚙️&nbsp;secondary | [`brightness.py`](./sections/arrays/brightness.py)            | brightness of terrain vertices defined as an array with one byte per macro vertex                                                     |
 | `emm1` | ⚙️&nbsp;secondary | [`infrastructure.py`](./sections/arrays/infrastructure.py)    | binary indication of visibility of road overlay defined as an array with one byte per macro vertex                                    |
 | `emmi` | 🗺️&nbsp;primary   | -                                                             | type of road overlay on top of terrain patterns defined as an array with one byte per micro vertex                                    |
@@ -205,8 +232,8 @@ in-game meaning primary sections have.
 | `eald` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of landscape names stored as plain text                                                                                  |
 | `emla` | 🗺️&nbsp;primary   | -                                                             | landscapes defined as an array with two bytes per micro vertex                                                                        |
 | `emvc` | 🗺️&nbsp;primary   | -                                                             | colors of macro vertices (known as `vertexcolors`) defined as an array with one byte per macro vertex (absent in older `*.dat` files) |
-| `xend` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
-| `tend` | ⬛&nbsp;empty     | -                                                             | empty                                                                                                                                 |
+| `xend` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                     |
+| `tend` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                     |
 
 ## Credits
 
@@ -227,7 +254,7 @@ For official developers' website visit [Funatics](https://www.funatics.de/).
 [Red Blob Games](https://www.redblobgames.com/): "[*Hexagonal Grids*](https://www.redblobgames.com/grids/hexagons/)" (2013)  
 [Siguza](https://github.com/Siguza): "[*Cultures 2 file formats*](https://web.archive.org/web/20210724220815/https://forum.xentax.com/viewtopic.php?t=10705)" (2013)  
 [Nithanim](https://github.com/Nithanim): "[*Northland or 8th Wonder of the World map.dat file format*](https://gist.github.com/Nithanim/766c31475377b0bd594bab974a1de8d2)" (2019)  
-[MartianBoy](https://github.com/martianboy): "[*cultures2-engine*](https://github.com/martianboy/cultures2-engine)" (2020)  
+[Martianboy](https://github.com/martianboy): "[*cultures2-engine*](https://github.com/martianboy/cultures2-engine)" (2020)  
 [Mikulus](https://github.com/Mikulus6): "[*Cultures map editor*](https://github.com/Mikulus6/Cultures-map-editor)" (2025)
 
 ### License

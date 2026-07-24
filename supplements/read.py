@@ -104,8 +104,9 @@ def read(filepath: str, mode: Literal["r", "rb"] = "r", *,
 
 
 # cultures 2 only
-def load_global_library():
+def load_global_library(gameroot_directory: str = "."):
     global library_global, library_global_loaded
     if not library_global_loaded:
-        library_global.load(library_global_path, cultures_1=False)
+        library_global_full_path = os.path.join(gameroot_directory, library_global_path)
+        library_global.load(library_global_full_path, cultures_1=False)
         library_global_loaded = True
