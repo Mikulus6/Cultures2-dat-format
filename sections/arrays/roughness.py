@@ -5,7 +5,7 @@ from ..arrays.logic_type import get_adjacent_logic_types
 logic_types_roughness = {0: 0, 1: 1, 2: 2, 3: 4, 4: 3, 5: 0, 6: 0, 7: 5, 8: 3, 9: 3, 10: 1}
 
 def data_to_lmpr(data_object):
-    # There exist three original maps on which this algoritm does not produce the exactly same output as the section
+    # There exist three original maps on which this algorithm does not produce exactly the same output as the section
     # included in the game files. Those are "The swords of the kings" and "Trophy hunt" in the game "Northland" and
     # "Servant of the oracle" in the game "8th Wonder of the World". These discrepancies are considered negligible.
     lmpr = np.zeros(shape=data_object.lsiz.shape_micro, dtype=np.uint8)

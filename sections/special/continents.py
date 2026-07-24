@@ -27,9 +27,9 @@ class Continents(list, metaclass=SpecialSection):
             anchor_vertex_y = buffer.signed(length=2)
             continent_size = buffer.signed(length=4)
 
-            # Cordinates of anchor vertex being -1 x -1 and negative continent size are most likely a result of a
-            # removal of previously existing continent during development process. The second type of this issue is
-            # absent in "Cultures 2: The Gates of Asgard" and is present only in newer Cultures games.
+            # Coordinates of anchor vertex being -1 x -1 and negative continent size are most likely a result of a
+            # removal of a previously existing continent during the development process. The second type of this issue
+            # is absent in "Cultures 2: The Gates of Asgard" and is present only in newer Cultures games.
 
             assert (int(bool(index_)) == buffer.unsigned(length=4)) or continent_size == 0
 

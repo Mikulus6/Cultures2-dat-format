@@ -79,11 +79,11 @@ class MapData:
                     case 2: ndarray_dtype = np.uint16
                     case _: raise ValueError
 
-                size_multiplicator = section_matrices[name][1]
+                size_multiplier = section_matrices[name][1]
                 section_ndarray = np.frombuffer(run_length_decryption(bytes(section_buffer)),
                                                 dtype=ndarray_dtype).reshape(
-                                                                     self.lsiz.height * size_multiplicator,
-                                                                     self.lsiz.width  * size_multiplicator).copy()
+                                                                     self.lsiz.height * size_multiplier,
+                                                                     self.lsiz.width  * size_multiplier).copy()
                 setattr(self, name, section_ndarray)
 
             elif name in sections_texts:
@@ -189,7 +189,7 @@ class MapData:
     def pack(self, directory: str):
         """Load data from a collection of text files and images into the object."""
 
-        self.lsiz = Size()  # noqa, precaculate map size
+        self.lsiz = Size()  # noqa, precalculate map size
         assert min(section_matrices.values(), key=lambda x: x[1])[1] == 1
         minimal_width_section_name = min(section_matrices, key=lambda x: x[1])
         minimal_width_section = Image.open(os.path.join(directory, f"{minimal_width_section_name}.png"))
@@ -223,7 +223,7 @@ class MapData:
             getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
 
     def update(self, *, refresh_primary: bool = False):
-        """Modify all secondary sections accordingly to derivation algorithms"""
+        """Modify all secondary sections according to derivation algorithms"""
         self.__dict__.update(vars(update(self, refresh_primary=refresh_primary)))
 
     def _get_section_bytes(self, name):

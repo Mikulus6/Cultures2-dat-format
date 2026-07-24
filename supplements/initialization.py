@@ -6,7 +6,7 @@ newline_factual = "\r\n"
 
 # Cultures Initialization File (*.cif) format
 
-# Following code written below was initially constructed in 2010 on XeNTaX forum.
+# The following code was initially constructed in the year 2010 on XeNTaX forum.
 # Original discussion was available here: https://forum.xentax.com/viewtopic.php?t=3711
 
 def apply_cipher(bytes_obj: bytes, mode: Literal["decode", "encode"]) -> bytes:

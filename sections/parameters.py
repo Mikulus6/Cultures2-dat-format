@@ -26,7 +26,7 @@ section_matrices = {"lmhe": (1, 1), "lmpa": (1, 1), "lmpb": (1, 1), "lmlt": (1, 
                     "lmco": (1, 2), "lmtw": (1, 2), "lmms": (1, 2), "lmpr": (1, 2), "lmwb": (1, 2), "lmbb": (1, 2),
                     "lmro": (1, 2), "lmsb": (1, 2), "lmao": (2, 2), "lmhf": (1, 2), "embr": (1, 1), "emm1": (1, 1),
                     "emmi": (1, 2), "empa": (2, 1), "empb": (2, 1), "emt1": (1, 1), "emt2": (1, 1), "emt3": (1, 1),
-                    "emt4": (1, 1), "emla": (2, 2), "emvc": (1, 1)} # name: (bytes_per_vertex, width_multiplicator)
+                    "emt4": (1, 1), "emla": (2, 2), "emvc": (1, 1)}  # name: (bytes_per_vertex, width_multiplier)
 
 section_type_default   = 1
 sections_texts         = {"eapd", "eatd", "eald"}

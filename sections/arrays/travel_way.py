@@ -16,10 +16,10 @@ def check_boundary(data_object, coordinates):
         case _: raise ArithmeticError
 
 def data_to_lmtw(data_object):
-    # There are two types of exceptions in exisitng maps where lmtw is not correctly derived. On of them, possible to
+    # There are two types of exceptions in existing maps where lmtw is not correctly derived. One of them, possible to
     # easily recreate in the original editor, is that edges might not update when drawing with void on top of land or
     # water. The other one is present only on the map "Trophy hunt" in the game "Northland". This map does not seem to
-    # be properly finished (as there are *.bak files present), which would explain presence of uexpected values in lmtw.
+    # be properly finished (as there are *.bak files present), which would explain unexpected values in lmtw.
 
     lmtw = np.zeros(data_object.lsiz.shape_micro, dtype=np.uint8)
     continent_types = -1 * np.ones(data_object.lsiz.shape_micro, dtype=np.int8)

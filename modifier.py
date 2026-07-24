@@ -3,14 +3,14 @@ import pathlib
 import time
 from supplements import prepare_readable
 
-# Edit these paths accordingly to your local files.
+# Edit these paths according to your local files.
 gameroot_path = "C:\\GOG Games\\Northland and 8th Wonder of the World\\8th Wonder of the World"
 dat_path      = "C:\\Users\\USERNAME\\Desktop\\Map.c2m"
 dir_path      = "C:\\Users\\USERNAME\\Desktop\\Map"
 
 prepare_readable(gameroot_path)  # Copy game files to the project and prepare them for quicker usage.
 
-from map_data import MapData  # This module can be imported only if necessary game files are copied to the project.
+from map_data import MapData  # This module can be imported only if the necessary game files are copied to the project.
 
 def get_directory_mtime(directory_path):
     try: return max([f.stat().st_mtime for f in pathlib.Path(directory_path).rglob('*') if f.is_file()])
@@ -19,9 +19,9 @@ def get_directory_mtime(directory_path):
 def get_file_mtime(file_path):
     return os.path.getmtime(file_path)
 
-# Following code operates on file specified in dat_path variable and directory specified in dir_path variable.
+# The following code operates on the file specified in dat_path variable and directory specified in dir_path variable.
 # If *.dat / *.c2m file was modified, it will be loaded and extracted to the specified directory.
-# If directory was modified, it will be packed and saved to the specified file.
+# If the directory was modified, it will be packed and saved to the specified file.
 # This way one can easily experiment how raw extracted file content and map appearance correlate with each other.
 
 is_file_found          = True

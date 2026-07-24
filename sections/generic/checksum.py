@@ -5,7 +5,7 @@ def calculate_checksum(section_bytes: bytes) -> int:
 
     checksum = 0
 
-    # Initial values of a, b, c are coprime with exception that gcd(b, c) = 13.
+    # Initial values of a, b, c are coprime with the exception that gcd(b, c) = 13.
     a = 1695929585
     b = 1876105387
     c = 1677611962

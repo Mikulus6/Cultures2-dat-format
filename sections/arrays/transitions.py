@@ -8,7 +8,7 @@ from ..generic.geometry import get_adjacent_triangles, get_triangle_corner_verti
 from ..generic.minus_one import get_minus_one
 
 # Capitalization of various names is not consistent across game files related to transitions.
-# To prevent any confusion, it was decided to turn all ambigious strings into lowercase.
+# To prevent any confusion, it was decided to turn all ambigous strings into lowercase.
 
 points_lowercase = {key.lower(): value for key, value in points.items()}
 points_editnames_ordered_lowercase = list(map(str.lower, points.editnames_ordered))

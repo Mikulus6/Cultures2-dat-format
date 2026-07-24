@@ -34,9 +34,9 @@ def distance_transform(input_data: np.array, value_to_fill, max_output_value, ou
 
 def moveable_block(data_object) -> np.ndarray:
 
-    # There exists one map in the game "Cultures: Die Saga" where this derivation is incorrect. This is map "Daheim".
-    # Such discrepency is caused by stockade disappearing after removing player in the external editor. This mismatch
-    # is easily recreatable by placing stockade and removing player to whom it belongs in the aforementioned editor.
+    # There exists one map named "Daheim" in the game "Cultures: Die Saga" where this derivation is incorrect.
+    # Such discrepancy is caused by stockade disappearing after removing player in the external editor. This mismatch is
+    # easily recreatable by placing a stockade and removing the player to whom it belongs in the aforementioned editor.
 
     moveable_array = np.zeros(data_object.lsiz.shape_micro, dtype=np.bool)
 

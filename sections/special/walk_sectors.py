@@ -425,7 +425,7 @@ def get_supplementary_points(data_object, base_point, terrain_type: Literal["lan
                 queue.append((x_1, y_1))
 
         if len(solutions.get(size_limit, [])) >= _max_number_of_points:
-            break  # It is unnecessary to preform rest of flood fill, because optimal solution is already found.
+            break  # It is unnecessary to perform the rest of flood fill, because the optimal solution is already found.
 
     if len(solutions) == 0: return []
     else:                   return solutions[max(solutions.keys())][:_max_number_of_points]

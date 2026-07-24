@@ -1,6 +1,5 @@
 from itertools import count
-from supplements import BufferGiver, BufferTaker  # noqa,  used by other files
-from supplements.parser import parse_ini_file
+from supplements import BufferGiver, BufferTaker, parse_ini_file  # noqa,  buffers are used by other files
 
 
 class ExternalAssets(dict):

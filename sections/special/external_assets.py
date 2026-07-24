@@ -44,7 +44,7 @@ def update_landscapes(data_object, eald_new: list | None = None):
 
 def update_transitions(data_object, eatd_new: list | None = None):
 
-    # This is just a technical combination. Such combination does not represent human-readable array.
+    # This is just a technical combination. Such a combination does not represent a human-readable array.
     emt = combine_ab_sections(combine_ab_sections(data_object.emt1, data_object.emt3),  # transitions A
                               combine_ab_sections(data_object.emt2, data_object.emt4))  # transitions B
     # 1, 2 -> foreground

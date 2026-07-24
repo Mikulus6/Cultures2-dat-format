@@ -4,7 +4,7 @@ from supplements.initialization import decode
 from supplements.read import library_global, load_global_library
 
 def prepare_lib_data():
-    # This function is important only for project memebers working on reverse engineering to make things easier to use
+    # This function is important only for project members working on reverse engineering to make things easier to use
     # and debug. It should not be used in the final application, because computers can read binary files directly
     # without converting it to human-readable text.
 

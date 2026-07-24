@@ -4,12 +4,12 @@ from .initialization import decode
 from .read import library_global, load_global_library
 
 def prepare_readable(gameroot_directory: str, project_directory: str = "."):
-    """Copy and modify game files to make it more human-readable and quicker to load."""
+    """Copy and modify game files to make them more human-readable and quicker to load."""
 
     data_full_path = os.path.join(project_directory, "data")
 
     if os.path.isdir(data_full_path):
-        return  # Procedure is skipped. It is assumed that files are already prepared if this directory exists.
+        return  # The procedure is skipped. It is assumed that files are already prepared if this directory exists.
 
     load_global_library(gameroot_directory=gameroot_directory)
     library_global.extract(project_directory)

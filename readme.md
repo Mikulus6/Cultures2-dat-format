@@ -4,7 +4,7 @@
 
 The following project is meant to be a tool for various mapping and modding
 efforts regarding `*.dat` files in video games from [*Cultures*](https://de.wikipedia.org/wiki/Cultures_(Computerspielreihe))
-series whichs engines are based on [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard).
+series whose engines are based on [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard).
 These are, including the aforementioned game, listed below.
 
  - [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard)
@@ -13,14 +13,14 @@ These are, including the aforementioned game, listed below.
  - [*Cultures: Die Saga*](https://www.mobygames.com/game/11159/cultures-die-saga/)
 
 
-Using [`MapData`](./map_data.py) class defined in this project one can freely
-read data from and write data to `*.dat` files. Exemplary usage is shown in
-[`modifier.py`](./modifier.py) file. Do not confuse this file format with the
-one present in *Cultures: Discovery of Vinland* and in the other older games
-released as part of the *Cultures* series. This file format is completely
-different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
-files present there and is only relevant for `map.dat` files.  This project
-also serves as a complete documentation of `*.dat` files.
+Using the [`MapData`](./map_data.py) class defined in this project one can
+freely read data from and write data to `*.dat` files. Exemplary usage is
+shown in [`modifier.py`](./modifier.py) file. This project also serves as
+complete documentation of `*.dat` files. Do not confuse this file format with
+the one present in *Cultures: Discovery of Vinland* and in the other older
+games released as part of the *Cultures* series. This file format is
+completely different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
+files present there and is only relevant for `map.dat` files.  
 
 ## Documentation
 
@@ -32,8 +32,8 @@ triangles A (Δ) and triangles B (∇). These two types of triangles always
 appear paired with each other. Ignoring distortion caused by elevation, the
 composition of a pair of triangles is a parallelogram (Δ∇).
 
-Vertices present in top left corners of parallelograms composed of paired A
-triangle and B triangle are called *macro vertices*. In game, coordinates of
+Vertices present in the top-left corners of parallelograms composed of paired
+A and B triangles are called *macro vertices*. In the game, coordinates of
 such vertices satisfy the following equation: `y mod 4 = 2·(x mod 2)`.
 
 Additional vertices can be obtained by shifting any macro vertex. Vertices
@@ -46,7 +46,7 @@ dimension.
 
 Macro vertices and micro vertices together make all the vertices on which
 landscapes can be placed and between which creatures can move. When working
-on problems related to these concepts it is useful to imagine only vertices
+on problems related to these concepts, it is useful to imagine only vertices
 without underlying triangles. One can easily see that by rotating the image of
 flat terrain by 45° the structure of vertices is geometrically equivalent to
 the regular grid made out of squares. This explains intuitively why creatures
@@ -58,11 +58,11 @@ vertices one can notice that moving on triangular grid vertex by vertex is
 topologically equivalent to moving on hexagonal grid tile by tile. This idea
 in many cases simplifies required geometrical imagination.
 
-It is important to note that vertical coordinate on this kind of grid does not
-simply move in one direction as one might expect to happen by having intuition
-from grids based on square repetition. Instead, vertical coordinate for all
-triangles A, triangles B, macro vertices and micro vertices, moves in a zigzag
-pattern.
+It is important to note that the vertical coordinate on this kind of grid does
+not simply move in one direction as one might expect to happen by having
+intuition from grids based on square repetition. Instead, vertical coordinate
+for all triangles A, triangles B, macro vertices and micro vertices, moves in
+a zigzag pattern.
 
 All geometrical ideas described above are shown in the exemplary image below.
 
@@ -74,12 +74,11 @@ The file format `*.dat` is composed of various parts called sections. Each
 section starts with the text `hoix` and then is followed by a section name
 with a length of four characters. It is important to note that all such texts
 should be read in reverse. The reversed text of `hoix` is a shortened name for
-*X Input-Output Handler*. Some section names remain ambiguous in the matter of
-what their shortened reversed names stand for, but most of them are guessed
-based on the content of the section and the overall context given by game
-files. In this repository all such texts are reversed compared to how they
-appear directly inside `*.dat` files, so that they are easier to read and
-analyze.  
+*X Input-Output Handler*. Some section names remain ambiguous as to what their
+shortened reversed names stand for, but most of them are guessed based on the
+content of the section and the overall context given by game files. In this
+repository all such texts are reversed compared to how they appear directly
+inside `*.dat` files, so that they are easier to read and analyze.  
 
 Following the section name, each section can be divided into a header and a
 body. The header of the section contains, right after its name, four bytes
@@ -93,7 +92,7 @@ file. After that, again eight bytes are empty and they constitute the end of
 the section header. Next, the body of a section is present, whose length was
 given in the header.  
 
-In short, each section present in `*.dat` file has the following structure:
+In short, each section present in a `*.dat` file has the following structure:
 ```txt
 char[4]  string_hoix;       // always "hoix"
 char[4]  string_name;       // reversed section name
@@ -106,10 +105,10 @@ ubyte[section_length] body;
 ```
 
 The exact binary interpretation of the section body is dependent on the
-section name and type. Most of them however contain compressed two-dimensional
-arrays which can be read using the run-length decryption algorithm present in
-[`run_length.py`](./sections/generic/run_length.py) file. All other cases of
-non-empty sections are handled using the [`SpecialSection`](./sections/special/special.py)
+section name and type. Most of them, however, contain compressed
+two-dimensional arrays which can be read using the run-length decryption
+algorithm present in [`run_length.py`](./sections/generic/run_length.py) file.
+All other cases of non-empty sections are handled using the [`SpecialSection`](./sections/special/special.py)
 metaclass and are considered in [`MapData`](./map_data.py) methods. Some of
 them represent one-dimensional arrays of strings - those are handled by the
 [`TextSection`](./sections/special/texts.py) class.  
@@ -119,17 +118,17 @@ them represent one-dimensional arrays of strings - those are handled by the
 All sections can be divided into two types. These are primary sections and
 secondary sections. Primary sections are those sections that are responsible
 for data which is directly perceived on the map in the game and is also
-intended to be directly editable by the map creator. One can think about
-primary sections as phenomena whose qualities are significant for both the
-player and such a map creator that does not have any need to manually read
-game files. These sections are responsible for the placement of landscapes and
-fish swarms as well as for terrain appearance.
+intended to be directly editable by the map creator. One can think of primary
+sections as phenomena whose qualities are significant for both the player and
+such a map creator who does not have any need to manually read game files.
+These sections are responsible for the placement of landscapes and fish swarms
+as well as for terrain appearance.
 
 Secondary sections, on the other hand, are those sections whose content can be
 expressed as a function of a collection of primary sections and other game
 files. In other words, given primary sections and game files, one can
 determine what should be the exact correct content of any secondary section.
-This means that from the technical point of view all secondary sections are an
+This means that from a technical point of view all secondary sections are an
 investment of in-game physics computing time paid off by the increased memory
 usage in `*.dat` files. These sections are responsible for hitboxes of
 landscapes (calculated from the placement of landscapes), continent
@@ -143,21 +142,21 @@ solved if all primary sections have a known in-game meaning and all secondary
 sections have a known completed derivation algorithm. Note that it is not
 necessary to obtain the in-game meaning of a secondary section to solve the
 `*.dat` file format if its derivation algorithm is known. That is because
-derivation algorithms are surjective under the codomain of all valid states of
+derivation algorithms are surjective onto the codomain of all valid states of
 secondary sections.
 
 There are some exceptions when a secondary section contains information that
 cannot be derived from primary sections, yet it is not necessary to know its
 meaning. Such a difference between an original secondary section and a derived
-secondary section is called a corruption. From the purely rational standpoint
+secondary section is called corruption. From a purely rational standpoint,
 there is no mathematical difference between primary information and corrupted
 information. However, there exists a simple empirical method to differentiate
 between those two. Consider an original editor present in various games from
 the Cultures series. Assume that for every simple action done in this editor
-(such as for example placing a landscape on an empty vertex) there exists also
-an inverse action (such as removing a landscape from the same vertex). It is
-reasonable to assume that the algebraic composition of inverse actions should
-result in the `*.dat` file content remaining the same. This is in fact not
+(such as, for example, placing a landscape on an empty vertex) there exists
+also an inverse action (such as removing a landscape from the same vertex). It
+is reasonable to assume that the algebraic composition of inverse actions should
+result in the `*.dat` file content remaining the same. This is, in fact, not
 always correct. The state of a secondary section is called corrupted when in
 the original editor there exists an algebraic composition of a simple action
 and its inverse action such that the state of the considered secondary section
@@ -167,7 +166,7 @@ in-game meaning primary sections have.
 
 ### Usage
 
-Objects from class [`MapData`](./map_data.py) have five methods available.
+Instances of the [`MapData`](./map_data.py) class have five methods available.
 These are named `load`, `save`, `extract`, `pack` and `update`. The first two
 of these (`load`, `save`) make it possible for data from a `*.dat` file to be
 loaded into an object and to be saved again as a `*.dat` file. It is also
@@ -178,16 +177,16 @@ respectively to extract the content of an object as a conventional set of
 image and text files and to pack it back into the object. This makes it
 possible to analyze any binary data present in a `*.dat` file in a more
 readable form of image and text files. The last method (`update`) is used to
-update all secondary sections accordingly to known derivation algorithms. It
-is also possible to get primary information about vertices and triangles by
+update all secondary sections according to known derivation algorithms. It is
+also possible to get primary information about vertices and triangles by
 specifying coordinates as an element of an object. Usage of all these methods
 is visualized below.  
 
 ![class structure](./assets/class_structure.png)
 
-Note that it is necessary to firstly load some game files in order to use the
+Note that it is necessary to first load some game files in order to use the
 aforementioned class. This can be simply done by running the [`prepare_readable`](./supplements/__init__.py)
-function once. This way the necessary game files will be copied into the main
+function once. This way, the necessary game files will be copied into the main
 project directory and processed into the form that makes them both quicker to
 load and more human-readable.  
 
@@ -237,14 +236,14 @@ load and more human-readable.
 
 ## Credits
 
-This project is a fan-made tool created by [CulturesNation](https://culturesnation.pl/)
+This project is a fan-made tool created by the [CulturesNation](https://culturesnation.pl/)
 community. It is not affiliated with the official legacy of *Cultures* series.
-For official developers' website visit [Funatics](https://www.funatics.de/).
+For official developers' website visit [Funatics](https://www.funatics.de/).  
 
 ### Contributors
 
 [Mikulus](https://github.com/Mikulus6): Managed project and wrote Python code.  
-[Basssiiie](https://github.com/Basssiiie): Decompiled parts of game's engine via Ghidra.  
+[Basssiiie](https://github.com/Basssiiie): Decompiled parts of the game's engine via Ghidra.  
 [Rumu](https://github.com/Rumu121/): Helped with empirical verifications in game.  
 [Push42](https://github.com/push42): Helped with walk sectors data interpretation.
 ### Literature
@@ -255,11 +254,11 @@ For official developers' website visit [Funatics](https://www.funatics.de/).
 [Siguza](https://github.com/Siguza): "[*Cultures 2 file formats*](https://web.archive.org/web/20210724220815/https://forum.xentax.com/viewtopic.php?t=10705)" (2013)  
 [Nithanim](https://github.com/Nithanim): "[*Northland or 8th Wonder of the World map.dat file format*](https://gist.github.com/Nithanim/766c31475377b0bd594bab974a1de8d2)" (2019)  
 [Martianboy](https://github.com/martianboy): "[*cultures2-engine*](https://github.com/martianboy/cultures2-engine)" (2020)  
-[Mikulus](https://github.com/Mikulus6): "[*Cultures map editor*](https://github.com/Mikulus6/Cultures-map-editor)" (2025)
+[Mikulus](https://github.com/Mikulus6): "[*Cultures map editor*](https://github.com/Mikulus6/Cultures-map-editor)" (2025)  
 
 ### License
 
-This program and its source code are distributed under [GNU General Public License 3.0](https://www.gnu.org/licenses/gpl-3.0.txt),
+This program and its source code are distributed under the [GNU General Public License 3.0](https://www.gnu.org/licenses/gpl-3.0.txt),
 which can be found in the [`license.txt`](license.txt) file. *Cultures* itself
 is the property of [Funatics Development](https://www.funatics.de/) with all
 rights reserved as stated in the game readme, and is not covered by the
