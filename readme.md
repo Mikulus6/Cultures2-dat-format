@@ -12,14 +12,13 @@ These are, including the aforementioned game, listed below.
  - [*8th Wonder of the World*](https://www.mobygames.com/game/8939/8th-wonder-of-the-world/)
  - [*Cultures: Die Saga*](https://www.mobygames.com/game/11159/cultures-die-saga/)
 
-
 Using the [`MapData`](./map_data.py) class defined in this project one can
 freely read data from and write data to `*.dat` files. Exemplary usage is
-shown in [`modifier.py`](coupler.py) file. This project also serves as
-complete documentation of `*.dat` files. Do not confuse this file format with
-the one present in *Cultures: Discovery of Vinland* and in the other older
-games released as part of the *Cultures* series. This file format is
-completely different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
+shown in [`coupler.py`](coupler.py) file. This project also serves as complete
+documentation of `*.dat` files. Do not confuse this file format with the one
+present in *Cultures: Discovery of Vinland* and in the other older games
+released as part of the *Cultures* series. This file format is completely
+different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
 files present there and is only relevant for `map.dat` files.  
 
 ## Documentation
