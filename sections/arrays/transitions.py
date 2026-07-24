@@ -3,8 +3,8 @@ from itertools import product, repeat
 import numpy as np
 from random import randint
 from typing import Literal
+from ..generic.external import transitions, points, patterns
 from ..generic.geometry import get_adjacent_triangles, get_triangle_corner_vertices
-from ..generic.imports import transitions, points, patterns
 from ..generic.minus_one import get_minus_one
 
 # Capitalization of various names is not consistent across game files related to transitions.

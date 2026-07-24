@@ -5,7 +5,7 @@ import numpy as np
 import os
 import time
 from typing import Literal
-from ..generic.imports import BufferGiver, BufferTaker
+from ..generic.external import BufferGiver, BufferTaker
 from ..generic.geometry import get_neighbouring_vertices, hexagonal_norm
 from ..generic.minus_one import get_minus_one
 from ..special.external_assets import update_ea_d

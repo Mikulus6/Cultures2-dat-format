@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 import numpy as np
 from .arrays.infrastructure import emm_pattern_types
 from .arrays.transitions import get_current_transitions, set_transitions
+from .generic.external import patterns
 from .generic.geometry import is_vertex_macro
-from .generic.imports import patterns
 from .generic.minus_one import get_minus_one
 
 @dataclass

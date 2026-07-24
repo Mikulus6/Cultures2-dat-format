@@ -1,4 +1,4 @@
-from ..generic.imports import BufferGiver, BufferTaker
+from ..generic.external import BufferGiver, BufferTaker
 
 
 def run_length_decryption(sequence: bytes) -> bytes:

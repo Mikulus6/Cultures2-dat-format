@@ -80,9 +80,9 @@ def list_to_dict_by_global_key(data_list, global_key):
         data_dict[global_key(section)] = section
     return data_dict
 
-def load_ini_as_dict(filename, allowed_section_names,
+def parse_ini_file(filename, allowed_section_names,
                      entries_duplicated, global_key, merge_duplicates) -> dict:
-    """This function works also with *.cif files."""
+    """This function works with both *.ini and *.cif files."""
     data_list = load_ini_as_sections(filename)
     data_list = filter_section_by_name(data_list, allowed_section_names)
     data_list = merge_entries_to_dicts(data_list, entries_duplicated, merge_duplicates)

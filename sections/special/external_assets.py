@@ -1,6 +1,6 @@
 import numpy as np
 from ..generic.ab_sections import combine_ab_sections, split_ab_sections
-from ..generic.imports import patterns, landscapes
+from ..generic.external import patterns, landscapes
 from ..generic.minus_one import get_minus_one
 from ..special.texts import TextSection
 

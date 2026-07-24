@@ -1,6 +1,6 @@
 from math import floor
 import numpy as np
-from ..generic.imports import patterns
+from ..generic.external import patterns
 
 # shadow kernel
 shadow_kernel_center = (2, 0)
@@ -90,7 +90,7 @@ def update_embr(data_object):
 
 
 class StochasticGradientDescentShadowKernel:
-    # supplementary class used for reversee-enginering shadow kernel in existing data files with SGD method
+    # supplementary class used for reversee-engineering shadow kernel in existing data files with SGD method
 
     def __init__(self, kernel_size, kernel_center=(0, 0)):
         self.kernel_ndarray = np.zeros(kernel_size, dtype=np.uint32)

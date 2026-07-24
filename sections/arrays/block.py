@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Literal
-from ..generic.imports import landscapes
+from ..generic.external import landscapes
 from ..generic.minus_one import get_minus_one
 
 # lm_b = {lmwb, lmbb}

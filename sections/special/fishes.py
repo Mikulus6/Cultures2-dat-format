@@ -1,5 +1,5 @@
 import os
-from ..generic.imports import BufferGiver, BufferTaker
+from ..generic.external import BufferGiver, BufferTaker
 from ..special.special import SpecialSection
 
 
