@@ -12,7 +12,6 @@ continents_logic_types = {0: {0, 5, 6},              # void
 void_continent_id = 0
 minimum_continent_size = 20
 continents_types_priority = (1, 0, 2)  # from the most important to the least important
-
 continents_logic_types_inverse = {v: k for k, vs in continents_logic_types.items() for v in vs}
 
 def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
@@ -24,7 +23,7 @@ def get_continent_type(data_object, coordinates_1, coordinates_2 = None):
         raise ValueError  # undefined continent type
 
 def flood_fill_hexagonal_generator(input_data: np.ndarray | Callable, coordinates_start, *, shape=None):
-    """ Generates triplets of form (x, y, z), where (x, y) are coordinates and z is a binary indicator of vertex
+    """ Generates triplets of form (x, y, z), where (x, y) are coordinates, and z is a binary indicator of vertex
     belonging to filled area or to its boundary (1 = filled area, 0 = boundary) """
 
     if isinstance(input_data, Callable):
@@ -142,10 +141,10 @@ def check_continents_isomorphicity(data_object_1, data_object_2, *, ignore_void_
                 # draw a water basin with size slightly bigger than the minimum size required for a continent, and a
                 # void area adjacent to it, which now makes the water basin too small to be considered a continent.
                 # If water basin was drawn first, it is still considered a continent, even if due to the void presence,
-                # it no longer satisfies criteria to be considered one of them. If void was drawn first, and then water
-                # was drawn next to it, never satisfying the condition of a continent's minimum size, it will never be
-                # considered a continent in the first place. These exceptions are present in several maps from games
-                # "Northland" and "8th Wonder of the World".
+                # it no longer satisfies criteria to be considered one of them. If the void was drawn first, and then
+                # water was drawn next to it, never satisfying the condition of a continent's minimum size, it will
+                # never be considered a continent in the first place. These exceptions are present in several maps from
+                # games "Northland" and "8th Wonder of the World".
                 continue
 
             if value_2 != vertex_bijection_1.setdefault(value_1, value_2): return False
@@ -160,5 +159,5 @@ def check_continents_isomorphicity(data_object_1, data_object_2, *, ignore_void_
             if not ignore_void_mismatch and (data_object_1.lmco[continent_1.anchor_vertex[::-1]] != continent_1_id and
                                              data_object_2.lmco[continent_2.anchor_vertex[::-1]] != continent_2_id):
                 return False
-            # It is unnecessary to check sizes of continents here, because bijection already requires sizes to match.
+            # It is unnecessary to check the sizes of continents here, because bijection already requires them to match.
     return True

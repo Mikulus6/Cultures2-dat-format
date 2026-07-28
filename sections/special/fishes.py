@@ -24,7 +24,7 @@ class Fishes(dict, metaclass=SpecialSection):
             position_y = buffer.unsigned(length=2)
             fish_count = buffer.unsigned(length=4)
             continent  = buffer.unsigned(length=4)
-            # Continent value is correctly assigned only in "Cultures 2: The Gates of Asgard". In newer Cultures games
+            # Continent value is correctly assigned only in "Cultures 2: The Gates of Asgard". In newer Culture games,
             # this value is not always correctly updated when "lmco" section is considered. That is because water basins
             # can be modified after fishes are placed on the map, and the data of fish swarms will not be corrected.
 

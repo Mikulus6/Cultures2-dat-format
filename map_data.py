@@ -10,6 +10,7 @@ class MapData:
     """Data from *.dat files in the Cultures game series, processed into an interpretable object-oriented form."""
 
     def __init__(self):
+        self._is_loaded = False
         for name in set(section_names) - set(sections_empty):
             setattr(self, name, None)
 
@@ -97,8 +98,13 @@ class MapData:
         assert set(key for key in self.__dict__
                    if getattr(self, key) is None).issubset(sections_optional)
 
+        self._is_loaded = True
+
     def save(self, filename: str):
         """Save object data to a file."""
+
+        assert self._is_loaded
+
         buffer_taker = BufferTaker()
 
         names_ordered = [name for name in section_names if name[0] == "l"] + ["xend"] + \
@@ -153,6 +159,8 @@ class MapData:
 
     def extract(self, directory: str):
         """Extract the object data as a collection of text files and images."""
+
+        assert self._is_loaded
 
         os.makedirs(directory, exist_ok=True)
 
@@ -219,8 +227,11 @@ class MapData:
             setattr(self, name, section_special[name]())
             getattr(self, name).from_file(os.path.join(directory, f"{name}.csv"))
 
+        self._is_loaded = True
+
     def update(self, *, refresh_primary: bool = False):
         """Modify all secondary sections according to derivation algorithms"""
+        assert self._is_loaded
         self.__dict__.update(vars(update(self, refresh_primary=refresh_primary)))
 
     def _get_section_bytes(self, name):
@@ -248,4 +259,5 @@ class MapData:
 
     @staticmethod
     def _get_section_type(name):
+        if name in sections_empty: return section_type_empty
         return sections_types_special.get(name, section_type_default)

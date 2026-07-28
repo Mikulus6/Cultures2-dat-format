@@ -2,9 +2,11 @@ from itertools import product, repeat
 import numpy as np
 from random import randint
 from typing import Literal
+from ..generic.cache_soft import cache_soft
 from ..generic.external import transitions, points, patterns
 from ..generic.geometry import get_adjacent_triangles, get_triangle_corner_vertices
 from ..generic.minus_one import get_minus_one
+from ..special.texts import TextSection
 
 # Capitalization of various names is not consistent across game files related to transitions.
 # To prevent any confusion, it was decided to turn all ambigous strings into lowercase.
@@ -13,6 +15,7 @@ points_lowercase = {key.lower(): value for key, value in points.items()}
 points_editnames_ordered_lowercase = list(map(str.lower, points.editnames_ordered))
 points_inversed = {point["patterngroup"].lower() : point["name"].lower() for point in points.values()}
 
+transitions_capitalization_reversal = {transition_name.lower(): transition_name for transition_name in transitions.keys()}
 transitions_inversed = {transition["pointtype"].lower(): list() for transition in transitions.values()}
 for transition in transitions.values():
     transitions_inversed[transition["pointtype"].lower()].append(transition["name"].lower())
@@ -40,6 +43,9 @@ class StatisticalPriority(dict):
         super().__init__(dict())
 
     def analyze(self, data_object):
+
+        get_corner_characteristic.cache_clear()
+
         for y, x, triangle_type in product(range(data_object.lsiz.height),
                                            range(data_object.lsiz.width),
                                            ("a", "b")):
@@ -161,7 +167,7 @@ def set_transitions(data_object, coordinates, triangle_type: Literal["a", "b"], 
         except ValueError:
             terrain_type_num = len(eatd_lowercase_list)
             eatd_lowercase_list.append(terrain_name)
-            data_object.eatd.append(terrain_name)
+            data_object.eatd.append(transitions_capitalization_reversal[terrain_name])
 
         target_cover = tuple(item is not None for item in layer)
         cover_type_num = [k for k, v in cover_presence.items() if v == target_cover][0]
@@ -192,6 +198,7 @@ def get_triangle_pointtype(data_object, coordinates, triangle_type: Literal["a",
             return point_name
     return None
 
+@cache_soft(ignored_args=[0])
 def get_corner_characteristic(data_object, coordinates):
     triangles_a, triangles_b = get_adjacent_triangles(coordinates)
     characteristic = set()
@@ -203,6 +210,7 @@ def get_corner_characteristic(data_object, coordinates):
         characteristic.add(get_triangle_pointtype(data_object, triangle_coordinates, triangle_type))
     return characteristic
 
+@cache_soft(ignored_args=[0])
 def get_triangle_corners_characteristics(data_object, coordinates, triangle_type: Literal["a", "b"]):
     for corner in get_triangle_corner_vertices(coordinates, triangle_type):
         yield get_corner_characteristic(data_object, corner)
@@ -282,6 +290,12 @@ def update_emt_(data_object):
     data_object.emt3 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
     data_object.emt4 = np.zeros(shape=data_object.lsiz.shape, dtype=np.uint8)
 
+    if data_object.eatd is None:
+        data_object.eatd = TextSection()
+
+    get_corner_characteristic.cache_clear()
+    get_triangle_corners_characteristics.cache_clear()
+
     for y, x, triangle_type in product(range(data_object.lsiz.height),
                                        range(data_object.lsiz.width),
                                        ("a", "b")):
@@ -296,6 +310,9 @@ def get_transitions_accuracy(data_object) -> float:
     all_transitions = 0
     correct_transitions = 0
     correct_transitions_empty = 0
+
+    get_corner_characteristic.cache_clear()
+    get_triangle_corners_characteristics.cache_clear()
 
     for y, x, triangle_type in product(range(data_object.lsiz.height),
                                        range(data_object.lsiz.width),

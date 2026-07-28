@@ -1,11 +1,12 @@
 import numpy as np
 from ..generic.ab_sections import combine_ab_sections, split_ab_sections
-from ..generic.external import patterns, landscapes
+from ..generic.external import patterns, landscapes, transitions
 from ..generic.minus_one import get_minus_one
 from ..special.texts import TextSection
 
 eapd_global = TextSection(list_=patterns.editnames_ordered)
 eald_global = TextSection(list_=landscapes.editnames_ordered)
+eatd_global = TextSection(list_=transitions.editnames_ordered)
 
 def update_external_assets_references(array_section: np.ndarray,
                                       text_section_old: list, text_section_new: list | None = None):
@@ -19,6 +20,7 @@ def update_external_assets_references(array_section: np.ndarray,
 
     if text_section_new is None:  # If text_section_new is not specified, then generate new optimum content of it.
         text_section_new, array_section_new = np.unique(array_texts, return_inverse=True)
+        text_section_new = tuple(map(str, text_section_new))
         if "" in text_section_new:
             text_section_new = text_section_new[1:]
             array_section_new = np.where(array_section_new == 0, minus_one, array_section_new - 1)
@@ -30,7 +32,7 @@ def update_external_assets_references(array_section: np.ndarray,
 
     return array_section_new.astype(array_section.dtype), TextSection(list_=text_section_new)
 
-def update_patterns(data_object, eapd_new: list | None = None):
+def update_eapd(data_object, eapd_new: list | None = None):
     emp = combine_ab_sections(data_object.empa, data_object.empb)
     emp_new, data_object.eapd = update_external_assets_references(emp, data_object.eapd, eapd_new)
     empa_new, empb_new = split_ab_sections(emp_new)
@@ -38,11 +40,11 @@ def update_patterns(data_object, eapd_new: list | None = None):
     data_object.empb = empb_new.astype(data_object.empb.dtype)
     return data_object
 
-def update_landscapes(data_object, eald_new: list | None = None):
+def update_eald(data_object, eald_new: list | None = None):
     data_object.emla, data_object.eald = update_external_assets_references(data_object.emla, data_object.eald, eald_new)
     return data_object
 
-def update_transitions(data_object, eatd_new: list | None = None):
+def update_eatd(data_object, eatd_new: list | None = None):
 
     # This is just a technical combination. Such a combination does not represent a human-readable array.
     emt = combine_ab_sections(combine_ab_sections(data_object.emt1, data_object.emt3),  # transitions A
@@ -80,8 +82,8 @@ def update_ea_d(data_object,
                 eatd_new: list | None = None,
                 eald_new: list | None = None):
 
-    data_object = update_patterns   (data_object, eapd_new)
-    data_object = update_transitions(data_object, eatd_new)
-    data_object = update_landscapes (data_object, eald_new)
+    data_object = update_eapd(data_object, eapd_new)
+    data_object = update_eatd(data_object, eatd_new)
+    data_object = update_eald(data_object, eald_new)
 
     return data_object

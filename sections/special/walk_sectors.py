@@ -206,7 +206,7 @@ class WalkSectorsDecorrupter:
     # landscape with a tangible hitbox near the given coordinates in the original external editor of any game from the
     # Cultures series. If the corruption is removed due to the user refreshing walk sectors data by placing and removing
     # a landscape, and no other data is changed, it is proven to be corrupted data and not deterministically derivable
-    # information. So far this class has successfully proven that all encountered discrepancies between original data
+    # information. So far, this class has successfully proven that all encountered discrepancies between original data
     # and derived content of sections are caused by corruption present in data, not by an incorrectly working algorithm.
 
     def __init__(self, editable_c2m_path: str, refresh_time: float):

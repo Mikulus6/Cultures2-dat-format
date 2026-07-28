@@ -16,9 +16,9 @@ def test_map_data(filepath: str, *, print_successes: bool = False):
 
     print(f"Analyzing \"{filepath}\" file.")
 
-    _print_indent_correct   = " ✅ "
-    _print_indent_neutral   = " ⚠️ "
-    _print_indent_incorrect = " ❌ "
+    _print_indent_correct   = "✅ "
+    _print_indent_warning   = "⚠️ "
+    _print_indent_incorrect = "❌ "
 
     _temporary_file         = "temp.dat"
     _temporary_subdirectory = "temp"
@@ -34,7 +34,7 @@ def test_map_data(filepath: str, *, print_successes: bool = False):
     transitions_accuracy = get_transitions_accuracy(data_object)
     if transitions_accuracy == 1:
         if print_successes: print(f"{_print_indent_correct}Transitions accuracy: {(transitions_accuracy * 100):05f}%")
-    else:                   print(f"{_print_indent_neutral}Transitions accuracy: {(transitions_accuracy * 100):05f}%")
+    else:                   print(f"{_print_indent_warning}Transitions accuracy: {(transitions_accuracy * 100):05f}%")
 
     # extract+pack test
 

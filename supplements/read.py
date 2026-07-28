@@ -18,8 +18,9 @@ def read(filepath: str, mode: Literal["r", "rb"] = "r", *,
          skip_file = False, skip_library = False, skip_cif_check = False,
          cultures_1 = False) -> bytes | str:
     """
-    This function is supposed to work as combination of built-in open() and file.read() functions, but with the addition
-    of backup libraries and cif <-> ini files equivalence similarly to how games from Cultures series load files.
+    This function is supposed to work as a combination of built-in open() and file.read() functions, but with the
+    addition of backup libraries and cif <-> ini files equivalence similarly to how games from Cultures series load
+    files.
 
     Warnings:
      - Parameter 'mode' will be ignored if file extension is *.ini, *.cif, *.tab or *.sal.

@@ -33,8 +33,8 @@ def data_to_lmtw(data_object):
                 continue
 
             for index_, coordinates in enumerate(get_neighbouring_vertices((x, y))[:3]):
-                # Connections can be represented as an undirected graph, therefore it is necessary to check only three
-                # out of six connections, because remaining three can be checked from the side of other vertices.
+                # Connections can be represented as an undirected graph. Therefore, it is necessary to check only three
+                # out of six connections, because the remaining three can be checked from the side of other vertices.
                 if check_boundary(data_object, coordinates):
                     continue
 
