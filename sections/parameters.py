@@ -16,8 +16,6 @@ from .special.fishes          import Fishes
 from .special.size            import Size, update_lsiz
 from .special.walk_sectors    import WalkSectors, update_lasw
 
-
-
 section_names = \
     ("logi", "lgmm", "lsiz", "lmhe", "lmpa", "lmpb", "lmlt", "lmlv", "lmlp", "lmco", "lmtw", "lmms", "lmpr",
      "lmwb", "lmbb", "lmro", "lmsb", "lmao", "laco", "lasw", "lafm", "lmhf", "emmm", "embr", "emm1", "emmi",
@@ -47,7 +45,7 @@ sections_primary = \
     {"lsiz", "lmhe", "lmlv", "lmlp", "lafm", "emmi", "eapd", "empa", "empb",
      "eatd", "emt1", "emt2", "emt3", "emt4", "eald", "emla", "emvc"}
 
-# some primary but can be refreshed based on other sections.
+# Some sections below are primary, but can be refreshed based on other sections.
 derivations_dependencies = \
     {"lsiz": {"empa"},
      "lmpa": {"lsiz", "eapd", "empa"},
