@@ -1,1 +1,2 @@
-from .test import run_tests_for_all_files
+from .prepare_tests import prepare_tests
+from .run_tests     import run_tests

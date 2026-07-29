@@ -52,7 +52,7 @@ derivations_dependencies = \
     {"lsiz": {"empa"},
      "lmpa": {"lsiz", "eapd", "empa"},
      "lmpb": {"lsiz", "eapd", "empb"},
-     "lmlt": {"lsiz", "emla", "eald"},
+     "lmlt": {"lsiz", "eald", "emla"},
      "lmco": {"lsiz", "lmpa", "lmpb"},
      "lmtw": {"lsiz", "lmpa", "lmpb"},
      "lmms": {"lsiz", "lmpa", "lmpb", "lmco", "lmtw", "lmwb", "laco"},
@@ -73,7 +73,7 @@ derivations_dependencies = \
      "emt2": {"lsiz", "lmpa", "lmpb", "eapd", "empa", "empb"},
      "emt3": {"lsiz", "lmpa", "lmpb", "eapd", "empa", "empb"},
      "emt4": {"lsiz", "lmpa", "lmpb", "eapd", "empa", "empb"},
-     "eald": {"emla"},}
+     "eald": {"emla"}}
 
 update_functions = \
     {"lsiz": update_lsiz,

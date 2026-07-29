@@ -4,7 +4,7 @@ from ..generic.geometry import get_adjacent_triangles
 
 emm_pattern_types = {3: "overlay road 1",
                      4: "overlay road 2",
-                     5: "overlay house 1",
+                     5: "overlay house 1",  # Overlays of houses were never used in the original maps.
                      6: "overlay house 2"}
 
 def emm1_to_binary(emm1: np.ndarray) -> np.ndarray:

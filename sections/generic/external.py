@@ -1,5 +1,5 @@
 from itertools import count
-from supplements import BufferGiver, BufferTaker, parse_ini_file  # noqa,  buffers are used by other files
+from supplements import BufferGiver, BufferTaker, parse_ini_file, prepare_data  # noqa
 
 
 class ExternalAssets(dict):
@@ -60,4 +60,6 @@ try:
                                  entries_duplicated=landscapes_entries_keys_duplicated,
                                  merge_duplicates=False)
 except FileNotFoundError:
-    raise FileNotFoundError("Unable to find game files in the current working directory.")
+    error_message = f"Unable to find game files necessary to import sections module in the current working directory.\n"\
+                    f"Consider running in the current working directory \"{prepare_data.__name__}\" function first."
+    raise FileNotFoundError(error_message)

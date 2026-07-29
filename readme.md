@@ -3,7 +3,7 @@
 ## Introduction
 
 The following project is meant to be a package and documentation for various
-mapping and modding efforts regarding `*.dat` files in video games from [*Cultures*](https://de.wikipedia.org/wiki/Cultures_(Computerspielreihe))
+efforts regarding `*.dat` files in video games from [*Cultures*](https://de.wikipedia.org/wiki/Cultures_(Computerspielreihe))
 series whose engines are based on [*Cultures 2: The Gates of Asgard*](https://en.wikipedia.org/wiki/Cultures_2:_The_Gates_of_Asgard).
 These are, including the aforementioned game, listed below.
 
@@ -14,12 +14,15 @@ These are, including the aforementioned game, listed below.
 
 Using the [`MapData`](./map_data.py) class defined in this project one can
 freely read data from and write data to `*.dat` files. Exemplary usage is
-shown in [`coupler.py`](coupler.py) file. This project also serves as complete
-documentation of `*.dat` files. Do not confuse this file format with the one
-present in *Cultures: Discovery of Vinland* and in the other older games
-released as part of the *Cultures* series. This file format is completely
-different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
-files present there and is only relevant for `map.dat` files.  
+shown in the [`examples`](examples) directory. This project also serves as
+complete documentation of `*.dat` files. Do not confuse this file format with
+the one present in *Cultures: Discovery of Vinland* and in the other older
+games released as part of the *Cultures* series. This file format is
+completely different from [`gouraud.dat`](https://github.com/Mikulus6/Cultures-map-editor/blob/main/documentation/formats/data.md)
+files present there and is only relevant for `map.dat` files. There is also a
+singular exceptional file which is not considered here, and that is
+`DataX\Libs\t.dat` file present in *Cultures 2: The Gates of Asgard*. This
+file is only one character long and its purpose remains unknown.
 
 ## Documentation
 
@@ -114,8 +117,8 @@ them represent one-dimensional arrays of strings - those are handled by the
 
 ### Derivations
 
-All sections can be divided into two types. These are primary sections and
-secondary sections. Primary sections are those sections that are responsible
+All sections can be divided into two types. These are *primary sections* and
+*secondary sections*. Primary sections are those sections that are responsible
 for data which is directly perceived on the map in the game and is also
 intended to be directly editable by the map creator. One can think of primary
 sections as phenomena whose qualities are significant for both the player and
@@ -134,8 +137,8 @@ landscapes (calculated from the placement of landscapes), continent
 numeration, and for many other things which are explained in detail later.
 
 An algorithm used to obtain a certain secondary section given a set of other
-sections is called a derivation. If the set of given sections to perform such
-an algorithm can be reduced to any subset of all primary sections, such a
+sections is called a *derivation*. If the set of given sections to perform
+such an algorithm can be reduced to any subset of all primary sections, such a
 derivation is treated as completed. The file format `*.dat` is recognized as
 solved if all primary sections have a known in-game meaning and all secondary
 sections have a known completed derivation algorithm. Note that it is not
@@ -147,7 +150,7 @@ secondary sections.
 There are some exceptions when a secondary section contains information that
 cannot be derived from primary sections, yet it is not necessary to know its
 meaning. Such a difference between an original secondary section and a derived
-secondary section is called corruption. From a purely rational standpoint,
+secondary section is called *corruption*. From a purely rational standpoint,
 there is no mathematical difference between primary information and corrupted
 information. However, there exists a simple empirical method to differentiate
 between those two. Consider an original editor present in various games from
@@ -183,25 +186,25 @@ is visualized below.
 
 ![class structure](./assets/class_structure.png)
 
-Note that it is necessary to first load some game files in order to use the
-aforementioned class. This can be simply done by running the [`prepare_readable`](./supplements/__init__.py)
-function once. This way, the necessary game files will be copied into the main
-project directory and processed into the form that makes them both quicker to
-load and more human-readable.  
+Note that it is necessary to first load some game files in order to import the
+aforementioned class. This can be simply done by running the [`prepare_readable`](./supplements/prepare.py)
+function once. This way, the necessary game files will be copied into the
+current working directory and processed into the form that makes them both
+quicker to load and more human-readable.  
 
 ### Sections
 
 | name   | type              | algorithms                                                    | comment                                                                                                                                                     |
 |--------|-------------------|---------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `logi` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                                           |
-| `lgmm` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                                           |
+| `logi` | ⬛&nbsp;empty     | -                                                             | indication of the beginning of file                                                                                                                         |
+| `lgmm` | ⬛&nbsp;empty     | -                                                             | indication of the beginning of the `l___` sections ("l" stands for "logic")                                                                                 |
 | `lsiz` | 🗺️&nbsp;primary   | [`size.py`](./sections/special/size.py)                       | map size expressed as number of triangles in each dimension                                                                                                 |
-| `lmhe` | 🗺️&nbsp;primary   | -                                                             | terrain elevation defined as an array with one byte per macro vertex                                                                                        |
+| `lmhe` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | terrain elevation defined as an array with one byte per macro vertex                                                                                        |
 | `lmpa` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles A patterns `LogicType` defined as an array with one byte per triangle                                                                     |
 | `lmpb` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | terrain triangles B patterns `LogicType` defined as an array with one byte per triangle                                                                     |
 | `lmlt` | ⚙️&nbsp;secondary | [`logic_type.py`](./sections/arrays/logic_type.py)            | landscapes `LogicType` defined as an array with one byte per micro vertex                                                                                   |
-| `lmlv` | 🗺️&nbsp;primary   | -                                                             | landscape valency (usually indicates durability, size or custom properties) defined as an array with one byte per micro vertex                              |
-| `lmlp` | 🗺️&nbsp;primary   | -                                                             | landscape player (used for indicating ownership and palette of stockade and gates) defined as an array with one byte per micro vertex                       |
+| `lmlv` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | landscape valency (usually indicates durability, size or custom properties) defined as an array with one byte per micro vertex                              |
+| `lmlp` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | landscape player (used for indicating ownership and palette of stockade and gates) defined as an array with one byte per micro vertex                       |
 | `lmco` | ⚙️&nbsp;secondary | [`continents.py`](./sections/arrays/continents.py)            | continents (numerical indicators of enclosed areas of land or water) defined as an array with one byte per micro vertex                                     |
 | `lmtw` | ⚙️&nbsp;secondary | [`travel_way.py`](./sections/arrays/travel_way.py)            | availability of edges for movement defined as an array with one byte per micro vertex where six bits indicate six directions                                |
 | `lmms` | ⚙️&nbsp;secondary | [`moveable_size.py`](./sections/arrays/moveable_size.py)      | maximum allowed vehicle size with a limit of size `7` defined as an array with one byte per micro vertex                                                    |
@@ -215,21 +218,22 @@ load and more human-readable.
 | `lasw` | ⚙️&nbsp;secondary | [`walk_sectors.py`](./sections/special/walk_sectors.py)       | walk sectors data used by a pathfinding algorithm                                                                                                           |
 | `lafm` | 🗺️&nbsp;primary   | [`fishes.py`](./sections/special/fishes.py)                   | list of fish swarms                                                                                                                                         |
 | `lmhf` | ⚙️&nbsp;secondary | [`empty.py`](./sections/arrays/empty.py)                      | array of zeros with one byte per micro vertex (absent in older `*.dat` files)                                                                               |
-| `emmm` | ⬛&nbsp;empty     | -                                                             | -                                                                                                                                                           |
+| `xend` | ⬛&nbsp;empty     | -                                                             | present twice in every `*.dat` file, indicating the end of `l___` sections on its first occurrence, and the end of `e___` sections on its second occurrence |
+| `emmm` | ⬛&nbsp;empty     | -                                                             | indication of the beginning of `e___` sections ("e" stands for "edit")                                                                                      |
 | `embr` | ⚙️&nbsp;secondary | [`brightness.py`](./sections/arrays/brightness.py)            | brightness of terrain vertices defined as an array with one byte per macro vertex                                                                           |
 | `emm1` | ⚙️&nbsp;secondary | [`infrastructure.py`](./sections/arrays/infrastructure.py)    | binary indication of visibility of road overlay defined as an array with one byte per macro vertex                                                          |
-| `emmi` | 🗺️&nbsp;primary   | -                                                             | type of road overlay on top of terrain patterns defined as an array with one byte per micro vertex                                                          |
+| `emmi` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | type of road overlay on top of terrain patterns defined as an array with one byte per micro vertex                                                          |
 | `eapd` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of pattern names stored as plain text                                                                                                          |
-| `empa` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles A defined as an array with two bytes per triangle                                                                            |
-| `empb` | 🗺️&nbsp;primary   | -                                                             | terrain patterns for triangles B defined as an array with two bytes per triangle                                                                            |
+| `empa` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | terrain patterns for triangles A defined as an array with two bytes per triangle                                                                            |
+| `empb` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | terrain patterns for triangles B defined as an array with two bytes per triangle                                                                            |
 | `eatd` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of transition names stored as plain text                                                                                                       |
 | `emt1` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | upper transitions for triangles A defined as an array with one byte per triangle                                                                            |
 | `emt2` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | upper transitions for triangles B defined as an array with one byte per triangle                                                                            |
 | `emt3` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | lower transitions for triangles A defined as an array with one byte per triangle                                                                            |
 | `emt4` | 🗺️&nbsp;primary   | [`transitions.py`](./sections/arrays/transitions.py)          | lower transitions for triangles B defined as an array with one byte per triangle                                                                            |
 | `eald` | 🗺️&nbsp;primary   | [`external_assets.py`](./sections/special/external_assets.py) | ordered list of landscape names stored as plain text                                                                                                        |
-| `emla` | 🗺️&nbsp;primary   | -                                                             | landscapes defined as an array with two bytes per micro vertex                                                                                              |
-| `emvc` | 🗺️&nbsp;primary   | -                                                             | colors of macro vertices (known as `vertexcolors`) defined as an array with one byte per macro vertex (absent in older `*.dat` files)                       |
+| `emla` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | landscapes defined as an array with two bytes per micro vertex                                                                                              |
+| `emvc` | 🗺️&nbsp;primary   | [`primary.py`](./sections/primary.py)                         | colors of macro vertices (known as `vertexcolors`) defined as an array with one byte per macro vertex (absent in older `*.dat` files)                       |
 | `xend` | ⬛&nbsp;empty     | -                                                             | present twice in every `*.dat` file, indicating the end of `l___` sections on its first occurrence, and the end of `e___` sections on its second occurrence |
 | `tend` | ⬛&nbsp;empty     | -                                                             | indication of the end of file                                                                                                                               |
 
@@ -245,6 +249,7 @@ For official developers' website visit [Funatics](https://www.funatics.de/).
 [Basssiiie](https://github.com/Basssiiie): Decompiled parts of the game's engine via Ghidra.  
 [Rumu](https://github.com/Rumu121/): Helped with empirical verifications in game.  
 [Push42](https://github.com/push42): Helped with walk sectors data interpretation.
+
 ### Literature
 
 [Watto](https://github.com/wattostudios): "[*Game Extractor*](https://www.watto.org/game_extractor.html)" (2004)  

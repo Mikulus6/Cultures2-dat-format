@@ -7,7 +7,7 @@ from supplements import BufferGiver, BufferTaker, Library, encode
 
 
 class MapData:
-    """Data from *.dat files in the Cultures game series, processed into an interpretable object-oriented form."""
+    """Data from map.dat files from the Cultures game series, processed into an interpretable object-oriented form."""
 
     def __init__(self):
         self._is_loaded = False
@@ -45,6 +45,10 @@ class MapData:
                 del library
             case _:
                 raise ValueError
+
+        if len(buffer) == 1:
+            assert buffer.string(length=1, encoding="ascii") == "x"
+            raise NotImplementedError  # edge case for "DataX\Libs\t.dat" file
 
         while len(buffer) != 0:
             assert buffer.string(length=4, encoding="ascii")[::-1] == "xioh"  # "x input-output handler"

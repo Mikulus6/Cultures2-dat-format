@@ -6,6 +6,9 @@ from .generic.external import patterns
 from .generic.geometry import is_vertex_macro
 from .generic.minus_one import get_minus_one
 
+# This module is responsible for packing all primary information of a vertex into an instance of Vertex class.
+# There are no derivation algorithms present here.
+
 @dataclass
 class MicroVertex:
     landscape_name    : str  = None
@@ -17,13 +20,13 @@ class MicroVertex:
 @dataclass
 class MacroVertex:
     height            : int  = 0
-    pattern_a         : str  = patterns.editnames_ordered[0]
-    pattern_b         : str  = patterns.editnames_ordered[0]
-    transition_upper_a: list = field(default_factory=lambda: [None, None, None])
-    transition_upper_b: list = field(default_factory=lambda: [None, None, None])
-    transition_lower_a: list = field(default_factory=lambda: [None, None, None])
-    transition_lower_b: list = field(default_factory=lambda: [None, None, None])
-    vertexcolor       : int  = None
+    pattern_a         : str  = patterns.editnames_ordered[0]                      # triangle Δ
+    pattern_b         : str  = patterns.editnames_ordered[0]                      # triangle ∇
+    transition_upper_a: list = field(default_factory=lambda: [None, None, None])  # corners: down+right, down+left, up
+    transition_upper_b: list = field(default_factory=lambda: [None, None, None])  # corners: down, up+right, up+left
+    transition_lower_a: list = field(default_factory=lambda: [None, None, None])  # corners: down+right, down+left, up
+    transition_lower_b: list = field(default_factory=lambda: [None, None, None])  # corners: down, up+right, up+left
+    vertexcolor       : int  = None  # palette index for "data\engine2d\bin\palettes\misc\vertexcolors.pcx" file
 
 @dataclass
 class Vertex:
