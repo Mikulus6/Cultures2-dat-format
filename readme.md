@@ -187,7 +187,7 @@ is visualized below.
 ![class structure](./assets/class_structure.png)
 
 Note that it is necessary to first load some game files in order to import the
-aforementioned class. This can be simply done by running the [`prepare_readable`](./supplements/prepare.py)
+aforementioned class. This can be simply done by running the [`prepare_data`](./supplements/prepare.py)
 function once. This way, the necessary game files will be copied into the
 current working directory and processed into the form that makes them both
 quicker to load and more human-readable.  
