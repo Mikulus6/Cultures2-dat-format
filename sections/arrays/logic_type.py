@@ -32,7 +32,7 @@ def data_to_lmlt(data_object):
     def func(landscape_id):
         if landscape_id != minus_one: return landscapes[data_object.eald[landscape_id]]["LogicType"]
         else:                         return 0
-    lmlt = np.vectorize(func)(data_object.emla).astype(data_object.emla.dtype)
+    lmlt = np.vectorize(func)(data_object.emla).astype(np.uint8)
     return lmlt
 
 def update_lmlt(data_object):

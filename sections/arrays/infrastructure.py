@@ -12,7 +12,7 @@ def emm1_to_binary(emm1: np.ndarray) -> np.ndarray:
 
 def binary_to_emm1(binary_sec: np.ndarray) -> np.ndarray:
     emm1_a, emm1_b = split_ab_sections(binary_sec)
-    return (emm1_b * 2) + emm1_a
+    return ((emm1_b * 2) + emm1_a).astype(np.uint8)
 
 def emmi_to_types(emmi: np.ndarray) -> np.ndarray:
     with np.errstate(divide='ignore'):

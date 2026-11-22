@@ -90,7 +90,7 @@ button_load    = tk.Button(root, text="load"   , width=button_size[0], height=bu
 button_save    = tk.Button(root, text="save"   , width=button_size[0], height=button_size[1], command=save)
 button_extract = tk.Button(root, text="extract", width=button_size[0], height=button_size[1], command=extract)
 button_pack    = tk.Button(root, text="pack"   , width=button_size[0], height=button_size[1], command=pack)
-button_uptade  = tk.Button(root, text="update" , width=button_size[0], height=button_size[1], command=pack)
+button_uptade  = tk.Button(root, text="update" , width=button_size[0], height=button_size[1], command=update)
 
 button_new.pack    (pady=button_vertical_margin)
 button_load.pack   (pady=button_vertical_margin)
